@@ -153,25 +153,6 @@ test_list_names__(void)
         printf("  %s\n", test->name);
 }
 
-void
-test_help__(void)
-{
-    printf("Usage: %s [options] [test...]\n", test_argv0__);
-    printf("Run the specified unit tests; or if the option '--skip' is used, run all\n");
-    printf("tests in the suite but those listed.  By default, if no tests are specified\n");
-    printf("on the command line, all unit tests in the suite are run.\n");
-    printf("\n");
-    printf("Options:\n");
-    printf("  -s, --skip         Execute all unit tests but the listed ones\n");
-    printf("      --no-exec      Do not execute unit tests as child processes\n");
-    printf("      --no-summary   Suppress printing of test results summary\n");
-    printf("  -l, --list         List unit tests in the suite and exit\n");
-    printf("  -v, --verbose      Enable more verbose output\n");
-    printf("  -h, --help         Display this help and exit\n");
-    printf("\n");
-    test_list_names__();
-}
-
 const struct test__*
 test_by_name__(const char* name)
 {
@@ -279,7 +260,6 @@ test_run__(const struct test__* test)
         test_stat_failed_units__++;
 }
 
-
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
 LONG CALLBACK
 test_exception_filter__(EXCEPTION_POINTERS *ptrs)
@@ -292,6 +272,25 @@ test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 }
 #endif
 
+void
+test_help__(void)
+{
+    printf("Usage: %s [options] [test...]\n", test_argv0__);
+    printf("Run the specified unit tests; or if the option '--skip' is used, run all\n");
+    printf("tests in the suite but those listed.  By default, if no tests are specified\n");
+    printf("on the command line, all unit tests in the suite are run.\n");
+    printf("\n");
+    printf("Options:\n");
+    printf("  -s, --skip            Execute all unit tests but the listed ones\n");
+    printf("      --no-exec         Do not execute unit tests as child processes\n");
+    printf("      --no-summary      Suppress printing of test results summary\n");
+    printf("  -l, --list            List unit tests in the suite and exit\n");
+    printf("  -v, --verbose         Enable more verbose output\n");
+    printf("      --verbose=LEVEL   Set verbose level to LEVEL (small integer)\n");
+    printf("  -h, --help            Display this help and exit\n");
+    printf("\n");
+    test_list_names__();
+}
 
 int
 main(int argc, char** argv)
