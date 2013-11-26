@@ -2,7 +2,6 @@
 #include "cutest.h"
 
 
-
 void test_tutorial(void)
 {
     void* mem;
@@ -15,7 +14,6 @@ void test_tutorial(void)
 
     free(mem);
 }
-
 
 void
 test_fail(void)
@@ -37,7 +35,7 @@ test_crash(void)
     int* invalid = ((int*)NULL) + 0xdeadbeef;
 
     *invalid = 42;
-    TEST_CHECK_(1 == 1, "We likely never get here., due to the crash above.");
+    TEST_CHECK_(1 == 1, "We likely never get here, due to the crash above.");
 }
 
 

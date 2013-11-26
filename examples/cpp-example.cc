@@ -1,5 +1,6 @@
 
 #include "cutest.h"
+
 #include <exception>
 #include <string>
 
@@ -31,7 +32,6 @@ void test_strange_exception(void)
 {
     throw "It deals also with exception not derived from std::exception";
 }
-
 
 
 TEST_LIST = {
