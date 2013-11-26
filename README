@@ -97,8 +97,9 @@ example, assuming cc is your C compiler:
   $ cc test_example.c -o test_example
 
 
-Using Unit Tests
-================
+
+Running Unit Tests
+==================
 
 When the C file with the tests is compiled, the resulted testing binary can be
 used to run the tests.
@@ -125,4 +126,3 @@ The project resides on github:
 
 You can find the latest version of CUTest.h there, contribute with enhancements
 or report bugs.
-
