@@ -1,0 +1,128 @@
+
+                    =====================================
+                                CUTest Readme
+                       <http://github.com/mity/cutest>
+                    =====================================
+
+
+What is CUTest
+==============
+
+CUTest means "C Unit Testing" and it is intended to do exactly that, while
+being as simple as possible to use it, not to stand in the developer's way
+and minimize any external dependencies.
+
+To achieve that, the complete implementation resides in a single C header file,
+"cutest.h", and its core depends only on few standard C library functions.
+As an optional feature, the tests can be executed in a subprocess, however this
+feature is available on POSIX platforms (system()) or Windows (CreateProcess()).
+
+CUTest supports C as well as C++, and deals with tests throwing an exception.
+
+
+License
+=======
+
+CUTest is covered with the GNU Lesser General Public License 2.1 or
+(at your option) any later version. See file COPYING.lib for more info.
+
+In brief, this generally means that:
+
+    * Any program or library, even commercial, covered with any proprietary
+      license, is allowed to use CUTest, i.e. include "cutest.h".
+
+    * You can modify "cutest.h" and distribute such modified header if such
+      modifications are also licensed under the terms of the LGPL 2.1  (or any
+      later version); or under the terms of GPL 2 (or any later version).
+
+
+Writing Unit Tests
+==================
+
+To use CUTest, simply include the header file "cutest.h" on the beginning of
+the C file implementing one or more unit tests. Note the header provides
+implementation of the main() function.
+
+  #include "cutest.h"
+
+The C file implements the unit tests as a function with the prototype
+
+  void test_example(void);
+
+The tests can use preprocessor macro TEST_CHECK or TEST_CHECK_ to validate some
+condition. They can be used multiple times, and if any of those conditions
+fails, the test is considered to fail. (The macro TEST_CHECK_ can be used only
+your C preprocessor supports variadic macros, and it takes printf-like extra
+arguments to provide a custom error message of the condition fails.)
+
+For example:
+
+  void test_example(void)
+  {
+      void* mem;
+      int a, b;
+
+      mem = malloc(10);
+      TEST_CHECK(mem != NULL);
+
+      mem = realloc(mem, 20);
+      TEST_CHECK(mem != NULL);
+
+      a = 1;
+      b = 2;
+      TEST_CHECK_(a + b == 3, "Expected %d, got %d", 3, a + b);
+  }
+
+Note that the tests should not depend on each other. (On platforms where
+supported) each unit test is executed in a context of standalone (sub)process.
+
+Finally, the C module has to list the unit tests, using the macro TEST_LIST.
+The list specifies name of each test (it has to be unique) and pointer to
+a function implementing the test. I recommend names which are easy to use on
+command-line, i.e. especially avoid space and other special characters in them.
+Also avoid using dash as a first character, as it would be then interpreted
+as an command line option, not a test name.
+
+  TEST_LIST = {
+     { "example", test_example },
+     ...
+     { 0 }
+  };
+
+Please note the tests are ended with zeroed record.
+
+Finally you just compile the C module as a simple standalone program. For
+example, assuming cc is your C compiler:
+
+  $ cc test_example.c -o test_example
+
+
+Using Unit Tests
+================
+
+When the C file with the tests is compiled, the resulted testing binary can be
+used to run the tests.
+
+By default (without any command line options), it runs all implemented unit
+tests. It can also run only subset of the unit tests as specified on the
+command line:
+
+  $ ./test_example                # Run all tests in the suite
+  $ ./test_example test1 test2    # Run only tests "test1" and "test2"
+  $ ./test_example --skip test3   # Run all tests with the exception of "test3"
+
+To see all the options, simply run the binary with the option --help.
+
+  $ ./test_example --help
+
+
+More Information
+================
+
+The project resides on github:
+
+  http://github.com/mity/cutest
+
+You can find the latest version of CUTest.h there, contribute with enhancements
+or report bugs.
+
