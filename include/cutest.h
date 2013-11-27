@@ -48,7 +48,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
+    #define CUTEST_UNIX__    1
+#endif
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+    #define CUTEST_WIN__     1
     #include <windows.h>
 #endif
 
@@ -217,12 +222,12 @@ test_run__(const struct test__* test)
 
     if(!test_no_exec__) {
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(CUTEST_UNIX__)
         char buffer[256] = {0};
         snprintf(buffer, sizeof(buffer)-1, "%s --no-exec --no-summary --verbose=%d \"%s\"",
                  test_argv0__, test_verbose_level__, test->name);
         failed = (system(buffer) != 0);
-#elif defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+#elif defined(CUTEST_WIN__)
         char buffer[256] = {0};
         STARTUPINFOA startupInfo = {0};
         PROCESS_INFORMATION processInfo;
@@ -260,7 +265,7 @@ test_run__(const struct test__* test)
         test_stat_failed_units__++;
 }
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+#if defined(CUTEST_WIN__)
 LONG CALLBACK
 test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 {
@@ -334,7 +339,7 @@ main(int argc, char** argv)
         }
     }
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
+#if defined(CUTEST_WIN__)
     SetUnhandledExceptionFilter(test_exception_filter__);
 #endif
 
