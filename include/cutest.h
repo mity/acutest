@@ -65,6 +65,12 @@
 /* Note our global private identifiers end with '__' to minimize risk of clash
  * with the unit tests implementation. */
 
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
+
 struct test__ {
     const char* name;
     void (*func)(void);
@@ -394,3 +400,8 @@ main(int argc, char** argv)
 
     return (test_stat_failed_units__ == 0) ? 0 : 1;
 }
+
+
+#ifdef __cplusplus
+    }  /* extern "C" */
+#endif
