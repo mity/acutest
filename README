@@ -14,10 +14,13 @@ and minimize any external dependencies.
 
 To achieve that, the complete implementation resides in a single C header file,
 "cutest.h", and its core depends only on few standard C library functions.
-As an optional feature, the tests can be executed in a subprocess, however this
-feature is available on POSIX platforms (system()) or Windows (CreateProcess()).
 
-CUTest supports C as well as C++, and deals with tests throwing an exception.
+As an optional feature, the unit tests can be executed in a subprocess. However
+this feature is only available on Unix platforms (fork(2)) and Windows
+(CreateProcess()). On those platforms, it is also a default behavior.
+
+CUTest supports C as well as C++, and it can deal with unit tests which throw
+C++ exceptions.
 
 
 License
