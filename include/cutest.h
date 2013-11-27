@@ -1,5 +1,5 @@
 /*
- * CUTest - C Unit Test facility
+ * CUTest -- C/C++ Unit Test facility (http://github.com/mity/cutest)
  * Copyright (c) 2013 Martin Mitas
  *
  * This library is free software; you can redistribute it and/or modify it
