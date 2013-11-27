@@ -50,6 +50,8 @@
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define CUTEST_UNIX__    1
+    #include <errno.h>
+    #include <unistd.h>
 #endif
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
@@ -229,11 +231,47 @@ test_run__(const struct test__* test)
     if(!test_no_exec__) {
 
 #if defined(CUTEST_UNIX__)
-        char buffer[256] = {0};
-        snprintf(buffer, sizeof(buffer)-1, "%s --no-exec --no-summary --verbose=%d \"%s\"",
-                 test_argv0__, test_verbose_level__, test->name);
-        failed = (system(buffer) != 0);
+
+        pid_t pid;
+        int exit_code;
+
+        pid = fork();
+        if(pid == (pid_t)-1) {
+            test_msg__(1, "Cannot start the unit test subprocess. %s [%d]", strerror(errno), errno);
+            failed = 1;
+        } else if(pid == 0) {
+            failed = (test_do_run__(test) != 0);
+            exit(failed ? 1 : 0);
+        } else {
+            waitpid(pid, &exit_code, 0);
+            if(WIFEXITED(exit_code)) {
+                switch(WEXITSTATUS(exit_code)) {
+                    case 0:   failed = 0; break;   /* test has passed. */
+                    case 1:   /* noop */ break;    /* "normal" failure. */
+                    default:  test_msg__(1, "Unexpected subprocess exit code [%d]", WEXITSTATUS(exit_code));
+                }
+            } else if(WIFSIGNALED(exit_code)) {
+                char tmp[32];
+                const char* signame;
+                switch(WTERMSIG(exit_code)) {
+                    case SIGINT:  signame = "SIGINT"; break;
+                    case SIGHUP:  signame = "SIGHUP"; break;
+                    case SIGQUIT: signame = "SIGQUIT"; break;
+                    case SIGABRT: signame = "SIGABRT"; break;
+                    case SIGKILL: signame = "SIGKILL"; break;
+                    case SIGSEGV: signame = "SIGSEGV"; break;
+                    case SIGILL:  signame = "SIGILL"; break;
+                    case SIGTERM: signame = "SIGTERM"; break;
+                    default:      sprintf(tmp, "signal %d", WTERMSIG(exit_code)); signame = tmp; break;
+                }
+                test_msg__(1, "Test interrupted by %s", signame);
+            } else {
+                test_msg__(1, "Test ended in an unexpected way [%d]", exit_code);
+            }
+        }
+
 #elif defined(CUTEST_WIN__)
+
         char buffer[256] = {0};
         STARTUPINFOA startupInfo = {0};
         PROCESS_INFORMATION processInfo;
@@ -256,8 +294,11 @@ test_run__(const struct test__* test)
             test_msg__(1, "Cannot start the unit test subprocess [%ld].", GetLastError());
             failed = 1;
         }
+
 #else
+
         failed = (test_do_run__(test) != 0);
+
 #endif
 
     } else {
