@@ -125,7 +125,7 @@ test_msg__(int verbose_level, const char* fmt, ...)
     test_current_already_logged__++;
 }
 
-void
+int
 test_check__(int cond, const char* file, int line, const char* cond_str, const char* fmt, ...)
 {
     const char *result_str;
@@ -154,6 +154,7 @@ test_check__(int cond, const char* file, int line, const char* cond_str, const c
 
     test_msg__(verbose_level, "%s:%d: Condition '%s' has %s.%s",
                file, line, cond_str, result_str, buffer);
+    return (cond != 0);
 }
 
 void
