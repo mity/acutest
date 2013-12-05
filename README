@@ -24,20 +24,41 @@ Overview
 Main features:
  * Unit tests in C or C++ are supported.
  * No need to install/setup/configure testing framework. CUTest is just single
-   C/C++ header.
- * Trivial interface for writing unit tests (3 macros).
+   C/C++ header, cutest.h.
+ * The header provides program entry point (function main()).
+ * Minimal dependencies: Core features only depends on few standard C headers,
+   optional features may use more if available on the particular system.
+ * Trivial interface for writing unit tests: Few preprocessor macros described
+   further below.
+   
+Windows specific features:
+ * By default, every unit test is executed as a child process.
+ * CUTest installs a SEH filter to print out uncaught SEH exceptions.
+ 
+Unix specific features:
+ * By default, every unit test is executed as a child process.
 
-Any C/C++ module implementing one or more unit tests can is built as a standalone
-program (Note <cutest.h> implements main()). The resulted binary is then executed
-to run the tests, as specified with its command line options.
+C++ specific features:
+ * CUTest catches a C++ exceptions thrown from unit test functions.
+ * If the excception is drived from std::exception, what() is written out
+   in an error message.
 
-By default, all unit tests in the program are run. On Windows and Unix, every
-unit test is executed in aits own subprocess.
+Any C/C++ module implementing one or more unit tests and including cutest.h,
+can be built as a standalone program. We call the resulted binary as a "test
+suite" for purposes of this document. The suite is then executed to run the
+tests, as specified with its command line options.
 
-We say an unit test succeeds if all conditions (preprocessor macros TEST_CHECK
+By default, all unit tests in the program are run and (on Windows and Unix)
+every unit test is executed in a context of its own subprocess. Both can be
+overrrided on the command line.
+
+We say any unit test succeeds if all conditions (preprocessor macros TEST_CHECK
 or TEST_CHECK_) called throughout its execution pass, the test does not throw
-an exception (C++ only), and the test is not interrupted by (e.g.) a signal
-(only if run as a subprocess).
+an exception (C++ only), and (on Windows/Unix) the unit test subprocess is not
+interrupted/terminated (e.g. by a signal on Unix or SEH on Windows).
+
+Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
+or other number if an internal error occures.
 
 
 Writing Unit Tests
