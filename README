@@ -39,8 +39,8 @@ Unix specific features:
  * By default, every unit test is executed as a child process.
 
 C++ specific features:
- * CUTest catches a C++ exceptions thrown from unit test functions.
- * If the excception is drived from std::exception, what() is written out
+ * CUTest catches C++ exceptions thrown from unit test functions.
+ * If the excception is derived from std::exception, what() is written out
    in an error message.
 
 Any C/C++ module implementing one or more unit tests and including cutest.h,
