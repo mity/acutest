@@ -28,11 +28,34 @@
  *** Public interface ***
  ************************/
 
-/* Macro to specify list of unit tests in the suite. */
+/* Macro to specify list of unit tests in the suite. 
+ * The unit test implementation MUST provide list of unit tests it implements
+ * with this macro:
+ *
+ * TEST_LIST = {
+ *     { "test1_name", test1_func_ptr },
+ *     { "test2_name", test2_func_ptr },
+ *     ...
+ *     { 0 }
+ * };
+ *
+ * The list specifies names of each tests (must be unique) and pointer to
+ * a function implementing it. The function does not take any arguments
+ * and have no return values.
+ */
 #define TEST_LIST              const struct test__ test_list__[]
 
-/* Macros for testing whether the test succeeds or fails. Can be used
- * arbitrarily during the test. */
+
+/* Macros for testing whether an unit test succeeds or fails. These macros
+ * can be used arbitrarily in functions implementing the unit tests.
+ *
+ * If condition fails troughout execution of a test, the test fails.
+ *
+ * TEST_CHECK takes only one argument (the condition), TEST_CHECK_ allows
+ * also to specify an error message to print out if the condition fails.
+ * (It expects printf-like format string and its parameters). The macros
+ * return 0 (condition passes) or 1 (condition fails).
+ */
 #define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, #cond, __VA_ARGS__)
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, #cond, NULL)
 
