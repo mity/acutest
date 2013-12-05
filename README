@@ -1,11 +1,10 @@
-
                     =====================================
                                 CUTest Readme
                        <http://github.com/mity/cutest>
                     =====================================
 
 
-What is CUTest
+What Is CUTest
 ==============
 
 CUTest means "C Unit Testing" and it is intended to do exactly that, while
@@ -15,28 +14,30 @@ and minimize any external dependencies.
 To achieve that, the complete implementation resides in a single C header file,
 "cutest.h", and its core depends only on few standard C library functions.
 
-As an optional feature, the unit tests can be executed in a subprocess. However
-this feature is only available on Unix platforms (fork(2)) and Windows
-(CreateProcess()). On those platforms, it is also a default behavior.
-
 CUTest supports C as well as C++, and it can deal with unit tests which throw
 C++ exceptions.
 
 
-License
-=======
+Overview
+========
 
-CUTest is covered with the GNU Lesser General Public License 2.1 or
-(at your option) any later version. See file COPYING.lib for more info.
+Main features:
+ * Unit tests in C or C++ are supported.
+ * No need to install/setup/configure testing framework. CUTest is just single
+   C/C++ header.
+ * Trivial interface for writing unit tests (3 macros).
 
-In brief, this generally means that:
+Any C/C++ module implementing one or more unit tests can is built as a standalone
+program (Note <cutest.h> implements main()). The resulted binary is then executed
+to run the tests, as specified with its command line options.
 
-    * Any program or library, even commercial, covered with any proprietary
-      license, is allowed to use CUTest, i.e. include "cutest.h".
+By default, all unit tests in the program are run. On Windows and Unix, every
+unit test is executed in aits own subprocess.
 
-    * You can modify "cutest.h" and distribute such modified header if such
-      modifications are also licensed under the terms of the LGPL 2.1  (or any
-      later version); or under the terms of GPL 2 (or any later version).
+We say an unit test succeeds if all conditions (preprocessor macros TEST_CHECK
+or TEST_CHECK_) called throughout its execution pass, the test does not throw
+an exception (C++ only), and the test is not interrupted by (e.g.) a signal
+(only if run as a subprocess).
 
 
 Writing Unit Tests
@@ -100,7 +101,6 @@ example, assuming cc is your C compiler:
   $ cc test_example.c -o test_example
 
 
-
 Running Unit Tests
 ==================
 
@@ -118,6 +118,22 @@ command line:
 To see all the options, simply run the binary with the option --help.
 
   $ ./test_example --help
+
+
+License
+=======
+
+CUTest is covered with the GNU Lesser General Public License 2.1 or
+(at your option) any later version. See file COPYING.lib for more info.
+
+In brief, this generally means that:
+
+    * Any program or library, even commercial, covered with any proprietary
+      license, is allowed to use CUTest, i.e. include "cutest.h".
+
+    * You can modify "cutest.h" and distribute such modified header if such
+      modifications are also licensed under the terms of the LGPL 2.1  (or any
+      later version); or under the terms of GPL 2 (or any later version).
 
 
 More Information
