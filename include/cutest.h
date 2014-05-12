@@ -75,6 +75,9 @@
     #define CUTEST_UNIX__    1
     #include <errno.h>
     #include <unistd.h>
+    #include <sys/types.h>
+    #include <sys/wait.h>
+    #include <signal.h>
 #endif
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
