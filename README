@@ -65,20 +65,23 @@ Writing Unit Tests
 ==================
 
 To use CUTest, simply include the header file "cutest.h" on the beginning of
-the C file implementing one or more unit tests. Note the header provides
-implementation of the main() function.
+the C/C++ source file implementing one or more unit tests. Note the header
+provides implementation of the main() function.
 
   #include "cutest.h"
 
-The C file implements the unit tests as a function with the prototype
+Every test is supposed to be implemented as a function with the following
+prototype:
 
   void test_example(void);
 
-The tests can use preprocessor macro TEST_CHECK or TEST_CHECK_ to validate some
-conditions. They can be used multiple times, and if any of those conditions
-fails, the test is considered to fail. (The macro TEST_CHECK_ can be used only
-if your C preprocessor supports variadic macros: it takes printf-like extra
-arguments to provide a custom error message if the condition fails.)
+The tests can use preprocessor macro TEST_CHECK or TEST_CHECK_ to validate the
+test conditions. They can be used multiple times, and if any of those conditions
+fails, the particular test is considered to fail.
+
+(The macro TEST_CHECK_ can be used only if your C preprocessor supports variadic
+macros: it takes printf-like extra arguments to provide a custom error message 
+if the condition fails.)
 
 For example:
 
@@ -98,15 +101,17 @@ For example:
       TEST_CHECK_(a + b == 3, "Expected %d, got %d", 3, a + b);
   }
 
-Note that the tests should not depend on each other. (On platforms where
-supported) each unit test is executed in a context of standalone (sub)process.
+Note that the tests should be independent on each other. Whenever the test
+suite is invoked, the user may run any number of tests in the suite, in any
+order. Furthermore by default, on platforms where supported, each unit test
+is executed as a standalone (sub)process.
 
-Finally, the C module has to list the unit tests, using the macro TEST_LIST.
-The list specifies name of each test (it has to be unique) and pointer to
-a function implementing the test. I recommend names which are easy to use on
-command-line, i.e. especially avoid space and other special characters in them.
-Also avoid using dash as a first character, as it would be then interpreted
-as an command line option, not a test name.
+Finally, the test suite source file has to list the unit tests, using the
+macro TEST_LIST. The list specifies name of each test (it has to be unique)
+and pointer to a function implementing the test. I recommend names which are
+easy to use on command-line, i.e. especially avoid space and other special
+characters in them. Also avoid using dash as a first character, as it would
+be then interpreted as an command line option, not a test name.
 
   TEST_LIST = {
      { "example", test_example },
@@ -114,10 +119,10 @@ as an command line option, not a test name.
      { 0 }
   };
 
-Please note the tests are ended with zeroed record.
+Note the test list has to be ended with zeroed record.
 
-Finally you just compile the C module as a simple standalone program. For
-example, assuming cc is your C compiler:
+Finally you just compile the C/C++ test suite source file as a simple program.
+For example, assuming cc is your C compiler:
 
   $ cc test_example.c -o test_example
 
