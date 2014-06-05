@@ -246,10 +246,11 @@ test_do_run__(const struct test__* test)
     }
 #endif
 
-    if(test_current_failures__ == 0)
-        test_msg__(2, "All conditions have passed.");
-    else
-        test_msg__(2, "%d conditions have FAILED.", test_current_failures__);
+    switch(test_current_failures__) {
+        case 0:  test_msg__(2, "All conditions have passed."); break;
+        case 1:  test_msg__(2, "One condition has FAILED."); break;
+        default: test_msg__(2, "%d conditions have FAILED.", test_current_failures__); break;
+    }
 
     test_current_unit__ = NULL;
 
