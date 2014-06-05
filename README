@@ -75,10 +75,10 @@ The C file implements the unit tests as a function with the prototype
   void test_example(void);
 
 The tests can use preprocessor macro TEST_CHECK or TEST_CHECK_ to validate some
-condition. They can be used multiple times, and if any of those conditions
+conditions. They can be used multiple times, and if any of those conditions
 fails, the test is considered to fail. (The macro TEST_CHECK_ can be used only
-your C preprocessor supports variadic macros, and it takes printf-like extra
-arguments to provide a custom error message of the condition fails.)
+if your C preprocessor supports variadic macros: it takes printf-like extra
+arguments to provide a custom error message if the condition fails.)
 
 For example:
 
