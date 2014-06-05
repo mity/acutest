@@ -54,7 +54,16 @@
  * TEST_CHECK takes only one argument (the condition), TEST_CHECK_ allows
  * also to specify an error message to print out if the condition fails.
  * (It expects printf-like format string and its parameters). The macros
- * return 0 (condition passes) or 1 (condition fails).
+ * return non-zero (condition passes) or 0 (condition fails).
+ *
+ * That can be useful when more conditions should be checked only if some
+ * preceding condition passes, as illustrated here:
+ * 
+ * SomeStruct* ptr = allocate_some_struct();
+ * if(TEST_CHECK(ptr != NULL)) {
+ *     TEST_CHECK(ptr->member1 < 100);
+ *     TEST_CHECK(ptr->member2 > 200);
+ * }
  */
 #define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, #cond, __VA_ARGS__)
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, #cond, NULL)
