@@ -1,6 +1,8 @@
 /*
- * CUTest -- C/C++ Unit Test facility (http://github.com/mity/cutest)
- * Copyright (c) 2013 Martin Mitas
+ * CUTest -- C/C++ Unit Test facility
+ * <http://github.com/mity/cutest>
+ *
+ * Copyright (c) 2013-2014 Martin Mitas
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by
