@@ -20,10 +20,7 @@
  */
 
 #ifndef CUTEST_H__
-    #define CUTEST_H__
-#else
-    #error Header "cutest.h" already included. It can only be included once.
-#endif
+#define CUTEST_H__
 
 
 /************************
@@ -481,3 +478,6 @@ main(int argc, char** argv)
 #ifdef __cplusplus
     }  /* extern "C" */
 #endif
+
+
+#endif  /* #ifndef CUTEST_H__ */
