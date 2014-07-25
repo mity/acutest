@@ -170,17 +170,17 @@ test_check__(int cond, const char* file, int line, const char* cond_str, const c
         result_str = "FAILED";
         verbose_level = 1;
         test_current_failures__++;
+    }
 
-        if(fmt != NULL) {
-            va_list args;
+    if(fmt != NULL) {
+        va_list args;
 
-            buffer[0] = ' ';
-            buffer[1] = ' ';
-            va_start(args, fmt);
-            vsnprintf(buffer+2, sizeof(buffer)-3, fmt, args);
-            va_end(args);
-            buffer[sizeof(buffer)-1] = '\0';
-        }
+        buffer[0] = ' ';
+        buffer[1] = ' ';
+        va_start(args, fmt);
+        vsnprintf(buffer+2, sizeof(buffer)-3, fmt, args);
+        va_end(args);
+        buffer[sizeof(buffer)-1] = '\0';
     }
 
     test_msg__(verbose_level, "%s:%d: Condition '%s' has %s.%s",
