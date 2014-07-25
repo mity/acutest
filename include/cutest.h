@@ -28,7 +28,7 @@
  *** Public interface ***
  ************************/
 
-/* Macro to specify list of unit tests in the suite. 
+/* Macro to specify list of unit tests in the suite.
  * The unit test implementation MUST provide list of unit tests it implements
  * with this macro:
  *
@@ -58,7 +58,7 @@
  *
  * That can be useful when more conditions should be checked only if some
  * preceding condition passes, as illustrated here:
- * 
+ *
  * SomeStruct* ptr = allocate_some_struct();
  * if(TEST_CHECK(ptr != NULL)) {
  *     TEST_CHECK(ptr->member1 < 100);
@@ -317,10 +317,6 @@ test_run__(const struct test__* test)
         snprintf(buffer, sizeof(buffer)-1, "%s --no-exec --no-summary --verbose=%d \"%s\"",
                  test_argv0__, test_verbose_level__, test->name);
         startupInfo.cb = sizeof(STARTUPINFO);
-        startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-        startupInfo.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-        startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-        startupInfo.dwFlags = STARTF_USESTDHANDLES;
         if(CreateProcessA(NULL, buffer, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
             WaitForSingleObject(processInfo.hProcess, INFINITE);
             GetExitCodeProcess(processInfo.hProcess, &exitCode);
