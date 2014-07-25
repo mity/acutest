@@ -49,7 +49,7 @@
 /* Macros for testing whether an unit test succeeds or fails. These macros
  * can be used arbitrarily in functions implementing the unit tests.
  *
- * If condition fails troughout execution of a test, the test fails.
+ * If condition fails throughout execution of a test, the test fails.
  *
  * TEST_CHECK takes only one argument (the condition), TEST_CHECK_ allows
  * also to specify an error message to print out if the condition fails.
