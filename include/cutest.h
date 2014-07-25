@@ -27,6 +27,13 @@
  *** Public interface ***
  ************************/
 
+/* By default, <cutest.h> provides the main program entry point (function
+ * main()). However, if the test suite is composed of multiple source files
+ * which include <cutest.h>, then this brings a problem of multiple main()
+ * definitions. To avoid this problem, #define macro TEST_NO_MAIN in all
+ * compilation units but one.
+ */
+
 /* Macro to specify list of unit tests in the suite.
  * The unit test implementation MUST provide list of unit tests it implements
  * with this macro:
@@ -113,24 +120,14 @@ struct test__ {
 };
 
 extern const struct test__ test_list__[];
-
-static char* test_argv0__ = NULL;
-static int test_count__ = 0;
-static int test_no_exec__ = 0;
-static int test_no_summary__ = 0;
-static int test_verbose_level__ = 2;
-static int test_skip_mode__ = 0;
-
-static int test_stat_failed_units__ = 0;
-static int test_stat_run_units__ = 0;
-
-static const struct test__* test_current_unit__ = NULL;
-static int test_current_already_logged__ = 0;
-static int test_current_failures__ = 0;
+extern int test_verbose_level__;
+extern const struct test__* test_current_unit__;
+extern int test_current_already_logged__;
+extern int test_current_failures__;
 
 
 #ifdef __GNUC__
-    void test_msg__(int verbose_level, const char* fmt, ...)
+    static void test_msg__(int verbose_level, const char* fmt, ...)
             __attribute__((format (printf, 2, 3)));
 #endif
 
@@ -191,7 +188,25 @@ test_check__(int cond, const char* file, int line, const char* cond_str, const c
     return (cond != 0);
 }
 
-void
+
+#ifndef TEST_NO_MAIN
+
+static char* test_argv0__ = NULL;
+static int test_count__ = 0;
+static int test_no_exec__ = 0;
+static int test_no_summary__ = 0;
+static int test_skip_mode__ = 0;
+
+static int test_stat_failed_units__ = 0;
+static int test_stat_run_units__ = 0;
+
+const struct test__* test_current_unit__ = NULL;
+int test_current_already_logged__ = 0;
+int test_verbose_level__ = 2;
+int test_current_failures__ = 0;
+
+
+static void
 test_list_names__(void)
 {
     const struct test__* test;
@@ -201,7 +216,7 @@ test_list_names__(void)
         printf("  %s\n", test->name);
 }
 
-const struct test__*
+static const struct test__*
 test_by_name__(const char* name)
 {
     const struct test__* test;
@@ -214,7 +229,7 @@ test_by_name__(const char* name)
     return NULL;
 }
 
-int
+static int
 test_do_run__(const struct test__* test)
 {
     test_current_unit__ = test;
@@ -256,7 +271,7 @@ test_do_run__(const struct test__* test)
     return (test_current_failures__ == 0) ? 0 : -1;
 }
 
-void
+static void
 test_run__(const struct test__* test)
 {
     int failed = 1;
@@ -345,7 +360,7 @@ test_run__(const struct test__* test)
 }
 
 #if defined(CUTEST_WIN__)
-LONG CALLBACK
+static LONG CALLBACK
 test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 {
     test_msg__(1, "Unhandled exception %08lx at %p. Unit test has crashed??",
@@ -356,7 +371,7 @@ test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 }
 #endif
 
-void
+static void
 test_help__(void)
 {
     printf("Usage: %s [options] [test...]\n", test_argv0__);
@@ -474,6 +489,8 @@ main(int argc, char** argv)
     return (test_stat_failed_units__ == 0) ? 0 : 1;
 }
 
+
+#endif  /* #ifndef TEST_NO_MAIN */
 
 #ifdef __cplusplus
     }  /* extern "C" */
