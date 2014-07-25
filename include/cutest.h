@@ -328,7 +328,7 @@ test_run__(const struct test__* test)
         PROCESS_INFORMATION processInfo;
         DWORD exitCode;
 
-        snprintf(buffer, sizeof(buffer)-1, "%s --no-exec --no-summary --verbose=%d \"%s\"",
+        snprintf(buffer, sizeof(buffer)-1, "%s --no-exec --no-summary --verbose=%d -- \"%s\"",
                  test_argv0__, test_verbose_level__, test->name);
         startupInfo.cb = sizeof(STARTUPINFO);
         if(CreateProcessA(NULL, buffer, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
@@ -396,12 +396,24 @@ main(int argc, char** argv)
 {
     const struct test__** tests = NULL;
     int i, j, n = 0;
+    int seen_double_dash = 0;
 
     test_argv0__ = argv[0];
 
     /* Parse options */
     for(i = 1; i < argc; i++) {
-        if(strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+        if(seen_double_dash || argv[i][0] != '-') {
+            tests = (const struct test__**) realloc(tests, (n+1) * sizeof(struct test__));
+            tests[n] = test_by_name__(argv[i]);
+            if(tests[n] == NULL) {
+                fprintf(stderr, "%s: Unrecognized unit test '%s'\n", argv[0], argv[i]);
+                fprintf(stderr, "Try '%s --list' for list of unit tests.\n", argv[0]);
+                exit(2);
+            }
+            n++;
+        } else if(strcmp(argv[i], "--") == 0) {
+            seen_double_dash = 1;
+        } else if(strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             test_help__();
             exit(0);
         } else if(strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0) {
@@ -417,15 +429,6 @@ main(int argc, char** argv)
         } else if(strcmp(argv[i], "--list") == 0 || strcmp(argv[i], "-l") == 0) {
             test_list_names__();
             exit(0);
-        } else if(argv[i][0] != '-') {
-            tests = (const struct test__**) realloc(tests, (n+1) * sizeof(struct test__));
-            tests[n] = test_by_name__(argv[i]);
-            if(tests[n] == NULL) {
-                fprintf(stderr, "%s: Unrecognized unit test '%s'\n", argv[0], argv[i]);
-                fprintf(stderr, "Try '%s --list' for list of unit tests.\n", argv[0]);
-                exit(2);
-            }
-            n++;
         } else {
             fprintf(stderr, "%s: Unrecognized option '%s'\n", argv[0], argv[i]);
             fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
