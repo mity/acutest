@@ -119,7 +119,7 @@ static char* test_argv0__ = NULL;
 static int test_count__ = 0;
 static int test_no_exec__ = 0;
 static int test_no_summary__ = 0;
-static int test_verbose_level__ = 1;
+static int test_verbose_level__ = 2;
 static int test_skip_mode__ = 0;
 
 static int test_stat_failed_units__ = 0;
@@ -169,7 +169,7 @@ test_check__(int cond, const char* file, int line, const char* cond_str, const c
 
     if(cond) {
         result_str = "passed";
-        verbose_level = 2;
+        verbose_level = 3;
     } else {
         result_str = "FAILED";
         verbose_level = 1;
