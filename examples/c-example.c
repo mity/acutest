@@ -26,7 +26,7 @@ test_fail(void)
     TEST_CHECK(a + b == 5);
 
     /* Also show TEST_CHECK_ in action */
-    TEST_CHECK_(a + b == 5, "Expected 5, got %d", a + b);
+    TEST_CHECK_(a + b == 5, "%d + %d == 5", a, b);
 }
 
 void
