@@ -199,7 +199,7 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
     int verbose_level;
 
     if(cond) {
-        result_str = "passed";
+        result_str = "ok";
         result_color = CUTEST_COLOR_GREEN__;
         verbose_level = 3;
     } else {
@@ -222,15 +222,15 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         printf("  ");
 
         if(file != NULL)
-            n += printf("%s:%d: ", file, line);
+            n += printf("%s:%d: Check ", file, line);
 
         va_start(args, fmt);
         n += vprintf(fmt, args);
         va_end(args);
 
-        printf(" ");
+        printf("... ");
         test_print_in_color(result_color, result_str);
-        printf(".\n");
+        printf("\n");
         test_current_already_logged__++;
     }
 
