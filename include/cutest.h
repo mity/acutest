@@ -71,8 +71,8 @@
  *     TEST_CHECK(ptr->member2 > 200);
  * }
  */
-#define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, #cond, __VA_ARGS__)
-#define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, #cond, NULL)
+#define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
+#define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
 
 /**********************
@@ -126,65 +126,41 @@ extern int test_current_already_logged__;
 extern int test_current_failures__;
 
 
-#ifdef __GNUC__
-    static void test_msg__(int verbose_level, const char* fmt, ...)
-            __attribute__((format (printf, 2, 3)));
-#endif
-
-
-void
-test_msg__(int verbose_level, const char* fmt, ...)
-{
-    va_list args;
-    size_t len;
-
-    if(verbose_level > test_verbose_level__)
-        return;
-
-    /* In low verbose levels, we haven't written what unit test we are running. */
-    if(!test_current_already_logged__  &&  test_current_unit__ != NULL)
-        printf("In unit test %s:\n", test_current_unit__->name);
-
-    printf("  ");
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-    len = strlen(fmt);
-    if(len > 0  &&  fmt[len-1] != '\n')
-        printf("\n");
-
-    test_current_already_logged__++;
-}
-
 int
-test_check__(int cond, const char* file, int line, const char* cond_str, const char* fmt, ...)
+test_check__(int cond, const char* file, int line, const char* fmt, ...)
 {
     const char *result_str;
     int verbose_level;
-    char buffer[128] = "";
 
     if(cond) {
-        result_str = "passed";
+        result_str = "[passed]";
         verbose_level = 3;
     } else {
-        result_str = "FAILED";
-        verbose_level = 1;
+        if(!test_current_already_logged__  &&  test_current_unit__ != NULL)
+            printf("[ FAILED ]\n");
+        result_str = "[failed]";
+        verbose_level = 2;
         test_current_failures__++;
+        test_current_already_logged__++;
     }
 
-    if(fmt != NULL) {
+    if(test_verbose_level__ >= verbose_level) {
+        size_t n = 0;
         va_list args;
 
-        buffer[0] = ' ';
-        buffer[1] = ' ';
+        printf("  ");
+
+        if(file != NULL)
+            n += printf("%s:%d: ", file, line);
+
         va_start(args, fmt);
-        vsnprintf(buffer+2, sizeof(buffer)-3, fmt, args);
+        n += vprintf(fmt, args);
         va_end(args);
-        buffer[sizeof(buffer)-1] = '\0';
+
+        printf(" %s\n", result_str);
+        test_current_already_logged__++;
     }
 
-    test_msg__(verbose_level, "%s:%d: Condition '%s' has %s.%s",
-               file, line, cond_str, result_str, buffer);
     return (cond != 0);
 }
 
@@ -236,9 +212,19 @@ test_do_run__(const struct test__* test)
     test_current_failures__ = 0;
     test_current_already_logged__ = 0;
 
-    if(test_verbose_level__ >= 2) {
-        printf("Starting test %s...\n", test->name);
+    if(test_verbose_level__ >= 3) {
+        printf("Test %s:\n", test->name);
         test_current_already_logged__++;
+    } else if(test_verbose_level__ >= 1) {
+        size_t n;
+        char spaces[32];
+
+        n = printf("Test %s... ", test->name);
+        memset(spaces, ' ', sizeof(spaces));
+        if(n < sizeof(spaces))
+            printf("%.*s", sizeof(spaces) - n, spaces);
+    } else {
+        test_current_already_logged__ = 1;
     }
 
 #ifdef __cplusplus
@@ -249,25 +235,27 @@ test_do_run__(const struct test__* test)
 
 #ifdef __cplusplus
     } catch(std::exception& e) {
-        test_current_failures__++;
         const char* what = e.what();
-        if(what == NULL)
-            what = "<null>";
-        test_msg__(1, "Caught C++ exception:  %s", what);
+        if(what != NULL)
+            test_check__(0, NULL, 0, "Threw std::exception: %s", what);
+        else
+            test_check__(0, NULL, 0, "Threw std::exception");
     } catch(...) {
-        test_current_failures__++;
-        test_msg__(1, "Caught C++ exception (not derived from std::exception)");
+        test_check__(0, NULL, 0, "Threw an exception");
     }
 #endif
 
-    switch(test_current_failures__) {
-        case 0:  test_msg__(2, "All conditions have passed."); break;
-        case 1:  test_msg__(2, "One condition has FAILED."); break;
-        default: test_msg__(2, "%d conditions have FAILED.", test_current_failures__); break;
+    if(test_verbose_level__ >= 3) {
+        switch(test_current_failures__) {
+            case 0:  printf("All conditions have passed.\n\n"); break;
+            case 1:  printf("One condition has FAILED.\n\n"); break;
+            default: printf("%d conditions have FAILED.\n\n", test_current_failures__); break;
+        }
+    } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
+        printf("[   OK   ]\n");
     }
 
     test_current_unit__ = NULL;
-
     return (test_current_failures__ == 0) ? 0 : -1;
 }
 
@@ -288,7 +276,7 @@ test_run__(const struct test__* test)
 
         pid = fork();
         if(pid == (pid_t)-1) {
-            test_msg__(1, "Cannot start the unit test subprocess. %s [%d]", strerror(errno), errno);
+            test_check__(0, NULL, 0, "Error: Cannot fork. %s [%d]", strerror(errno), errno);
             failed = 1;
         } else if(pid == 0) {
             failed = (test_do_run__(test) != 0);
@@ -299,7 +287,7 @@ test_run__(const struct test__* test)
                 switch(WEXITSTATUS(exit_code)) {
                     case 0:   failed = 0; break;   /* test has passed. */
                     case 1:   /* noop */ break;    /* "normal" failure. */
-                    default:  test_msg__(1, "Unexpected subprocess exit code [%d]", WEXITSTATUS(exit_code));
+                    default:  test_check__(0, NULL, 0, "Error: Unexpected exit code [%d]", WEXITSTATUS(exit_code));
                 }
             } else if(WIFSIGNALED(exit_code)) {
                 char tmp[32];
@@ -315,9 +303,9 @@ test_run__(const struct test__* test)
                     case SIGTERM: signame = "SIGTERM"; break;
                     default:      sprintf(tmp, "signal %d", WTERMSIG(exit_code)); signame = tmp; break;
                 }
-                test_msg__(1, "Test interrupted by %s", signame);
+                test_check__(0, NULL, 0, "Error: Test interrupted by %s", signame);
             } else {
-                test_msg__(1, "Test ended in an unexpected way [%d]", exit_code);
+                test_check__(0, NULL, 0, "Error: Test ended in an unexpected way [%d]", exit_code);
             }
         }
 
@@ -338,7 +326,7 @@ test_run__(const struct test__* test)
             CloseHandle(processInfo.hProcess);
             failed = (exitCode != 0);
         } else {
-            test_msg__(1, "Cannot start the unit test subprocess [%ld].", GetLastError());
+            test_check__(0, NULL, 0, "Error: Cannot create unit test subprocess [%ld].", GetLastError());
             failed = 1;
         }
 
@@ -363,7 +351,7 @@ test_run__(const struct test__* test)
 static LONG CALLBACK
 test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 {
-    test_msg__(1, "Unhandled exception %08lx at %p. Unit test has crashed??",
+    test_check__(0, NULL, 0, "Error: Unhandled SEH exception %08lx at %p.",
                ptrs->ExceptionRecord->ExceptionCode, ptrs->ExceptionRecord->ExceptionAddress);
     fflush(stdout);
     fflush(stderr);
@@ -473,7 +461,7 @@ main(int argc, char** argv)
 
     /* Write a summary */
     if(!test_no_summary__) {
-        if(test_verbose_level__ >= 2) {
+        if(test_verbose_level__ >= 3) {
             printf("\nSummary:\n");
             printf("  Count of all unit tests:     %4d\n", test_count__);
             printf("  Count of run unit tests:     %4d\n", test_stat_run_units__);
