@@ -98,6 +98,7 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     #define CUTEST_WIN__     1
     #include <windows.h>
+    #include <io.h>
 #endif
 
 #ifdef __cplusplus
@@ -124,21 +125,91 @@ extern int test_verbose_level__;
 extern const struct test__* test_current_unit__;
 extern int test_current_already_logged__;
 extern int test_current_failures__;
+extern int test_colorize__;
 
+
+#define CUTEST_COLOR_DEFAULT__               0
+#define CUTEST_COLOR_GREEN__                 1
+#define CUTEST_COLOR_RED__                   2
+#define CUTEST_COLOR_DEFAULT_INTENSIVE__     3
+#define CUTEST_COLOR_GREEN_INTENSIVE__       4
+#define CUTEST_COLOR_RED_INTENSIVE__         5
+
+size_t
+test_print_in_color(int color, const char* fmt, ...)
+{
+    va_list args;
+    char buffer[256];
+    size_t n;
+
+    va_start(args, fmt);
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+    buffer[sizeof(buffer)-1] = '\0';
+
+    if(!test_colorize__) {
+        return printf("%s", buffer);
+    }
+
+#if defined CUTEST_UNIX__
+    const char* col_str;
+    switch(color) {
+        case CUTEST_COLOR_GREEN__:             col_str = "\e[0;32m"; break;
+        case CUTEST_COLOR_RED__:               col_str = "\e[0;31m"; break;
+        case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\e[1;32m"; break;
+        case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\e[1;30m"; break;
+        case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\e[1m"; break;
+        default:                               col_str = "\e[0m"; break;
+    }
+    printf("%s", col_str);
+    n = printf("%s", buffer);
+    printf("\e[0m");
+#elif defined CUTEST_WIN__
+    HANDLE h;
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    WORD attr;
+
+    h = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleScreenBufferInfo(h, &info);
+
+    switch(color) {
+        case CUTEST_COLOR_GREEN__:             attr = FOREGROUND_GREEN; break;
+        case CUTEST_COLOR_RED__:               attr = FOREGROUND_RED; break;
+        case CUTEST_COLOR_GREEN_INTENSIVE__:   attr = FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
+        case CUTEST_COLOR_RED_INTENSIVE__:     attr = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+        case CUTEST_COLOR_DEFAULT_INTENSIVE__: attr = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+        default:                               attr = 0; break;
+    }
+    if(attr != 0)
+        SetConsoleTextAttribute(h, attr);
+    n = printf("%s", buffer);
+    SetConsoleTextAttribute(h, info.wAttributes);
+    return n;
+#else
+    n = printf("%s", buffer);
+    return n;
+#endif
+}
 
 int
 test_check__(int cond, const char* file, int line, const char* fmt, ...)
 {
     const char *result_str;
+    int result_color;
     int verbose_level;
 
     if(cond) {
-        result_str = "[passed]";
+        result_str = "passed";
+        result_color = CUTEST_COLOR_GREEN__;
         verbose_level = 3;
     } else {
-        if(!test_current_already_logged__  &&  test_current_unit__ != NULL)
-            printf("[ FAILED ]\n");
-        result_str = "[failed]";
+        if(!test_current_already_logged__  &&  test_current_unit__ != NULL) {
+            printf("[ ");
+            test_print_in_color(CUTEST_COLOR_RED_INTENSIVE__, "FAILED");
+            printf(" ]\n");
+        }
+        result_str = "failed";
+        result_color = CUTEST_COLOR_RED__;
         verbose_level = 2;
         test_current_failures__++;
         test_current_already_logged__++;
@@ -157,7 +228,9 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         n += vprintf(fmt, args);
         va_end(args);
 
-        printf(" %s\n", result_str);
+        printf(" ");
+        test_print_in_color(result_color, result_str);
+        printf(".\n");
         test_current_already_logged__++;
     }
 
@@ -180,6 +253,7 @@ const struct test__* test_current_unit__ = NULL;
 int test_current_already_logged__ = 0;
 int test_verbose_level__ = 2;
 int test_current_failures__ = 0;
+int test_colorize__ = 0;
 
 
 static void
@@ -213,13 +287,13 @@ test_do_run__(const struct test__* test)
     test_current_already_logged__ = 0;
 
     if(test_verbose_level__ >= 3) {
-        printf("Test %s:\n", test->name);
+        test_print_in_color(CUTEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
         test_current_already_logged__++;
     } else if(test_verbose_level__ >= 1) {
         size_t n;
         char spaces[32];
 
-        n = printf("Test %s... ", test->name);
+        n = test_print_in_color(CUTEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
         memset(spaces, ' ', sizeof(spaces));
         if(n < sizeof(spaces))
             printf("%.*s", sizeof(spaces) - n, spaces);
@@ -247,16 +321,39 @@ test_do_run__(const struct test__* test)
 
     if(test_verbose_level__ >= 3) {
         switch(test_current_failures__) {
-            case 0:  printf("All conditions have passed.\n\n"); break;
-            case 1:  printf("One condition has FAILED.\n\n"); break;
-            default: printf("%d conditions have FAILED.\n\n", test_current_failures__); break;
+            case 0:  test_print_in_color(CUTEST_COLOR_GREEN_INTENSIVE__, "  All conditions have passed.\n\n"); break;
+            case 1:  test_print_in_color(CUTEST_COLOR_RED_INTENSIVE__, "  One condition has FAILED.\n\n"); break;
+            default: test_print_in_color(CUTEST_COLOR_RED_INTENSIVE__, "  %d conditions have FAILED.\n\n", test_current_failures__); break;
         }
     } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
-        printf("[   OK   ]\n");
+        printf("[   ");
+        test_print_in_color(CUTEST_COLOR_GREEN_INTENSIVE__, "OK");
+        printf("   ]\n");
     }
 
     test_current_unit__ = NULL;
     return (test_current_failures__ == 0) ? 0 : -1;
+}
+
+static void
+test_error__(const char* fmt, ...)
+{
+    va_list args;
+
+    if(!test_current_already_logged__  &&  test_current_unit__ != NULL) {
+        printf("[ ");
+        test_print_in_color(CUTEST_COLOR_RED_INTENSIVE__, "FAILED");
+        printf(" ]\n");
+    }
+
+    if(test_verbose_level__ < 2)
+        return;
+
+    test_print_in_color(CUTEST_COLOR_RED_INTENSIVE__, "  Error: ");
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+    printf("\n");
 }
 
 static void
@@ -276,7 +373,7 @@ test_run__(const struct test__* test)
 
         pid = fork();
         if(pid == (pid_t)-1) {
-            test_check__(0, NULL, 0, "Error: Cannot fork. %s [%d]", strerror(errno), errno);
+            test_error__("Cannot fork. %s [%d]", strerror(errno), errno);
             failed = 1;
         } else if(pid == 0) {
             failed = (test_do_run__(test) != 0);
@@ -287,7 +384,7 @@ test_run__(const struct test__* test)
                 switch(WEXITSTATUS(exit_code)) {
                     case 0:   failed = 0; break;   /* test has passed. */
                     case 1:   /* noop */ break;    /* "normal" failure. */
-                    default:  test_check__(0, NULL, 0, "Error: Unexpected exit code [%d]", WEXITSTATUS(exit_code));
+                    default:  test_error__("Unexpected exit code [%d]", WEXITSTATUS(exit_code));
                 }
             } else if(WIFSIGNALED(exit_code)) {
                 char tmp[32];
@@ -303,21 +400,23 @@ test_run__(const struct test__* test)
                     case SIGTERM: signame = "SIGTERM"; break;
                     default:      sprintf(tmp, "signal %d", WTERMSIG(exit_code)); signame = tmp; break;
                 }
-                test_check__(0, NULL, 0, "Error: Test interrupted by %s", signame);
+                test_error__("Test interrupted by %s", signame);
             } else {
-                test_check__(0, NULL, 0, "Error: Test ended in an unexpected way [%d]", exit_code);
+                test_error__("Test ended in an unexpected way [%d]", exit_code);
             }
         }
 
 #elif defined(CUTEST_WIN__)
 
-        char buffer[256] = {0};
+        char buffer[512] = {0};
         STARTUPINFOA startupInfo = {0};
         PROCESS_INFORMATION processInfo;
         DWORD exitCode;
 
-        snprintf(buffer, sizeof(buffer)-1, "%s --no-exec --no-summary --verbose=%d -- \"%s\"",
-                 test_argv0__, test_verbose_level__, test->name);
+        snprintf(buffer, sizeof(buffer)-1,
+                 "%s --no-exec --no-summary --verbose=%d --color=%s -- \"%s\"",
+                 test_argv0__, test_verbose_level__,
+                 test_colorize__ ? "always" : "never", test->name);
         startupInfo.cb = sizeof(STARTUPINFO);
         if(CreateProcessA(NULL, buffer, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
             WaitForSingleObject(processInfo.hProcess, INFINITE);
@@ -326,7 +425,7 @@ test_run__(const struct test__* test)
             CloseHandle(processInfo.hProcess);
             failed = (exitCode != 0);
         } else {
-            test_check__(0, NULL, 0, "Error: Cannot create unit test subprocess [%ld].", GetLastError());
+            test_error__("Cannot create unit test subprocess [%ld].", GetLastError());
             failed = 1;
         }
 
@@ -351,8 +450,9 @@ test_run__(const struct test__* test)
 static LONG CALLBACK
 test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 {
-    test_check__(0, NULL, 0, "Error: Unhandled SEH exception %08lx at %p.",
-               ptrs->ExceptionRecord->ExceptionCode, ptrs->ExceptionRecord->ExceptionAddress);
+    test_error__("Unhandled SEH exception %08lx at %p.",
+                 ptrs->ExceptionRecord->ExceptionCode,
+                 ptrs->ExceptionRecord->ExceptionAddress);
     fflush(stdout);
     fflush(stderr);
     return EXCEPTION_EXECUTE_HANDLER;
@@ -374,6 +474,7 @@ test_help__(void)
     printf("  -l, --list            List unit tests in the suite and exit\n");
     printf("  -v, --verbose         Enable more verbose output\n");
     printf("      --verbose=LEVEL   Set verbose level to LEVEL (small integer)\n");
+    printf("      --color=WHEN      Enable colorized output (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -h, --help            Display this help and exit\n");
     printf("\n");
     test_list_names__();
@@ -387,6 +488,14 @@ main(int argc, char** argv)
     int seen_double_dash = 0;
 
     test_argv0__ = argv[0];
+
+#if defined CUTEST_UNIX__
+    test_colorize__ = isatty(fileno(stdout));
+#elif defined CUTEST_WIN__
+    test_colorize__ = _isatty(_fileno(stdout));
+#else
+    test_colorize__ = 0;
+#endif
 
     /* Parse options */
     for(i = 1; i < argc; i++) {
@@ -408,6 +517,12 @@ main(int argc, char** argv)
             test_verbose_level__++;
         } else if(strncmp(argv[i], "--verbose=", 10) == 0) {
             test_verbose_level__ = atoi(argv[i] + 10);
+        } else if(strcmp(argv[i], "--color=auto") == 0) {
+            /* noop (set from above) */
+        } else if(strcmp(argv[i], "--color=always") == 0 || strcmp(argv[i], "--color") == 0) {
+            test_colorize__ = 1;
+        } else if(strcmp(argv[i], "--color=never") == 0) {
+            test_colorize__ = 0;
         } else if(strcmp(argv[i], "--skip") == 0 || strcmp(argv[i], "-s") == 0) {
             test_skip_mode__ = 1;
         } else if(strcmp(argv[i], "--no-exec") == 0) {
@@ -460,20 +575,23 @@ main(int argc, char** argv)
     }
 
     /* Write a summary */
-    if(!test_no_summary__) {
+    if(!test_no_summary__ && test_verbose_level__ >= 1) {
+        test_print_in_color(CUTEST_COLOR_DEFAULT_INTENSIVE__, "\nSummary:\n");
+
         if(test_verbose_level__ >= 3) {
-            printf("\nSummary:\n");
             printf("  Count of all unit tests:     %4d\n", test_count__);
             printf("  Count of run unit tests:     %4d\n", test_stat_run_units__);
             printf("  Count of failed unit tests:  %4d\n", test_stat_failed_units__);
             printf("  Count of skipped unit tests: %4d\n", test_count__ - test_stat_run_units__);
         }
-        if(test_verbose_level__ >= 1) {
-            printf("\n");
-            if(test_stat_failed_units__ == 0)
-                printf("SUCCESS: All unit tests have passed.\n");
-            else
-                printf("FAILED: %d of %d unit tests have failed.\n", test_stat_failed_units__, test_stat_run_units__);
+
+        if(test_stat_failed_units__ == 0) {
+            test_print_in_color(CUTEST_COLOR_GREEN_INTENSIVE__,
+                    "  SUCCESS: All unit tests have passed.\n");
+        } else {
+            test_print_in_color(CUTEST_COLOR_RED_INTENSIVE__,
+                    "  FAILED: %d of %d unit tests have failed.\n",
+                    test_stat_failed_units__, test_stat_run_units__);
         }
     }
 
