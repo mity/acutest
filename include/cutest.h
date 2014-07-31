@@ -413,7 +413,7 @@ test_run__(const struct test__* test)
         PROCESS_INFORMATION processInfo;
         DWORD exitCode;
 
-        snprintf(buffer, sizeof(buffer)-1,
+        _snprintf(buffer, sizeof(buffer)-1,
                  "%s --no-exec --no-summary --verbose=%d --color=%s -- \"%s\"",
                  test_argv0__, test_verbose_level__,
                  test_colorize__ ? "always" : "never", test->name);
