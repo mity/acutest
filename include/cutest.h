@@ -500,7 +500,7 @@ main(int argc, char** argv)
     /* Parse options */
     for(i = 1; i < argc; i++) {
         if(seen_double_dash || argv[i][0] != '-') {
-            tests = (const struct test__**) realloc(tests, (n+1) * sizeof(struct test__));
+            tests = (const struct test__**) realloc(tests, (n+1) * sizeof(const struct test__*));
             tests[n] = test_by_name__(argv[i]);
             if(tests[n] == NULL) {
                 fprintf(stderr, "%s: Unrecognized unit test '%s'\n", argv[0], argv[i]);
@@ -594,6 +594,9 @@ main(int argc, char** argv)
                     test_stat_failed_units__, test_stat_run_units__);
         }
     }
+
+    if(tests != NULL)
+        free(tests);
 
     return (test_stat_failed_units__ == 0) ? 0 : 1;
 }
