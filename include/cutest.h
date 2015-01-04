@@ -38,16 +38,19 @@
  * The unit test implementation MUST provide list of unit tests it implements
  * with this macro:
  *
- * TEST_LIST = {
- *     { "test1_name", test1_func_ptr },
- *     { "test2_name", test2_func_ptr },
- *     ...
- *     { 0 }
- * };
+ *   TEST_LIST = {
+ *       { "test1_name", test1_func_ptr },
+ *       { "test2_name", test2_func_ptr },
+ *       ...
+ *       { 0 }
+ *   };
  *
  * The list specifies names of each tests (must be unique) and pointer to
  * a function implementing it. The function does not take any arguments
- * and have no return values.
+ * and have no return values, i.e. the test functions should have this
+ * prototype:
+ *
+ *   void test_func(void);
  */
 #define TEST_LIST              const struct test__ test_list__[]
 
@@ -55,7 +58,7 @@
 /* Macros for testing whether an unit test succeeds or fails. These macros
  * can be used arbitrarily in functions implementing the unit tests.
  *
- * If condition fails throughout execution of a test, the test fails.
+ * If any condition fails throughout execution of a test, the test fails.
  *
  * TEST_CHECK takes only one argument (the condition), TEST_CHECK_ allows
  * also to specify an error message to print out if the condition fails.
@@ -65,11 +68,11 @@
  * That can be useful when more conditions should be checked only if some
  * preceding condition passes, as illustrated here:
  *
- * SomeStruct* ptr = allocate_some_struct();
- * if(TEST_CHECK(ptr != NULL)) {
- *     TEST_CHECK(ptr->member1 < 100);
- *     TEST_CHECK(ptr->member2 > 200);
- * }
+ *   SomeStruct* ptr = allocate_some_struct();
+ *   if(TEST_CHECK(ptr != NULL)) {
+ *       TEST_CHECK(ptr->member1 < 100);
+ *       TEST_CHECK(ptr->member2 > 200);
+ *   }
  */
 #define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)

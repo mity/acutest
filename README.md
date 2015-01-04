@@ -133,6 +133,9 @@ For example, assuming cc is your C compiler:
   $ cc test_example.c -o test_example
 ```
 
+More comprehensive description of API can be found in comments in the header
+cutest.h.
+
 
 Running Unit Tests
 ==================
