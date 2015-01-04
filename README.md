@@ -37,7 +37,7 @@ Unix specific features:
 
 C++ specific features:
 * CUTest catches C++ exceptions thrown from unit test functions.
-* If the excception is derived from std::exception, what() is written out
+* If the exception is derived from std::exception, what() is written out
 in an error message.
 
 Any C/C++ module implementing one or more unit tests and including cutest.h,
@@ -47,7 +47,7 @@ tests, as specified with its command line options.
 
 By default, all unit tests in the program are run and (on Windows and Unix)
 every unit test is executed in a context of its own subprocess. Both can be
-overrrided on the command line.
+overridden on the command line.
 
 We say any unit test succeeds if all conditions (preprocessor macros `TEST_CHECK`
 or `TEST_CHECK_`) called throughout its execution pass, the test does not throw
@@ -55,7 +55,7 @@ an exception (C++ only), and (on Windows/Unix) the unit test subprocess is not
 interrupted/terminated (e.g. by a signal on Unix or SEH on Windows).
 
 Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
-or other number if an internal error occures.
+or other number if an internal error occurs.
 
 
 Writing Unit Tests
