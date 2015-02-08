@@ -504,6 +504,10 @@ main(int argc, char** argv)
     for(i = 1; i < argc; i++) {
         if(seen_double_dash || argv[i][0] != '-') {
             tests = (const struct test__**) realloc(tests, (n+1) * sizeof(const struct test__*));
+            if(tests == NULL) {
+                fprintf(stderr, "Out of memory.\n");
+                exit(2);
+            }
             tests[n] = test_by_name__(argv[i]);
             if(tests[n] == NULL) {
                 fprintf(stderr, "%s: Unrecognized unit test '%s'\n", argv[0], argv[i]);
