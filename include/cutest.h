@@ -167,6 +167,7 @@ test_print_in_color(int color, const char* fmt, ...)
     printf("%s", col_str);
     n = printf("%s", buffer);
     printf("\e[0m");
+    return n;
 #elif defined CUTEST_WIN__
     HANDLE h;
     CONSOLE_SCREEN_BUFFER_INFO info;
@@ -299,7 +300,7 @@ test_do_run__(const struct test__* test)
         n = test_print_in_color(CUTEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
         memset(spaces, ' ', sizeof(spaces));
         if(n < sizeof(spaces))
-            printf("%.*s", sizeof(spaces) - n, spaces);
+            printf("%.*s", (int) (sizeof(spaces) - n), spaces);
     } else {
         test_current_already_logged__ = 1;
     }
