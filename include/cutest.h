@@ -167,6 +167,7 @@ test_print_in_color(int color, const char* fmt, ...)
     printf("%s", col_str);
     n = printf("%s", buffer);
     printf("\e[0m");
+    return n;
 #elif defined CUTEST_WIN__
     HANDLE h;
     CONSOLE_SCREEN_BUFFER_INFO info;
