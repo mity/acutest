@@ -300,7 +300,7 @@ test_do_run__(const struct test__* test)
         n = test_print_in_color(CUTEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
         memset(spaces, ' ', sizeof(spaces));
         if(n < sizeof(spaces))
-            printf("%.*s", sizeof(spaces) - n, spaces);
+            printf("%.*s", (int) (sizeof(spaces) - n), spaces);
     } else {
         test_current_already_logged__ = 1;
     }
