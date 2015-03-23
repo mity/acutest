@@ -9,7 +9,7 @@ being as simple as possible to use it, not to stand in the developer's way
 and minimize any external dependencies.
 
 To achieve that, the complete implementation resides in a single C header file,
-"cutest.h", and its core depends only on few standard C library functions.
+`"cutest.h"`, and its core depends only on few standard C library functions.
 
 CUTest supports C as well as C++, and it can deal with unit tests which throw
 C++ exceptions.
@@ -22,8 +22,8 @@ Main features:
 * Unit tests in C or C++ are supported.
 * No need to install/setup/configure testing framework. CUTest is just single
 C/C++ header, cutest.h.
-* The header provides program entry point (function main()).
-* Minimal dependencies: Core features only depends on few standard C headers,
+* The header provides program entry point (function `main()`).
+* Minimal dependencies: Core features only depend on few standard C headers,
 optional features may use more if available on the particular system.
 * Trivial interface for writing unit tests: Few preprocessor macros described
 further below.
@@ -37,10 +37,10 @@ Unix specific features:
 
 C++ specific features:
 * CUTest catches C++ exceptions thrown from unit test functions.
-* If the exception is derived from std::exception, what() is written out
+* If the exception is derived from `std::exception`, `what()` is written out
 in an error message.
 
-Any C/C++ module implementing one or more unit tests and including cutest.h,
+Any C/C++ module implementing one or more unit tests and including `"cutest.h"`,
 can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
 tests, as specified with its command line options.
@@ -61,9 +61,9 @@ or other number if an internal error occurs.
 Writing Unit Tests
 ==================
 
-To use CUTest, simply include the header file "cutest.h" on the beginning of
+To use CUTest, simply include the header file `"cutest.h"` on the beginning of
 the C/C++ source file implementing one or more unit tests. Note the header
-provides implementation of the main() function.
+provides implementation of the `main()` function.
 
 ```C
   #include "cutest.h"
