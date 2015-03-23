@@ -21,7 +21,7 @@ Overview
 Main features:
 * Unit tests in C or C++ are supported.
 * No need to install/setup/configure testing framework. CUTest is just single
-C/C++ header, cutest.h.
+C/C++ header, `"cutest.h"`.
 * The header provides program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
 optional features may use more if available on the particular system.
@@ -169,9 +169,9 @@ CUTest is covered with the GNU Lesser General Public License 2.1 or
 In brief, this generally means that:
 
 * Any program or library, even commercial, covered with any proprietary
-  license, is allowed to use CUTest, i.e. include "cutest.h".
+  license, is allowed to use CUTest, i.e. include `"cutest.h"`.
 
-* You can modify "cutest.h" and distribute such modified header if such
+* You can modify `"cutest.h"` and distribute such modified header if such
   modifications are also licensed under the terms of the LGPL 2.1  (or any
   later version); or under the terms of GPL 2 (or any later version).
 
