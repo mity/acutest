@@ -1,8 +1,7 @@
-<h1 align="center"><a href="https://github.com/mity/cutest">CUTest Readme</a></h1>
+# CUTest Readme
 
 
-What Is CUTest
-==============
+## What Is CUTest
 
 CUTest means "C Unit Testing" and it is intended to do exactly that, while
 being as simple as possible to use it, not to stand in the developer's way
@@ -15,18 +14,17 @@ CUTest supports C as well as C++, and it can deal with unit tests which throw
 C++ exceptions.
 
 
-Overview
-========
+## Overview
 
 Main features:
 * Unit tests in C or C++ are supported.
 * No need to install/setup/configure testing framework. CUTest is just single
-C/C++ header, `"cutest.h"`.
+  C/C++ header, `"cutest.h"`.
 * The header provides program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
-optional features may use more if available on the particular system.
+  optional features may use more if available on the particular system.
 * Trivial interface for writing unit tests: Few preprocessor macros described
-further below.
+  further below.
 
 Windows specific features:
 * By default, every unit test is executed as a child process.
@@ -38,7 +36,7 @@ Unix specific features:
 C++ specific features:
 * CUTest catches C++ exceptions thrown from unit test functions.
 * If the exception is derived from `std::exception`, `what()` is written out
-in an error message.
+  in an error message.
 
 Any C/C++ module implementing one or more unit tests and including `"cutest.h"`,
 can be built as a standalone program. We call the resulted binary as a "test
@@ -58,22 +56,21 @@ Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
 or other number if an internal error occurs.
 
 
-Writing Unit Tests
-==================
+## Writing Unit Tests
 
 To use CUTest, simply include the header file `"cutest.h"` on the beginning of
 the C/C++ source file implementing one or more unit tests. Note the header
 provides implementation of the `main()` function.
 
 ```C
-  #include "cutest.h"
+#include "cutest.h"
 ```
 
 Every test is supposed to be implemented as a function with the following
 prototype:
 
 ```C
-  void test_example(void);
+void test_example(void);
 ```
 
 The tests can use preprocessor macro `TEST_CHECK` or `TEST_CHECK_` to validate the
@@ -86,23 +83,23 @@ if the condition fails.)
 
 For example:
 
-  ```C
-  void test_example(void)
-  {
-      void* mem;
-      int a, b;
+```C
+void test_example(void)
+{
+    void* mem;
+    int a, b;
 
-      mem = malloc(10);
-      TEST_CHECK(mem != NULL);
+    mem = malloc(10);
+    TEST_CHECK(mem != NULL);
 
-      mem = realloc(mem, 20);
-      TEST_CHECK(mem != NULL);
+    mem = realloc(mem, 20);
+    TEST_CHECK(mem != NULL);
 
-      a = 1;
-      b = 2;
-      TEST_CHECK_(a + b == 3, "Expected %d, got %d", 3, a + b);
-  }
-  ```
+    a = 1;
+    b = 2;
+    TEST_CHECK_(a + b == 3, "Expected %d, got %d", 3, a + b);
+}
+```
 
 Note that the tests should be independent on each other. Whenever the test
 suite is invoked, the user may run any number of tests in the suite, in any
@@ -117,11 +114,11 @@ characters in them. Also avoid using dash as a first character, as it would
 be then interpreted as an command line option, not a test name.
 
 ```
-  TEST_LIST = {
-     { "example", test_example },
-     ...
-     { 0 }
-  };
+TEST_LIST = {
+   { "example", test_example },
+   ...
+   { 0 }
+};
 ```
 
 Note the test list has to be ended with zeroed record.
@@ -130,15 +127,14 @@ Finally you just compile the C/C++ test suite source file as a simple program.
 For example, assuming cc is your C compiler:
 
 ```
-  $ cc test_example.c -o test_example
+$ cc test_example.c -o test_example
 ```
 
 More comprehensive description of API can be found in comments in the header
 cutest.h.
 
 
-Running Unit Tests
-==================
+## Running Unit Tests
 
 When the C file with the tests is compiled, the resulted testing binary can be
 used to run the tests.
@@ -148,20 +144,19 @@ tests. It can also run only subset of the unit tests as specified on the
 command line:
 
 ```
-  $ ./test_example                # Run all tests in the suite
-  $ ./test_example test1 test2    # Run only tests "test1" and "test2"
-  $ ./test_example --skip test3   # Run all tests with the exception of "test3"
+$ ./test_example                # Run all tests in the suite
+$ ./test_example test1 test2    # Run only tests "test1" and "test2"
+$ ./test_example --skip test3   # Run all tests with the exception of "test3"
 ```
 
 To see all the options, simply run the binary with the option --help.
 
 ```
-  $ ./test_example --help
+$ ./test_example --help
 ```
 
 
-License
-=======
+## License
 
 CUTest is covered with the GNU Lesser General Public License 2.1 or
 (at your option) any later version. See file COPYING.lib for more info.
@@ -176,12 +171,11 @@ In brief, this generally means that:
   later version); or under the terms of GPL 2 (or any later version).
 
 
-More Information
-================
+## More Information
 
 The project resides on github:
 
-  http://github.com/mity/cutest
+* http://github.com/mity/cutest
 
 You can find the latest version of CUTest.h there, contribute with enhancements
 or report bugs.
