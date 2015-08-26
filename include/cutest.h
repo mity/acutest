@@ -504,7 +504,7 @@ main(int argc, char** argv)
     /* Parse options */
     for(i = 1; i < argc; i++) {
         if(seen_double_dash || argv[i][0] != '-') {
-            tests = (const struct test__**) realloc(tests, (n+1) * sizeof(const struct test__*));
+            tests = (const struct test__**) realloc((void*)tests, (n+1) * sizeof(const struct test__*));
             if(tests == NULL) {
                 fprintf(stderr, "Out of memory.\n");
                 exit(2);
@@ -604,7 +604,7 @@ main(int argc, char** argv)
     }
 
     if(tests != NULL)
-        free(tests);
+        free((void*)tests);
 
     return (test_stat_failed_units__ == 0) ? 0 : 1;
 }
