@@ -155,40 +155,44 @@ test_print_in_color__(int color, const char* fmt, ...)
     }
 
 #if defined CUTEST_UNIX__
-    const char* col_str;
-    switch(color) {
-        case CUTEST_COLOR_GREEN__:             col_str = "\e[0;32m"; break;
-        case CUTEST_COLOR_RED__:               col_str = "\e[0;31m"; break;
-        case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\e[1;32m"; break;
-        case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\e[1;30m"; break;
-        case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\e[1m"; break;
-        default:                               col_str = "\e[0m"; break;
+    {
+        const char* col_str;
+        switch(color) {
+            case CUTEST_COLOR_GREEN__:             col_str = "\e[0;32m"; break;
+            case CUTEST_COLOR_RED__:               col_str = "\e[0;31m"; break;
+            case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\e[1;32m"; break;
+            case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\e[1;30m"; break;
+            case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\e[1m"; break;
+            default:                               col_str = "\e[0m"; break;
+        }
+        printf("%s", col_str);
+        n = printf("%s", buffer);
+        printf("\e[0m");
+        return n;
     }
-    printf("%s", col_str);
-    n = printf("%s", buffer);
-    printf("\e[0m");
-    return n;
 #elif defined CUTEST_WIN__
-    HANDLE h;
-    CONSOLE_SCREEN_BUFFER_INFO info;
-    WORD attr;
+    {
+        HANDLE h;
+        CONSOLE_SCREEN_BUFFER_INFO info;
+        WORD attr;
 
-    h = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleScreenBufferInfo(h, &info);
+        h = GetStdHandle(STD_OUTPUT_HANDLE);
+        GetConsoleScreenBufferInfo(h, &info);
 
-    switch(color) {
-        case CUTEST_COLOR_GREEN__:             attr = FOREGROUND_GREEN; break;
-        case CUTEST_COLOR_RED__:               attr = FOREGROUND_RED; break;
-        case CUTEST_COLOR_GREEN_INTENSIVE__:   attr = FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
-        case CUTEST_COLOR_RED_INTENSIVE__:     attr = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
-        case CUTEST_COLOR_DEFAULT_INTENSIVE__: attr = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY; break;
-        default:                               attr = 0; break;
+        switch(color) {
+            case CUTEST_COLOR_GREEN__:             attr = FOREGROUND_GREEN; break;
+            case CUTEST_COLOR_RED__:               attr = FOREGROUND_RED; break;
+            case CUTEST_COLOR_GREEN_INTENSIVE__:   attr = FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
+            case CUTEST_COLOR_RED_INTENSIVE__:     attr = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+            case CUTEST_COLOR_DEFAULT_INTENSIVE__: attr = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+            default:                               attr = 0; break;
+        }
+        if(attr != 0)
+            SetConsoleTextAttribute(h, attr);
+        n = printf("%s", buffer);
+        SetConsoleTextAttribute(h, info.wAttributes);
+        return n;
     }
-    if(attr != 0)
-        SetConsoleTextAttribute(h, attr);
-    n = printf("%s", buffer);
-    SetConsoleTextAttribute(h, info.wAttributes);
-    return n;
 #else
     n = printf("%s", buffer);
     return n;
