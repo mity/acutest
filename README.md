@@ -113,7 +113,7 @@ easy to use on command-line, i.e. especially avoid space and other special
 characters in them. Also avoid using dash as a first character, as it would
 be then interpreted as an command line option, not a test name.
 
-```
+```C
 TEST_LIST = {
    { "example", test_example },
    ...
@@ -124,14 +124,14 @@ TEST_LIST = {
 Note the test list has to be ended with zeroed record.
 
 Finally you just compile the C/C++ test suite source file as a simple program.
-For example, assuming cc is your C compiler:
+For example, assuming `cc` is your C compiler:
 
-```
+```sh
 $ cc test_example.c -o test_example
 ```
 
 More comprehensive description of API can be found in comments in the header
-cutest.h.
+`"cutest.h"`.
 
 
 ## Running Unit Tests
@@ -143,7 +143,7 @@ By default (without any command line options), it runs all implemented unit
 tests. It can also run only subset of the unit tests as specified on the
 command line:
 
-```
+```sh
 $ ./test_example                # Run all tests in the suite
 $ ./test_example test1 test2    # Run only tests "test1" and "test2"
 $ ./test_example --skip test3   # Run all tests with the exception of "test3"
@@ -151,7 +151,7 @@ $ ./test_example --skip test3   # Run all tests with the exception of "test3"
 
 To see all the options, simply run the binary with the option --help.
 
-```
+```sh
 $ ./test_example --help
 ```
 
