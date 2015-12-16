@@ -36,9 +36,10 @@ Unix specific features:
 * By default, if the output is directed to a terminal, the output is colorized.
 
 C++ specific features:
-* CUTest catches C++ exceptions thrown from unit test functions.
+* CUTest catches C++ exceptions thrown from unit test functions. Such unit
+  tests are considered to fail.
 * If the exception is derived from `std::exception`, `what()` is written out
-  in the error message and the unit tests is considered to fail.
+  in the error message.
 
 Any C/C++ module implementing one or more unit tests and including `"cutest.h"`,
 can be built as a standalone program. We call the resulted binary as a "test
