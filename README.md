@@ -28,15 +28,17 @@ Main features:
 
 Windows specific features:
 * By default, every unit test is executed as a child process.
+* By default, if the output is directed to a terminal, the output is colorized.
 * CUTest installs a SEH filter to print out uncaught SEH exceptions.
 
 Unix specific features:
 * By default, every unit test is executed as a child process.
+* By default, if the output is directed to a terminal, the output is colorized.
 
 C++ specific features:
 * CUTest catches C++ exceptions thrown from unit test functions.
 * If the exception is derived from `std::exception`, `what()` is written out
-  in an error message.
+  in the error message and the unit tests is considered to fail.
 
 Any C/C++ module implementing one or more unit tests and including `"cutest.h"`,
 can be built as a standalone program. We call the resulted binary as a "test
@@ -109,9 +111,9 @@ is executed as a standalone (sub)process.
 Finally, the test suite source file has to list the unit tests, using the
 macro `TEST_LIST`. The list specifies name of each test (it has to be unique)
 and pointer to a function implementing the test. I recommend names which are
-easy to use on command-line, i.e. especially avoid space and other special
+easy to use on command line, i.e. especially avoid space and other special
 characters in them. Also avoid using dash as a first character, as it would
-be then interpreted as an command line option, not a test name.
+be then interpreted as a command line option, not a test name.
 
 ```C
 TEST_LIST = {
