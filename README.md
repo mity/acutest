@@ -161,17 +161,8 @@ $ ./test_example --help
 
 ## License
 
-CUTest is covered with the GNU Lesser General Public License 2.1 or
-(at your option) any later version. See file COPYING.lib for more info.
-
-In brief, this generally means that:
-
-* Any program or library, even commercial, covered with any proprietary
-  license, is allowed to use CUTest, i.e. include `"cutest.h"`.
-
-* You can modify `"cutest.h"` and distribute such modified header if such
-  modifications are also licensed under the terms of the LGPL 2.1  (or any
-  later version); or under the terms of GPL 2 (or any later version).
+CUTest is covered with MIT license, see the beginning of `cutest.h` file for
+its full text.
 
 
 ## More Information
