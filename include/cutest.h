@@ -360,20 +360,22 @@ test_error__(const char* fmt, ...)
 {
     va_list args;
 
-    if(!test_current_already_logged__  &&  test_current_unit__ != NULL) {
+    if(test_verbose_level__ == 0)
+        return;
+
+    if(test_verbose_level__ <= 2  &&  !test_current_already_logged__  &&  test_current_unit__ != NULL) {
         printf("[ ");
         test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "FAILED");
         printf(" ]\n");
     }
 
-    if(test_verbose_level__ < 2)
-        return;
-
-    test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "  Error: ");
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-    printf("\n");
+    if(test_verbose_level__ >= 2) {
+        test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "  Error: ");
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+        printf("\n");
+    }
 }
 
 /* Trigger the unit test. If possible (and not suppressed) it starts a child
@@ -503,7 +505,11 @@ test_help__(void)
     printf("      --no-summary      Suppress printing of test results summary\n");
     printf("  -l, --list            List unit tests in the suite and exit\n");
     printf("  -v, --verbose         Enable more verbose output\n");
-    printf("      --verbose=LEVEL   Set verbose level to LEVEL (small integer)\n");
+    printf("      --verbose=LEVEL   Set verbose level to LEVEL:\n");
+    printf("                          0 ... Be silent\n");
+    printf("                          1 ... Output one line per test (and summary)\n");
+    printf("                          2 ... As 1 and failed conditions (this is default)\n");
+    printf("                          3 ... As 1 and all conditions (and extended summary)\n");
     printf("      --color=WHEN      Enable colorized output (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -h, --help            Display this help and exit\n");
     printf("\n");
