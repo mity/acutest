@@ -318,6 +318,10 @@ test_do_run__(const struct test__* test)
     try {
 #endif
 
+        /* This is good to do for case the test unit e.g. crashes. */
+        fflush(stdout);
+        fflush(stderr);
+
         test->func();
 
 #ifdef __cplusplus
