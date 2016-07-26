@@ -33,7 +33,7 @@
 
 /* By default, <cutest.h> provides the main program entry point (function
  * main()). However, if the test suite is composed of multiple source files
- * which include <cutest.h>, then this brings a problem of multiple main()
+ * which include <cutest.h>, then this causes a problem of multiple main()
  * definitions. To avoid this problem, #define macro TEST_NO_MAIN in all
  * compilation units but one.
  */
@@ -49,10 +49,10 @@
  *       { 0 }
  *   };
  *
- * The list specifies names of each tests (must be unique) and pointer to
+ * The list specifies names of each test (must be unique) and pointer to
  * a function implementing it. The function does not take any arguments
- * and have no return values, i.e. the test functions should have this
- * prototype:
+ * and has no return values, i.e. every test function has tp be compatible
+ * with this prototype:
  *
  *   void test_func(void);
  */
@@ -70,7 +70,7 @@
  * return non-zero (condition passes) or 0 (condition fails).
  *
  * That can be useful when more conditions should be checked only if some
- * preceding condition passes, as illustrated here:
+ * preceding condition passes, as illustrated in this code snippet:
  *
  *   SomeStruct* ptr = allocate_some_struct();
  *   if(TEST_CHECK(ptr != NULL)) {
@@ -113,7 +113,7 @@
 #endif
 
 
-/* Note our global private identifiers end with '__' to minimize risk of clash
+/* Note our global private identifiers end with '__' to mitigate risk of clash
  * with the unit tests implementation. */
 
 
@@ -349,8 +349,8 @@ test_do_run__(const struct test__* test)
 }
 
 /* Called if anything goes bad in cutest, or if the unit test ends in other
- * way then by returning from tis function (e.g. exception or child process
- * termination). */
+ * way then by normal returning from its function (e.g. exception or some
+ * abnormal child process termination). */
 static void
 test_error__(const char* fmt, ...)
 {
@@ -454,7 +454,7 @@ test_run__(const struct test__* test)
 
 #else
 
-        /* A platform where we do not know to run child process. */
+        /* A platform where we don't know how to run child process. */
         failed = (test_do_run__(test) != 0);
 
 #endif
