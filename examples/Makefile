@@ -3,7 +3,10 @@ CC = gcc
 CXX = g++
 CFLAGS ?= -Wall
 CXXFLAGS ?= -Wall
-LDFLAGS ?= -static
+
+ifeq ($(OS),Windows_NT)
+	LDFLAGS ?= -static
+endif
 
 
 all: c-example cpp-example
