@@ -167,16 +167,16 @@ test_print_in_color__(int color, const char* fmt, ...)
     {
         const char* col_str;
         switch(color) {
-            case CUTEST_COLOR_GREEN__:             col_str = "\e[0;32m"; break;
-            case CUTEST_COLOR_RED__:               col_str = "\e[0;31m"; break;
-            case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\e[1;32m"; break;
-            case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\e[1;30m"; break;
-            case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\e[1m"; break;
-            default:                               col_str = "\e[0m"; break;
+            case CUTEST_COLOR_GREEN__:             col_str = "\033[0;32m"; break;
+            case CUTEST_COLOR_RED__:               col_str = "\033[0;31m"; break;
+            case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\033[1;32m"; break;
+            case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;30m"; break;
+            case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\033[1m"; break;
+            default:                               col_str = "\033[0m"; break;
         }
         printf("%s", col_str);
         n = printf("%s", buffer);
-        printf("\e[0m");
+        printf("\033[0m");
         return n;
     }
 #elif defined CUTEST_WIN__
