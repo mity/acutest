@@ -88,13 +88,13 @@
 
 /* The unit test files should not rely on anything below. */
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define CUTEST_UNIX__    1
+    /* CUTEST_UNIX__ assumes POSIX.1-1990 or later is available */
+    #ifndef _POSIX_C_SOURCE
+    #define _POSIX_C_SOURCE 1
+    #endif
     #include <errno.h>
     #include <unistd.h>
     #include <sys/types.h>
@@ -102,6 +102,11 @@
     #include <signal.h>
 #endif
 
+/* _POSIX_C_SOURCE must be defined before these includes */
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     #define CUTEST_WIN__     1
     #include <windows.h>
@@ -162,16 +167,16 @@ test_print_in_color__(int color, const char* fmt, ...)
     {
         const char* col_str;
         switch(color) {
-            case CUTEST_COLOR_GREEN__:             col_str = "\e[0;32m"; break;
-            case CUTEST_COLOR_RED__:               col_str = "\e[0;31m"; break;
-            case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\e[1;32m"; break;
-            case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\e[1;30m"; break;
-            case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\e[1m"; break;
-            default:                               col_str = "\e[0m"; break;
+            case CUTEST_COLOR_GREEN__:             col_str = "\033[0;32m"; break;
+            case CUTEST_COLOR_RED__:               col_str = "\033[0;31m"; break;
+            case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\033[1;32m"; break;
+            case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;30m"; break;
+            case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\033[1m"; break;
+            default:                               col_str = "\033[0m"; break;
         }
         printf("%s", col_str);
         n = printf("%s", buffer);
-        printf("\e[0m");
+        printf("\033[0m");
         return n;
     }
 #elif defined CUTEST_WIN__
