@@ -1,5 +1,7 @@
 # CUTest Readme
 
+Home: http://github.com/mity/cutest
+
 
 ## What Is CUTest
 
@@ -14,9 +16,34 @@ CUTest supports C as well as C++, and it can deal with unit tests which throw
 C++ exceptions.
 
 
+## Word of Disambiguation
+
+Originally, I was so proud to find out the name Cutest for this little project.
+However, as I have recently learned, there are so many more projects of the
+same name, doing the same way:
+
+ * http://cutest.sourceforge.net/
+   (with many mirrors of it on github, likely the 1st one having the name)
+ * https://github.com/rafael-santiago/cutest
+ * https://github.com/yubako/cutest
+ * https://github.com/m-pilia/cUTest
+ * https://github.com/djanowski/cutest (unit tests for Ruby)
+ * https://github.com/InfernalLogic/cutest
+ * https://ccpforge.cse.rl.ac.uk/gf/project/cutest/wiki
+ * https://github.com/aiobofh/cutest
+
+(and likely even more.)
+
+To deal with it, the [issue #6](https://github.com/mity/cutest/issues/6) has
+been created.
+
+In the mean time, please at least be careful what particular Cutest is meant
+when it is being talked about.
+
+
 ## Overview
 
-Main features:
+**Main features:**
 * Unit tests in C or C++ are supported.
 * No need to install/setup/configure testing framework. CUTest is just single
   C/C++ header, `"cutest.h"`.
@@ -26,16 +53,16 @@ Main features:
 * Trivial interface for writing unit tests: Few preprocessor macros described
   further below.
 
-Windows specific features:
+**Windows specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
 * CUTest installs a SEH filter to print out uncaught SEH exceptions.
 
-Unix specific features:
+**Unix specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
 
-C++ specific features:
+**C++ specific features:**
 * CUTest catches C++ exceptions thrown from unit test functions. Such unit
   tests are considered to fail.
 * If the exception is derived from `std::exception`, `what()` is written out
@@ -161,8 +188,8 @@ $ ./test_example --help
 
 ## License
 
-CUTest is covered with MIT license, see the beginning of `cutest.h` file for
-its full text.
+CUTest is covered with MIT license, see the file `LICENSE.md` or beginning of
+`cutest.h` for its full text.
 
 
 ## More Information
