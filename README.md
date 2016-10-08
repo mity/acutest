@@ -20,14 +20,14 @@ C++ exceptions.
 
 Originally, I was so proud to find out the name Cutest for this little project.
 However, as I have recently learned, there are so many more projects of the
-same name, doing the same way:
+same name, doing the same or similar thing:
 
  * http://cutest.sourceforge.net/
-   (with many mirrors of it on github, likely the 1st one having the name)
+   (likely the 1st C/C++ unit tester using the name)
  * https://github.com/rafael-santiago/cutest
  * https://github.com/yubako/cutest
  * https://github.com/m-pilia/cUTest
- * https://github.com/djanowski/cutest (unit tests for Ruby)
+ * https://github.com/djanowski/cutest
  * https://github.com/InfernalLogic/cutest
  * https://ccpforge.cse.rl.ac.uk/gf/project/cutest/wiki
  * https://github.com/aiobofh/cutest
