@@ -88,13 +88,13 @@
 
 /* The unit test files should not rely on anything below. */
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define CUTEST_UNIX__    1
-    /* CUTEST_UNIX__ assumes POSIX.1-1990 or later is available */
-    #ifndef _POSIX_C_SOURCE
-    #define _POSIX_C_SOURCE 1
-    #endif
     #include <errno.h>
     #include <unistd.h>
     #include <sys/types.h>
@@ -102,11 +102,6 @@
     #include <signal.h>
 #endif
 
-/* _POSIX_C_SOURCE must be defined before these includes */
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     #define CUTEST_WIN__     1
     #include <windows.h>
