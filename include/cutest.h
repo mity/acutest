@@ -88,13 +88,13 @@
 
 /* The unit test files should not rely on anything below. */
 
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define CUTEST_UNIX__    1
-    /* CUTEST_UNIX__ assumes POSIX.1-1990 or later is available */
-    #ifndef _POSIX_C_SOURCE
-    #define _POSIX_C_SOURCE 1
-    #endif
     #include <errno.h>
     #include <unistd.h>
     #include <sys/types.h>
@@ -102,11 +102,6 @@
     #include <signal.h>
 #endif
 
-/* _POSIX_C_SOURCE must be defined before these includes */
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     #define CUTEST_WIN__     1
     #include <windows.h>
@@ -357,6 +352,7 @@ test_do_run__(const struct test__* test)
     return (test_current_failures__ == 0) ? 0 : -1;
 }
 
+#if defined(CUTEST_UNIX__) || defined(CUTEST_WIN__)
 /* Called if anything goes bad in cutest, or if the unit test ends in other
  * way then by normal returning from its function (e.g. exception or some
  * abnormal child process termination). */
@@ -382,6 +378,7 @@ test_error__(const char* fmt, ...)
         printf("\n");
     }
 }
+#endif
 
 /* Trigger the unit test. If possible (and not suppressed) it starts a child
  * process who calls test_do_run__(), otherwise it calls test_do_run__()
@@ -531,7 +528,7 @@ main(int argc, char** argv)
     test_argv0__ = argv[0];
 
 #if defined CUTEST_UNIX__
-    test_colorize__ = isatty(fileno(stdout));
+    test_colorize__ = isatty(STDOUT_FILENO);
 #elif defined CUTEST_WIN__
     test_colorize__ = _isatty(_fileno(stdout));
 #else
