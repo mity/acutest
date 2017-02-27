@@ -128,12 +128,26 @@ struct test__ {
 };
 
 extern const struct test__ test_list__[];
-extern int test_verbose_level__;
-extern const struct test__* test_current_unit__;
-extern int test_current_already_logged__;
-extern int test_current_failures__;
-extern int test_colorize__;
 
+int test_check__(int cond, const char* file, int line, const char* fmt, ...);
+
+
+#ifndef TEST_NO_MAIN
+
+static char* test_argv0__ = NULL;
+static int test_count__ = 0;
+static int test_no_exec__ = 0;
+static int test_no_summary__ = 0;
+static int test_skip_mode__ = 0;
+
+static int test_stat_failed_units__ = 0;
+static int test_stat_run_units__ = 0;
+
+static const struct test__* test_current_unit__ = NULL;
+static int test_current_already_logged__ = 0;
+static int test_verbose_level__ = 2;
+static int test_current_failures__ = 0;
+static int test_colorize__ = 0;
 
 #define CUTEST_COLOR_DEFAULT__               0
 #define CUTEST_COLOR_GREEN__                 1
@@ -142,7 +156,7 @@ extern int test_colorize__;
 #define CUTEST_COLOR_GREEN_INTENSIVE__       4
 #define CUTEST_COLOR_RED_INTENSIVE__         5
 
-size_t
+static size_t
 test_print_in_color__(int color, const char* fmt, ...)
 {
     va_list args;
@@ -248,25 +262,6 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
 
     return (cond != 0);
 }
-
-
-#ifndef TEST_NO_MAIN
-
-static char* test_argv0__ = NULL;
-static int test_count__ = 0;
-static int test_no_exec__ = 0;
-static int test_no_summary__ = 0;
-static int test_skip_mode__ = 0;
-
-static int test_stat_failed_units__ = 0;
-static int test_stat_run_units__ = 0;
-
-const struct test__* test_current_unit__ = NULL;
-int test_current_already_logged__ = 0;
-int test_verbose_level__ = 2;
-int test_current_failures__ = 0;
-int test_colorize__ = 0;
-
 
 static void
 test_list_names__(void)
@@ -601,17 +596,15 @@ main(int argc, char** argv)
             test_run__(tests[i]);
     } else {
         /* Run all tests except those listed */
-        int is_skipped;
-
         for(i = 0; test_list__[i].func != NULL; i++) {
-            is_skipped = 0;
+            int want_skip = 0;
             for(j = 0; j < n; j++) {
                 if(tests[j] == &test_list__[i]) {
-                    is_skipped = 1;
+                    want_skip = 1;
                     break;
                 }
             }
-            if(!is_skipped)
+            if(!want_skip)
                 test_run__(&test_list__[i]);
         }
     }
