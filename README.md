@@ -19,8 +19,8 @@ C++ exceptions.
 ## Word of Disambiguation
 
 Originally, I was so proud to find out the name Cutest for this little project.
-However, as I have recently learned, there are so many more projects of the
-same name, doing the same or similar thing:
+However, as I later learned, there are so many more projects of the same name,
+doing the same or similar thing:
 
  * http://cutest.sourceforge.net/
    (likely the 1st C/C++ unit tester using the name)
