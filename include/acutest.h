@@ -1,6 +1,6 @@
 /*
- * CUTest -- C/C++ Unit Test facility
- * <http://github.com/mity/cutest>
+ * ACUTest -- C/C++ Unit Test facility
+ * <http://github.com/mity/acutest>
  *
  * Copyright (c) 2013-2017 Martin Mitas
  *
@@ -23,17 +23,17 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef CUTEST_H__
-#define CUTEST_H__
+#ifndef ACUTEST_H__
+#define ACUTEST_H__
 
 
 /************************
  *** Public interface ***
  ************************/
 
-/* By default, <cutest.h> provides the main program entry point (function
+/* By default, "acutest.h" provides the main program entry point (function
  * main()). However, if the test suite is composed of multiple source files
- * which include <cutest.h>, then this causes a problem of multiple main()
+ * which include "cutest.h", then this causes a problem of multiple main()
  * definitions. To avoid this problem, #define macro TEST_NO_MAIN in all
  * compilation units but one.
  */
@@ -94,7 +94,7 @@
 #include <string.h>
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
-    #define CUTEST_UNIX__    1
+    #define ACUTEST_UNIX__      1
     #include <errno.h>
     #include <unistd.h>
     #include <sys/types.h>
@@ -103,7 +103,7 @@
 #endif
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
-    #define CUTEST_WIN__     1
+    #define ACUTEST_WIN__       1
     #include <windows.h>
     #include <io.h>
 #endif
@@ -149,12 +149,12 @@ static int test_verbose_level__ = 2;
 static int test_current_failures__ = 0;
 static int test_colorize__ = 0;
 
-#define CUTEST_COLOR_DEFAULT__               0
-#define CUTEST_COLOR_GREEN__                 1
-#define CUTEST_COLOR_RED__                   2
-#define CUTEST_COLOR_DEFAULT_INTENSIVE__     3
-#define CUTEST_COLOR_GREEN_INTENSIVE__       4
-#define CUTEST_COLOR_RED_INTENSIVE__         5
+#define TEST_COLOR_DEFAULT__            0
+#define TEST_COLOR_GREEN__              1
+#define TEST_COLOR_RED__                2
+#define TEST_COLOR_DEFAULT_INTENSIVE__  3
+#define TEST_COLOR_GREEN_INTENSIVE__    4
+#define TEST_COLOR_RED_INTENSIVE__      5
 
 static size_t
 test_print_in_color__(int color, const char* fmt, ...)
@@ -172,23 +172,23 @@ test_print_in_color__(int color, const char* fmt, ...)
         return printf("%s", buffer);
     }
 
-#if defined CUTEST_UNIX__
+#if defined ACUTEST_UNIX__
     {
         const char* col_str;
         switch(color) {
-            case CUTEST_COLOR_GREEN__:             col_str = "\033[0;32m"; break;
-            case CUTEST_COLOR_RED__:               col_str = "\033[0;31m"; break;
-            case CUTEST_COLOR_GREEN_INTENSIVE__:   col_str = "\033[1;32m"; break;
-            case CUTEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;30m"; break;
-            case CUTEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\033[1m"; break;
-            default:                               col_str = "\033[0m"; break;
+            case TEST_COLOR_GREEN__:             col_str = "\033[0;32m"; break;
+            case TEST_COLOR_RED__:               col_str = "\033[0;31m"; break;
+            case TEST_COLOR_GREEN_INTENSIVE__:   col_str = "\033[1;32m"; break;
+            case TEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;30m"; break;
+            case TEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\033[1m"; break;
+            default:                                col_str = "\033[0m"; break;
         }
         printf("%s", col_str);
         n = printf("%s", buffer);
         printf("\033[0m");
         return n;
     }
-#elif defined CUTEST_WIN__
+#elif defined ACUTEST_WIN__
     {
         HANDLE h;
         CONSOLE_SCREEN_BUFFER_INFO info;
@@ -198,12 +198,12 @@ test_print_in_color__(int color, const char* fmt, ...)
         GetConsoleScreenBufferInfo(h, &info);
 
         switch(color) {
-            case CUTEST_COLOR_GREEN__:             attr = FOREGROUND_GREEN; break;
-            case CUTEST_COLOR_RED__:               attr = FOREGROUND_RED; break;
-            case CUTEST_COLOR_GREEN_INTENSIVE__:   attr = FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
-            case CUTEST_COLOR_RED_INTENSIVE__:     attr = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
-            case CUTEST_COLOR_DEFAULT_INTENSIVE__: attr = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY; break;
-            default:                               attr = 0; break;
+            case TEST_COLOR_GREEN__:             attr = FOREGROUND_GREEN; break;
+            case TEST_COLOR_RED__:               attr = FOREGROUND_RED; break;
+            case TEST_COLOR_GREEN_INTENSIVE__:   attr = FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
+            case TEST_COLOR_RED_INTENSIVE__:     attr = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+            case TEST_COLOR_DEFAULT_INTENSIVE__: attr = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY; break;
+            default:                                attr = 0; break;
         }
         if(attr != 0)
             SetConsoleTextAttribute(h, attr);
@@ -226,16 +226,16 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
 
     if(cond) {
         result_str = "ok";
-        result_color = CUTEST_COLOR_GREEN__;
+        result_color = TEST_COLOR_GREEN__;
         verbose_level = 3;
     } else {
         if(!test_current_already_logged__  &&  test_current_unit__ != NULL) {
             printf("[ ");
-            test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "FAILED");
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED");
             printf(" ]\n");
         }
         result_str = "failed";
-        result_color = CUTEST_COLOR_RED__;
+        result_color = TEST_COLOR_RED__;
         verbose_level = 2;
         test_current_failures__++;
         test_current_already_logged__++;
@@ -295,13 +295,13 @@ test_do_run__(const struct test__* test)
     test_current_already_logged__ = 0;
 
     if(test_verbose_level__ >= 3) {
-        test_print_in_color__(CUTEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
+        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
         test_current_already_logged__++;
     } else if(test_verbose_level__ >= 1) {
         size_t n;
         char spaces[32];
 
-        n = test_print_in_color__(CUTEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
+        n = test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
         memset(spaces, ' ', sizeof(spaces));
         if(n < sizeof(spaces))
             printf("%.*s", (int) (sizeof(spaces) - n), spaces);
@@ -333,13 +333,13 @@ test_do_run__(const struct test__* test)
 
     if(test_verbose_level__ >= 3) {
         switch(test_current_failures__) {
-            case 0:  test_print_in_color__(CUTEST_COLOR_GREEN_INTENSIVE__, "  All conditions have passed.\n\n"); break;
-            case 1:  test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "  One condition has FAILED.\n\n"); break;
-            default: test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "  %d conditions have FAILED.\n\n", test_current_failures__); break;
+            case 0:  test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "  All conditions have passed.\n\n"); break;
+            case 1:  test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  One condition has FAILED.\n\n"); break;
+            default: test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  %d conditions have FAILED.\n\n", test_current_failures__); break;
         }
     } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
         printf("[   ");
-        test_print_in_color__(CUTEST_COLOR_GREEN_INTENSIVE__, "OK");
+        test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "OK");
         printf("   ]\n");
     }
 
@@ -348,7 +348,7 @@ test_do_run__(const struct test__* test)
 }
 
 #if defined(CUTEST_UNIX__) || defined(CUTEST_WIN__)
-/* Called if anything goes bad in cutest, or if the unit test ends in other
+/* Called if anything goes bad in ACUtest, or if the unit test ends in other
  * way then by normal returning from its function (e.g. exception or some
  * abnormal child process termination). */
 static void
@@ -361,12 +361,12 @@ test_error__(const char* fmt, ...)
 
     if(test_verbose_level__ <= 2  &&  !test_current_already_logged__  &&  test_current_unit__ != NULL) {
         printf("[ ");
-        test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "FAILED");
+        test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED");
         printf(" ]\n");
     }
 
     if(test_verbose_level__ >= 2) {
-        test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__, "  Error: ");
+        test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  Error: ");
         va_start(args, fmt);
         vprintf(fmt, args);
         va_end(args);
@@ -522,9 +522,9 @@ main(int argc, char** argv)
 
     test_argv0__ = argv[0];
 
-#if defined CUTEST_UNIX__
+#if defined ACUTEST_UNIX__
     test_colorize__ = isatty(STDOUT_FILENO);
-#elif defined CUTEST_WIN__
+#elif defined ACUTEST_WIN__
     test_colorize__ = _isatty(_fileno(stdout));
 #else
     test_colorize__ = 0;
@@ -611,7 +611,7 @@ main(int argc, char** argv)
 
     /* Write a summary */
     if(!test_no_summary__ && test_verbose_level__ >= 1) {
-        test_print_in_color__(CUTEST_COLOR_DEFAULT_INTENSIVE__, "\nSummary:\n");
+        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "\nSummary:\n");
 
         if(test_verbose_level__ >= 3) {
             printf("  Count of all unit tests:     %4d\n", test_count__);
@@ -621,10 +621,10 @@ main(int argc, char** argv)
         }
 
         if(test_stat_failed_units__ == 0) {
-            test_print_in_color__(CUTEST_COLOR_GREEN_INTENSIVE__,
+            test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__,
                     "  SUCCESS: All unit tests have passed.\n");
         } else {
-            test_print_in_color__(CUTEST_COLOR_RED_INTENSIVE__,
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__,
                     "  FAILED: %d of %d unit tests have failed.\n",
                     test_stat_failed_units__, test_stat_run_units__);
         }
@@ -644,4 +644,4 @@ main(int argc, char** argv)
 #endif
 
 
-#endif  /* #ifndef CUTEST_H__ */
+#endif  /* #ifndef ACUTEST_H__ */

@@ -1,52 +1,27 @@
-# CUTest Readme
+# ACUTest Readme
 
-Home: http://github.com/mity/cutest
+Home: http://github.com/mity/ACUTest
 
 
-## What Is CUTest
+## What Is ACUTest
 
-CUTest means "C Unit Testing" and it is intended to do exactly that, while
-being as simple as possible to use it, not to stand in the developer's way
-and minimize any external dependencies.
+"ACUTest" means "Another C Unit Testing" and it is intended to do exactly that,
+while being as simple as possible to use it, not to stand in the developer's
+way and minimize any external dependencies.
 
 To achieve that, the complete implementation resides in a single C header file,
-`"cutest.h"`, and its core depends only on few standard C library functions.
+and its core depends only on few standard C library functions.
 
-CUTest supports C as well as C++, and it can deal with unit tests which throw
+ACUTest supports C as well as C++, and it can deal with unit tests which throw
 C++ exceptions.
-
-
-## Word of Disambiguation
-
-Originally, I was so proud to find out the name Cutest for this little project.
-However, as I later learned, there are so many more projects of the same name,
-doing the same or similar thing:
-
- * http://cutest.sourceforge.net/
-   (likely the 1st C/C++ unit tester using the name)
- * https://github.com/rafael-santiago/cutest
- * https://github.com/yubako/cutest
- * https://github.com/m-pilia/cUTest
- * https://github.com/djanowski/cutest
- * https://github.com/InfernalLogic/cutest
- * https://ccpforge.cse.rl.ac.uk/gf/project/cutest/wiki
- * https://github.com/aiobofh/cutest
-
-(and likely even more.)
-
-To deal with it, the [issue #6](https://github.com/mity/cutest/issues/6) has
-been created.
-
-In the mean time, please at least be careful what particular Cutest is meant
-when it is being talked about.
 
 
 ## Overview
 
 **Main features:**
 * Unit tests in C or C++ are supported.
-* No need to install/setup/configure testing framework. CUTest is just single
-  C/C++ header, `"cutest.h"`.
+* No need to install/setup/configure testing framework. ACUTest is just single
+  C/C++ header, `"acutest.h"`.
 * The header provides program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
   optional features may use more if available on the particular system.
@@ -56,19 +31,19 @@ when it is being talked about.
 **Windows specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
-* CUTest installs a SEH filter to print out uncaught SEH exceptions.
+* ACUTest installs a SEH filter to print out uncaught SEH exceptions.
 
 **Unix specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
 
 **C++ specific features:**
-* CUTest catches C++ exceptions thrown from unit test functions. Such unit
+* ACUTest catches C++ exceptions thrown from unit test functions. Such unit
   tests are considered to fail.
 * If the exception is derived from `std::exception`, `what()` is written out
   in the error message.
 
-Any C/C++ module implementing one or more unit tests and including `"cutest.h"`,
+Any C/C++ module implementing one or more unit tests and including `"acutest.h"`,
 can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
 tests, as specified with its command line options.
@@ -86,14 +61,22 @@ Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
 or other number if an internal error occurs.
 
 
+## FAQ
+
+**Q:** Wasn't this project known as "CUTest"?
+
+**A:** Yes. It has been renamed as the original name was
+[too much overloaded](https://github.com/mity/cutest/issues/6).
+
+
 ## Writing Unit Tests
 
-To use CUTest, simply include the header file `"cutest.h"` on the beginning of
-the C/C++ source file implementing one or more unit tests. Note the header
+To use ACUTest, simply include the header file `"acutest.h"` on the beginning
+of the C/C++ source file implementing one or more unit tests. Note the header
 provides implementation of the `main()` function.
 
 ```C
-#include "cutest.h"
+#include "acutest.h"
 ```
 
 Every test is supposed to be implemented as a function with the following
@@ -161,7 +144,7 @@ $ cc test_example.c -o test_example
 ```
 
 More comprehensive description of API can be found in comments in the header
-`"cutest.h"`.
+`"acutest.h"`.
 
 
 ## Running Unit Tests
@@ -188,15 +171,15 @@ $ ./test_example --help
 
 ## License
 
-CUTest is covered with MIT license, see the file `LICENSE.md` or beginning of
-`cutest.h` for its full text.
+ACUTest is covered with MIT license, see the file `LICENSE.md` or beginning of
+`"acutest.h"` for its full text.
 
 
 ## More Information
 
 The project resides on github:
 
-* http://github.com/mity/cutest
+* http://github.com/mity/acutest
 
-You can find the latest version of CUTest.h there, contribute with enhancements
+You can find the latest version of ACUtest there, contribute with enhancements
 or report bugs.
