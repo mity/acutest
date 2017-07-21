@@ -1,6 +1,6 @@
 # ACUTest Readme
 
-Home: http://github.com/mity/ACUTest
+Home: http://github.com/mity/acutest
 
 
 ## What Is ACUTest
