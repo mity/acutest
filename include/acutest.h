@@ -33,7 +33,7 @@
 
 /* By default, "acutest.h" provides the main program entry point (function
  * main()). However, if the test suite is composed of multiple source files
- * which include "cutest.h", then this causes a problem of multiple main()
+ * which include "acutest.h", then this causes a problem of multiple main()
  * definitions. To avoid this problem, #define macro TEST_NO_MAIN in all
  * compilation units but one.
  */
@@ -347,7 +347,7 @@ test_do_run__(const struct test__* test)
     return (test_current_failures__ == 0) ? 0 : -1;
 }
 
-#if defined(CUTEST_UNIX__) || defined(CUTEST_WIN__)
+#if defined(ACUTEST_UNIX__) || defined(ACUTEST_WIN__)
 /* Called if anything goes bad in ACUtest, or if the unit test ends in other
  * way then by normal returning from its function (e.g. exception or some
  * abnormal child process termination). */
@@ -388,7 +388,7 @@ test_run__(const struct test__* test)
 
     if(!test_no_exec__) {
 
-#if defined(CUTEST_UNIX__)
+#if defined(ACUTEST_UNIX__)
 
         pid_t pid;
         int exit_code;
@@ -430,7 +430,7 @@ test_run__(const struct test__* test)
             }
         }
 
-#elif defined(CUTEST_WIN__)
+#elif defined(ACUTEST_WIN__)
 
         char buffer[512] = {0};
         STARTUPINFOA startupInfo = {0};
@@ -474,7 +474,7 @@ test_run__(const struct test__* test)
         test_stat_failed_units__++;
 }
 
-#if defined(CUTEST_WIN__)
+#if defined(ACUTEST_WIN__)
 /* Callback for SEH events. */
 static LONG CALLBACK
 test_exception_filter__(EXCEPTION_POINTERS *ptrs)
@@ -576,7 +576,7 @@ main(int argc, char** argv)
         }
     }
 
-#if defined(CUTEST_WIN__)
+#if defined(ACUTEST_WIN__)
     SetUnhandledExceptionFilter(test_exception_filter__);
 #endif
 
