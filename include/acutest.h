@@ -179,7 +179,7 @@ test_print_in_color__(int color, const char* fmt, ...)
             case TEST_COLOR_GREEN__:             col_str = "\033[0;32m"; break;
             case TEST_COLOR_RED__:               col_str = "\033[0;31m"; break;
             case TEST_COLOR_GREEN_INTENSIVE__:   col_str = "\033[1;32m"; break;
-            case TEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;30m"; break;
+            case TEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;31m"; break;
             case TEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\033[1m"; break;
             default:                                col_str = "\033[0m"; break;
         }
