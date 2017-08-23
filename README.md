@@ -162,6 +162,12 @@ $ ./test_example test1 test2    # Run only tests "test1" and "test2"
 $ ./test_example --skip test3   # Run all tests with the exception of "test3"
 ```
 
+If the specified test does not exist, a relaxed test matching is used and any
+test whose name contains the specified pattern is used.
+
+So, if you adopt reasonable naming strategy, this can be used for running
+(or skipping) whole groups of tests with single command line argument.
+
 To see all the options, simply run the binary with the option --help.
 
 ```sh

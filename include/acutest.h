@@ -160,6 +160,9 @@ void test_message__(const char* fmt, ...);
 #ifndef TEST_NO_MAIN
 
 static char* test_argv0__ = NULL;
+static int test_list_size__ = 0;
+static const struct test__** tests__ = NULL;
+static char* test_flags__ = NULL;
 static int test_count__ = 0;
 static int test_no_exec__ = 0;
 static int test_no_summary__ = 0;
@@ -331,17 +334,41 @@ test_list_names__(void)
         printf("  %s\n", test->name);
 }
 
-static const struct test__*
-test_by_name__(const char* name)
+static void
+test_remember__(int i)
 {
-    const struct test__* test;
+    if(test_flags__[i])
+        return;
+    else
+        test_flags__[i] = 1;
 
-    for(test = &test_list__[0]; test->func != NULL; test++) {
-        if(strcmp(test->name, name) == 0)
-            return test;
+    tests__[test_count__] = &test_list__[i];
+    test_count__++;
+}
+
+static int
+test_lookup__(const char* pattern)
+{
+    int i;
+    int n = 0;
+
+    /* Try exact match. */
+    for(i = 0; i < test_list_size__; i++) {
+        if(strcmp(test_list__[i].name, pattern) == 0) {
+            test_remember__(i);
+            return 1;
+        }
     }
 
-    return NULL;
+    /* Try relaxed match. */
+    for(i = 0; i < test_list_size__; i++) {
+        if(strstr(test_list__[i].name, pattern) != NULL) {
+            test_remember__(i);
+            n++;
+        }
+    }
+
+    return n;
 }
 
 /* Call directly the given test unit function. */
@@ -569,7 +596,7 @@ test_help__(void)
     printf("      --color=WHEN      Enable colorized output (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -h, --help            Display this help and exit\n");
 
-    if(test_count__ < 16) {
+    if(test_list_size__ < 16) {
         printf("\n");
         test_list_names__();
     }
@@ -578,8 +605,7 @@ test_help__(void)
 int
 main(int argc, char** argv)
 {
-    const struct test__** tests = NULL;
-    int i, j, n = 0;
+    int i;
     int seen_double_dash = 0;
 
     test_argv0__ = argv[0];
@@ -593,25 +619,26 @@ main(int argc, char** argv)
 #endif
 
     /* Count all test units */
-    test_count__ = 0;
+    test_list_size__ = 0;
     for(i = 0; test_list__[i].func != NULL; i++)
-        test_count__++;
+        test_list_size__++;
+
+    tests__ = (const struct test__**) malloc(sizeof(const struct test__*) * test_list_size__);
+    test_flags__ = (char*) malloc(sizeof(char) * test_list_size__);
+    if(tests__ == NULL || test_flags__ == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(2);
+    }
+    memset((void*) test_flags__, 0, sizeof(sizeof(char) * test_list_size__));
 
     /* Parse options */
     for(i = 1; i < argc; i++) {
         if(seen_double_dash || argv[i][0] != '-') {
-            tests = (const struct test__**) realloc((void*)tests, (n+1) * sizeof(const struct test__*));
-            if(tests == NULL) {
-                fprintf(stderr, "Out of memory.\n");
-                exit(2);
-            }
-            tests[n] = test_by_name__(argv[i]);
-            if(tests[n] == NULL) {
+            if(test_lookup__(argv[i]) == 0) {
                 fprintf(stderr, "%s: Unrecognized unit test '%s'\n", argv[0], argv[i]);
                 fprintf(stderr, "Try '%s --list' for list of unit tests.\n", argv[0]);
                 exit(2);
             }
-            n++;
         } else if(strcmp(argv[i], "--") == 0) {
             seen_double_dash = 1;
         } else if(strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
@@ -648,25 +675,18 @@ main(int argc, char** argv)
 #endif
 
     /* Run the tests */
-    if(n == 0) {
-        /* Run all tests */
+    if(test_count__ == 0) {
+        /* Run all tests. */
         for(i = 0; test_list__[i].func != NULL; i++)
             test_run__(&test_list__[i]);
     } else if(!test_skip_mode__) {
-        /* Run the listed tests */
-        for(i = 0; i < n; i++)
-            test_run__(tests[i]);
+        /* Run the listed tests. */
+        for(i = 0; i < test_count__; i++)
+            test_run__(tests__[i]);
     } else {
-        /* Run all tests except those listed */
+        /* Run all tests except those listed. */
         for(i = 0; test_list__[i].func != NULL; i++) {
-            int want_skip = 0;
-            for(j = 0; j < n; j++) {
-                if(tests[j] == &test_list__[i]) {
-                    want_skip = 1;
-                    break;
-                }
-            }
-            if(!want_skip)
+            if(!test_flags__[i])
                 test_run__(&test_list__[i]);
         }
     }
@@ -676,10 +696,10 @@ main(int argc, char** argv)
         test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "\nSummary:\n");
 
         if(test_verbose_level__ >= 3) {
-            printf("  Count of all unit tests:     %4d\n", test_count__);
+            printf("  Count of all unit tests:     %4d\n", test_list_size__);
             printf("  Count of run unit tests:     %4d\n", test_stat_run_units__);
             printf("  Count of failed unit tests:  %4d\n", test_stat_failed_units__);
-            printf("  Count of skipped unit tests: %4d\n", test_count__ - test_stat_run_units__);
+            printf("  Count of skipped unit tests: %4d\n", test_list_size__ - test_stat_run_units__);
         }
 
         if(test_stat_failed_units__ == 0) {
@@ -692,8 +712,8 @@ main(int argc, char** argv)
         }
     }
 
-    if(tests != NULL)
-        free((void*)tests);
+    free((void*) tests__);
+    free((void*) test_flags__);
 
     return (test_stat_failed_units__ == 0) ? 0 : 1;
 }
