@@ -275,8 +275,24 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
 
         printf("  ");
 
-        if(file != NULL)
+        if(file != NULL) {
+            if(verbose_level < 3) {
+#ifdef ACUTEST_WIN__
+                const char* lastsep1 = strrchr(file, '\\');
+                const char* lastsep2 = strrchr(file, '/');
+                if(lastsep1 == NULL)
+                    lastsep1 = file-1;
+                if(lastsep2 == NULL)
+                    lastsep2 = file-1;
+                file = (lastsep1 > lastsep2 ? lastsep1 : lastsep2) + 1;
+#else
+                const char* lastsep = strrchr(file, '/');
+                if(lastsep != NULL)
+                    file = lastsep+1;
+#endif
+            }
             n += printf("%s:%d: Check ", file, line);
+        }
 
         va_start(args, fmt);
         n += vprintf(fmt, args);
