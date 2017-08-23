@@ -82,6 +82,30 @@
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
 
+/* printf-like macro for outputting an extra information about a failure.
+ *
+ * Note it does not output anything if there was not (yet) failed condition
+ * in the current test. Intended use is to output some computated output
+ * versus the expected value, e.g. like this:
+ *
+ *   if(!TEST_CHECK(produced != expected) == 0)) {
+ *       TEST_MSG("Expected: %d", expected);
+ *       TEST_MSG("Produced: %d", produced);
+ *   }
+ *
+ * The macro can deal with multi-line output fairly well. It also automatically
+ * adds a final new-line if there is none present.
+ */
+#define TEST_MSG(...)          test_message__(__VA_ARGS__)
+
+/* Maximal output per TEST_MSG call. Longer messages are cut.
+ * You may define another limit prior including "acutest.h"
+ */
+#ifndef TEST_MSG_MAXSIZE
+    #define TEST_MSG_MAXSIZE   1024
+#endif
+
+
 /**********************
  *** Implementation ***
  **********************/
@@ -130,6 +154,7 @@ struct test__ {
 extern const struct test__ test_list__[];
 
 int test_check__(int cond, const char* file, int line, const char* fmt, ...);
+void test_message__(const char* fmt, ...);
 
 
 #ifndef TEST_NO_MAIN
@@ -261,6 +286,39 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
     }
 
     return (cond != 0);
+}
+
+void
+test_message__(const char* fmt, ...)
+{
+    char buffer[TEST_MSG_MAXSIZE];
+    char* line_beg;
+    char* line_end;
+    va_list args;
+
+    if(test_verbose_level__ < 2)
+        return;
+
+    /* We allow extra message only when something is already wrong in the
+     * current test. */
+    if(!test_current_already_logged__  ||  test_current_unit__ == NULL)
+        return;
+
+    va_start(args, fmt);
+    vsnprintf(buffer, TEST_MSG_MAXSIZE, fmt, args);
+    va_end(args);
+    buffer[TEST_MSG_MAXSIZE-1] = '\0';
+
+    line_beg = buffer;
+    while(1) {
+        line_end = strchr(line_beg, '\n');
+        if(line_end == NULL)
+            break;
+        printf("    %.*s\n", (int)(line_end - line_beg), line_beg);
+        line_beg = line_end + 1;
+    }
+    if(line_beg[0] != '\0')
+        printf("    %s\n", line_beg);
 }
 
 static void
