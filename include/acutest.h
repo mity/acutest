@@ -546,6 +546,7 @@ test_exception_filter__(EXCEPTION_POINTERS *ptrs)
 }
 #endif
 
+
 static void
 test_help__(void)
 {
@@ -567,8 +568,11 @@ test_help__(void)
     printf("                          3 ... As 1 and all conditions (and extended summary)\n");
     printf("      --color=WHEN      Enable colorized output (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -h, --help            Display this help and exit\n");
-    printf("\n");
-    test_list_names__();
+
+    if(test_count__ < 16) {
+        printf("\n");
+        test_list_names__();
+    }
 }
 
 int
@@ -587,6 +591,11 @@ main(int argc, char** argv)
 #else
     test_colorize__ = 0;
 #endif
+
+    /* Count all test units */
+    test_count__ = 0;
+    for(i = 0; test_list__[i].func != NULL; i++)
+        test_count__++;
 
     /* Parse options */
     for(i = 1; i < argc; i++) {
@@ -637,11 +646,6 @@ main(int argc, char** argv)
 #if defined(ACUTEST_WIN__)
     SetUnhandledExceptionFilter(test_exception_filter__);
 #endif
-
-    /* Count all test units */
-    test_count__ = 0;
-    for(i = 0; test_list__[i].func != NULL; i++)
-        test_count__++;
 
     /* Run the tests */
     if(n == 0) {
