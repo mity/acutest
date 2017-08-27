@@ -645,7 +645,7 @@ main(int argc, char** argv)
         fprintf(stderr, "Out of memory.\n");
         exit(2);
     }
-    memset((void*) test_flags__, 0, sizeof(sizeof(char) * test_list_size__));
+    memset((void*) test_flags__, 0, sizeof(char) * test_list_size__);
 
     /* Parse options */
     for(i = 1; i < argc; i++) {
