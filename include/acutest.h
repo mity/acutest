@@ -600,7 +600,9 @@ test_help__(void)
     printf("\n");
     printf("Options:\n");
     printf("  -s, --skip            Execute all unit tests but the listed ones\n");
-    printf("      --no-exec         Do not execute unit tests as child processes\n");
+    printf("      --exec=WHEN       If supported, execute unit tests as child processes\n");
+    printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
+    printf("  -E, --no-exec         Same as --exec=never\n");
     printf("      --no-summary      Suppress printing of test results summary\n");
     printf("  -l, --list            List unit tests in the suite and exit\n");
     printf("  -v, --verbose         Enable more verbose output\n");
@@ -609,7 +611,8 @@ test_help__(void)
     printf("                          1 ... Output one line per test (and summary)\n");
     printf("                          2 ... As 1 and failed conditions (this is default)\n");
     printf("                          3 ... As 1 and all conditions (and extended summary)\n");
-    printf("      --color=WHEN      Enable colorized output (WHEN is one of 'auto', 'always', 'never')\n");
+    printf("      --color=WHEN      Enable colorized output\n");
+    printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -h, --help            Display this help and exit\n");
 
     if(test_list_size__ < 16) {
@@ -638,6 +641,8 @@ main(int argc, char** argv)
     test_list_size__ = 0;
     for(i = 0; test_list__[i].func != NULL; i++)
         test_list_size__++;
+
+    test_no_exec__ = -1;
 
     tests__ = (const struct test__**) malloc(sizeof(const struct test__*) * test_list_size__);
     test_flags__ = (char*) malloc(sizeof(char) * test_list_size__);
@@ -668,11 +673,15 @@ main(int argc, char** argv)
             /* noop (set from above) */
         } else if(strcmp(argv[i], "--color=always") == 0 || strcmp(argv[i], "--color") == 0) {
             test_colorize__ = 1;
-        } else if(strcmp(argv[i], "--color=never") == 0) {
+        } else if(strcmp(argv[i], "--color=never") == 0 || strcmp(argv[i], "--no-color") == 0) {
             test_colorize__ = 0;
         } else if(strcmp(argv[i], "--skip") == 0 || strcmp(argv[i], "-s") == 0) {
             test_skip_mode__ = 1;
-        } else if(strcmp(argv[i], "--no-exec") == 0) {
+        } else if(strcmp(argv[i], "--exec=auto") == 0) {
+            /* noop (set from above) */
+        } else if(strcmp(argv[i], "--exec=always") == 0 || strcmp(argv[i], "--exec") == 0) {
+            test_no_exec__ = 0;
+        } else if(strcmp(argv[i], "--exec=never") == 0 || strcmp(argv[i], "--no-exec") == 0 || strcmp(argv[i], "-E") == 0) {
             test_no_exec__ = 1;
         } else if(strcmp(argv[i], "--no-summary") == 0) {
             test_no_summary__ = 1;
@@ -689,6 +698,19 @@ main(int argc, char** argv)
 #if defined(ACUTEST_WIN__)
     SetUnhandledExceptionFilter(test_exception_filter__);
 #endif
+
+    /* Guess whether we want to run unit tests as child processes. */
+    if(test_no_exec__ < 0) {
+        /* One unit test can often be used in debugger, and any added value
+         * from exec. is negligible. */
+        if(test_count__ < 1)
+            test_no_exec__ = 1;
+
+#ifdef ACUTEST_WIN__
+        if(IsDebuggerPresent())
+            test_no_exec__ = 1;
+#endif
+    }
 
     /* Run the tests */
     if(test_count__ == 0) {
