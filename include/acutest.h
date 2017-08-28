@@ -126,6 +126,12 @@
     #include <signal.h>
 #endif
 
+#if defined(__gnu_linux__)
+    #define ACUTEST_LINUX__     1
+    #include <fcntl.h>
+    #include <sys/stat.h>
+#endif
+
 #if defined(_WIN32) || defined(__WIN32__) || defined(__WINDOWS__)
     #define ACUTEST_WIN__       1
     #include <windows.h>
@@ -164,7 +170,7 @@ static int test_list_size__ = 0;
 static const struct test__** tests__ = NULL;
 static char* test_flags__ = NULL;
 static int test_count__ = 0;
-static int test_no_exec__ = 0;
+static int test_no_exec__ = -1;
 static int test_no_summary__ = 0;
 static int test_skip_mode__ = 0;
 
@@ -621,6 +627,45 @@ test_help__(void)
     }
 }
 
+#ifdef ACUTEST_LINUX__
+static int
+test_is_tracer_present__(void)
+{
+    char buf[256+32+1];
+    int tracer_present = 0;
+    int fd;
+    ssize_t n_read;
+
+    fd = open("/proc/self/status", O_RDONLY);
+    if(fd == -1)
+        return 0;
+
+    n_read = read(fd, buf, sizeof(buf)-1);
+    while(n_read > 0) {
+        static const char pattern[] = "TracerPid:";
+        const char* field;
+
+        buf[n_read] = '\0';
+        field = strstr(buf, pattern);
+        if(field != NULL) {
+            pid_t tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
+            tracer_present = (tracer_pid != 0);
+            break;
+        }
+
+        if(n_read == sizeof(buf)-1) {
+            memmove(buf, buf + sizeof(buf)-1 - 32, 32);
+            n_read = read(fd, buf+32, sizeof(buf)-1-32);
+            if(n_read > 0)
+                n_read += 32;
+        }
+    }
+
+    close(fd);
+    return tracer_present;
+}
+#endif
+
 int
 main(int argc, char** argv)
 {
@@ -641,8 +686,6 @@ main(int argc, char** argv)
     test_list_size__ = 0;
     for(i = 0; test_list__[i].func != NULL; i++)
         test_list_size__++;
-
-    test_no_exec__ = -1;
 
     tests__ = (const struct test__**) malloc(sizeof(const struct test__*) * test_list_size__);
     test_flags__ = (char*) malloc(sizeof(char) * test_list_size__);
@@ -708,13 +751,17 @@ main(int argc, char** argv)
 
     /* Guess whether we want to run unit tests as child processes. */
     if(test_no_exec__ < 0) {
-        /* One unit test can often be used in debugger, and any added value
-         * from exec. is negligible. */
+        test_no_exec__ = 0;
+
         if(test_count__ < 1)
             test_no_exec__ = 1;
 
 #ifdef ACUTEST_WIN__
         if(IsDebuggerPresent())
+            test_no_exec__ = 1;
+#endif
+#ifdef ACUTEST_LINUX__
+        if(test_is_tracer_present__())
             test_no_exec__ = 1;
 #endif
     }
