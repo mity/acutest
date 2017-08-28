@@ -369,6 +369,31 @@ test_remember__(int i)
 }
 
 static int
+test_name_contains_word__(const char* name, const char* pattern)
+{
+    static const char word_delim[] = " \t-_.";
+    const char* substr;
+    size_t pattern_len;
+    int starts_on_word_boundary;
+    int ends_on_word_boundary;
+
+    pattern_len = strlen(pattern);
+
+    substr = strstr(name, pattern);
+    while(substr != NULL) {
+        starts_on_word_boundary = (substr == name || strchr(word_delim, substr[-1]) != NULL);
+        ends_on_word_boundary = (substr[pattern_len] == '\0' || strchr(word_delim, substr[pattern_len]) != NULL);
+
+        if(starts_on_word_boundary && ends_on_word_boundary)
+            return 1;
+
+        substr = strstr(substr+1, pattern);
+    }
+
+    return 0;
+}
+
+static int
 test_lookup__(const char* pattern)
 {
     int i;
@@ -378,9 +403,22 @@ test_lookup__(const char* pattern)
     for(i = 0; i < test_list_size__; i++) {
         if(strcmp(test_list__[i].name, pattern) == 0) {
             test_remember__(i);
-            return 1;
+            n++;
+            break;
         }
     }
+    if(n > 0)
+        return n;
+
+    /* Try word match. */
+    for(i = 0; i < test_list_size__; i++) {
+        if(test_name_contains_word__(test_list__[i].name, pattern)) {
+            test_remember__(i);
+            n++;
+        }
+    }
+    if(n > 0)
+        return n;
 
     /* Try relaxed match. */
     for(i = 0; i < test_list_size__; i++) {
