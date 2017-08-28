@@ -699,6 +699,13 @@ main(int argc, char** argv)
     SetUnhandledExceptionFilter(test_exception_filter__);
 #endif
 
+    /* By default, we want to run all tests. */
+    if(test_count__ == 0) {
+        for(i = 0; test_list__[i].func != NULL; i++)
+            tests__[i] = &test_list__[i];
+        test_count__ = test_list_size__;
+    }
+
     /* Guess whether we want to run unit tests as child processes. */
     if(test_no_exec__ < 0) {
         /* One unit test can often be used in debugger, and any added value
@@ -713,11 +720,7 @@ main(int argc, char** argv)
     }
 
     /* Run the tests */
-    if(test_count__ == 0) {
-        /* Run all tests. */
-        for(i = 0; test_list__[i].func != NULL; i++)
-            test_run__(&test_list__[i]);
-    } else if(!test_skip_mode__) {
+    if(!test_skip_mode__) {
         /* Run the listed tests. */
         for(i = 0; i < test_count__; i++)
             test_run__(tests__[i]);
