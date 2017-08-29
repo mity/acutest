@@ -819,23 +819,27 @@ main(int argc, char** argv)
 
     /* Write a summary */
     if(!test_no_summary__ && test_verbose_level__ >= 1) {
-        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "\nSummary:\n");
-
         if(test_verbose_level__ >= 3) {
+            test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Summary:\n");
+
             printf("  Count of all unit tests:     %4d\n", test_list_size__);
             printf("  Count of run unit tests:     %4d\n", test_stat_run_units__);
             printf("  Count of failed unit tests:  %4d\n", test_stat_failed_units__);
             printf("  Count of skipped unit tests: %4d\n", test_list_size__ - test_stat_run_units__);
+            printf("  ");
         }
 
         if(test_stat_failed_units__ == 0) {
-            test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__,
-                    "  SUCCESS: All unit tests have passed.\n");
+            test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "SUCCESS:");
+            printf(" All unit tests have passed.\n");
         } else {
-            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__,
-                    "  FAILED: %d of %d unit tests have failed.\n",
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED:");
+            printf(" %d of %d unit tests have failed.\n",
                     test_stat_failed_units__, test_stat_run_units__);
         }
+
+        if(test_verbose_level__ >= 3)
+            printf("\n");
     }
 
     free((void*) tests__);
