@@ -715,7 +715,11 @@ main(int argc, char** argv)
 #if defined ACUTEST_UNIX__
     test_colorize__ = isatty(STDOUT_FILENO);
 #elif defined ACUTEST_WIN__
+ #if defined __BORLANDC__
+    test_colorize__ = isatty(_fileno(stdout));
+ #else
     test_colorize__ = _isatty(_fileno(stdout));
+ #endif
 #else
     test_colorize__ = 0;
 #endif
