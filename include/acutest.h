@@ -282,7 +282,7 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         printf("  ");
 
         if(file != NULL) {
-            if(verbose_level < 3) {
+            if(test_verbose_level__ < 3) {
 #ifdef ACUTEST_WIN__
                 const char* lastsep1 = strrchr(file, '\\');
                 const char* lastsep2 = strrchr(file, '/');
