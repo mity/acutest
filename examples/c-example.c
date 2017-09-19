@@ -49,5 +49,5 @@ TEST_LIST = {
     { "tutorial", test_tutorial },
     { "fail",     test_fail },
     { "crash",    test_crash },
-    { 0 }
+    { NULL, NULL }
 };

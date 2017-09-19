@@ -37,5 +37,5 @@ void test_strange_exception(void)
 TEST_LIST = {
     { "std-exception",     test_std_exception },
     { "strange-exception", test_strange_exception },
-    { 0 }
+    { NULL, NULL }
 };

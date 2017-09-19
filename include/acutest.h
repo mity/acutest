@@ -166,10 +166,10 @@ void test_message__(const char* fmt, ...);
 #ifndef TEST_NO_MAIN
 
 static char* test_argv0__ = NULL;
-static int test_list_size__ = 0;
+static size_t test_list_size__ = 0;
 static const struct test__** tests__ = NULL;
 static char* test_flags__ = NULL;
-static int test_count__ = 0;
+static size_t test_count__ = 0;
 static int test_no_exec__ = -1;
 static int test_no_summary__ = 0;
 static int test_skip_mode__ = 0;
@@ -190,12 +190,12 @@ static int test_colorize__ = 0;
 #define TEST_COLOR_GREEN_INTENSIVE__    4
 #define TEST_COLOR_RED_INTENSIVE__      5
 
-static size_t
+static int
 test_print_in_color__(int color, const char* fmt, ...)
 {
     va_list args;
     char buffer[256];
-    size_t n;
+    int n;
 
     va_start(args, fmt);
     vsnprintf(buffer, sizeof(buffer), fmt, args);
@@ -276,7 +276,6 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
     }
 
     if(test_verbose_level__ >= verbose_level) {
-        size_t n = 0;
         va_list args;
 
         printf("  ");
@@ -297,11 +296,11 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
                     file = lastsep+1;
 #endif
             }
-            n += printf("%s:%d: Check ", file, line);
+            printf("%s:%d: Check ", file, line);
         }
 
         va_start(args, fmt);
-        n += vprintf(fmt, args);
+        vprintf(fmt, args);
         va_end(args);
 
         printf("... ");
@@ -400,7 +399,7 @@ test_lookup__(const char* pattern)
     int n = 0;
 
     /* Try exact match. */
-    for(i = 0; i < test_list_size__; i++) {
+    for(i = 0; i < (int) test_list_size__; i++) {
         if(strcmp(test_list__[i].name, pattern) == 0) {
             test_remember__(i);
             n++;
@@ -411,7 +410,7 @@ test_lookup__(const char* pattern)
         return n;
 
     /* Try word match. */
-    for(i = 0; i < test_list_size__; i++) {
+    for(i = 0; i < (int) test_list_size__; i++) {
         if(test_name_contains_word__(test_list__[i].name, pattern)) {
             test_remember__(i);
             n++;
@@ -421,7 +420,7 @@ test_lookup__(const char* pattern)
         return n;
 
     /* Try relaxed match. */
-    for(i = 0; i < test_list_size__; i++) {
+    for(i = 0; i < (int) test_list_size__; i++) {
         if(strstr(test_list__[i].name, pattern) != NULL) {
             test_remember__(i);
             n++;
@@ -443,13 +442,13 @@ test_do_run__(const struct test__* test)
         test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
         test_current_already_logged__++;
     } else if(test_verbose_level__ >= 1) {
-        size_t n;
+        int n;
         char spaces[48];
 
         n = test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
         memset(spaces, ' ', sizeof(spaces));
-        if(n < sizeof(spaces))
-            printf("%.*s", (int) (sizeof(spaces) - n), spaces);
+        if(n < (int) sizeof(spaces))
+            printf("%.*s", (int) sizeof(spaces) - n, spaces);
     } else {
         test_current_already_logged__ = 1;
     }
@@ -578,7 +577,7 @@ test_run__(const struct test__* test)
 #elif defined(ACUTEST_WIN__)
 
         char buffer[512] = {0};
-        STARTUPINFOA startupInfo = {0};
+        STARTUPINFOA startupInfo;
         PROCESS_INFORMATION processInfo;
         DWORD exitCode;
 
@@ -588,6 +587,7 @@ test_run__(const struct test__* test)
                  "%s --no-exec --no-summary --verbose=%d --color=%s -- \"%s\"",
                  test_argv0__, test_verbose_level__,
                  test_colorize__ ? "always" : "never", test->name);
+        memset(&startupInfo, 0, sizeof(startupInfo));
         startupInfo.cb = sizeof(STARTUPINFO);
         if(CreateProcessA(NULL, buffer, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
             WaitForSingleObject(processInfo.hProcess, INFINITE);
@@ -811,7 +811,7 @@ main(int argc, char** argv)
     /* Run the tests */
     if(!test_skip_mode__) {
         /* Run the listed tests. */
-        for(i = 0; i < test_count__; i++)
+        for(i = 0; i < (int) test_count__; i++)
             test_run__(tests__[i]);
     } else {
         /* Run all tests except those listed. */
@@ -826,10 +826,10 @@ main(int argc, char** argv)
         if(test_verbose_level__ >= 3) {
             test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Summary:\n");
 
-            printf("  Count of all unit tests:     %4d\n", test_list_size__);
+            printf("  Count of all unit tests:     %4d\n", (int) test_list_size__);
             printf("  Count of run unit tests:     %4d\n", test_stat_run_units__);
             printf("  Count of failed unit tests:  %4d\n", test_stat_failed_units__);
-            printf("  Count of skipped unit tests: %4d\n", test_list_size__ - test_stat_run_units__);
+            printf("  Count of skipped unit tests: %4d\n", (int) test_list_size__ - test_stat_run_units__);
             printf("  ");
         }
 
