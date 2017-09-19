@@ -19,10 +19,11 @@ env:
     - CFLAGS="-std=c11 -pedantic" CONFIG=Release
     - CXXFLAGS="-std=c++11 -pedantic" CONFIG=Debug      # C++11
     - CXXFLAGS="-std=c++11 -pedantic" CONFIG=Release
-    - CXXFLAGS="-std=c++14 -pedantic" CONFIG=Debug      # C++14
-    - CXXFLAGS="-std=c++14 -pedantic" CONFIG=Release
-    - CXXFLAGS="-std=c++17 -pedantic" CONFIG=Debug      # C++17
-    - CXXFLAGS="-std=c++17 -pedantic" CONFIG=Release
+    # Too old compilers on travis-ci.org for these:
+    #- CXXFLAGS="-std=c++14 -pedantic" CONFIG=Debug      # C++14
+    #- CXXFLAGS="-std=c++14 -pedantic" CONFIG=Release
+    #- CXXFLAGS="-std=c++17 -pedantic" CONFIG=Debug      # C++17
+    #- CXXFLAGS="-std=c++17 -pedantic" CONFIG=Release
 
 before_script:
     - mkdir build

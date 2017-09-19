@@ -1,3 +1,7 @@
+[![Build status (travis-ci.com)](https://img.shields.io/travis/mity/acutest/master.svg?label=linux%20build)](https://travis-ci.org/mity/acutest)
+[![Build status (appveyor.com)](https://img.shields.io/appveyor/ci/mity/acutest/master.svg?label=windows%20build)](https://ci.appveyor.com/project/mity/acutest/branch/master)
+
+
 # Acutest Readme
 
 Home: http://github.com/mity/acutest
