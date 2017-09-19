@@ -1,4 +1,4 @@
-# ACUTest Readme
+# Acutest Readme
 
 Home: http://github.com/mity/acutest
 
@@ -12,7 +12,7 @@ way and minimize any external dependencies.
 To achieve that, the complete implementation resides in a single C header file,
 and its core depends only on few standard C library functions.
 
-ACUTest supports C as well as C++, and it can deal with unit tests which throw
+Acutest supports C as well as C++, and it can deal with unit tests which throw
 C++ exceptions.
 
 
@@ -20,7 +20,7 @@ C++ exceptions.
 
 **Main features:**
 * Unit tests in C or C++ are supported.
-* No need to install/setup/configure testing framework. ACUTest is just single
+* No need to install/setup/configure testing framework. Acutest is just single
   C/C++ header, `"acutest.h"`.
 * The header provides program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
@@ -31,14 +31,14 @@ C++ exceptions.
 **Windows specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
-* ACUTest installs a SEH filter to print out uncaught SEH exceptions.
+* Acutest installs a SEH filter to print out uncaught SEH exceptions.
 
 **Unix specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
 
 **C++ specific features:**
-* ACUTest catches C++ exceptions thrown from unit test functions. Such unit
+* Acutest catches C++ exceptions thrown from unit test functions. Such unit
   tests are considered to fail.
 * If the exception is derived from `std::exception`, `what()` is written out
   in the error message.
@@ -71,7 +71,7 @@ or other number if an internal error occurs.
 
 ## Writing Unit Tests
 
-To use ACUTest, simply include the header file `"acutest.h"` on the beginning
+To use Acutest, simply include the header file `"acutest.h"` on the beginning
 of the C/C++ source file implementing one or more unit tests. Note the header
 provides implementation of the `main()` function.
 
@@ -178,7 +178,7 @@ $ ./test_example --help
 
 ## License
 
-ACUTest is covered with MIT license, see the file `LICENSE.md` or beginning of
+Acutest is covered with MIT license, see the file `LICENSE.md` or beginning of
 `"acutest.h"` for its full text.
 
 
