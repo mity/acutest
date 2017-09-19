@@ -51,7 +51,7 @@
  *
  * The list specifies names of each test (must be unique) and pointer to
  * a function implementing it. The function does not take any arguments
- * and has no return values, i.e. every test function has tp be compatible
+ * and has no return values, i.e. every test function has to be compatible
  * with this prototype:
  *
  *   void test_func(void);
