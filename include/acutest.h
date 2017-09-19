@@ -1,5 +1,5 @@
 /*
- * ACUTest -- C/C++ Unit Test facility
+ * Acutest -- Another C/C++ Unit Test facility
  * <http://github.com/mity/acutest>
  *
  * Copyright (c) 2013-2017 Martin Mitas
@@ -493,7 +493,7 @@ test_do_run__(const struct test__* test)
 }
 
 #if defined(ACUTEST_UNIX__) || defined(ACUTEST_WIN__)
-/* Called if anything goes bad in ACUtest, or if the unit test ends in other
+/* Called if anything goes bad in Acutest, or if the unit test ends in other
  * way then by normal returning from its function (e.g. exception or some
  * abnormal child process termination). */
 static void

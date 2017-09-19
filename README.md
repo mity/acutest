@@ -3,9 +3,9 @@
 Home: http://github.com/mity/acutest
 
 
-## What Is ACUTest
+## What Is Acutest
 
-"ACUTest" means "Another C Unit Testing" and it is intended to do exactly that,
+"Acutest" means "Another C Unit Testing" and it is intended to do exactly that,
 while being as simple as possible to use it, not to stand in the developer's
 way and minimize any external dependencies.
 
@@ -188,5 +188,5 @@ The project resides on github:
 
 * http://github.com/mity/acutest
 
-You can find the latest version of ACUtest there, contribute with enhancements
+You can find the latest version of Acutest there, contribute with enhancements
 or report bugs.
