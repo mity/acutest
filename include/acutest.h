@@ -795,17 +795,18 @@ main(int argc, char** argv)
     if(test_no_exec__ < 0) {
         test_no_exec__ = 0;
 
-        if(test_count__ < 1)
+        if(test_count__ <= 1) {
             test_no_exec__ = 1;
-
+        } else {
 #ifdef ACUTEST_WIN__
-        if(IsDebuggerPresent())
-            test_no_exec__ = 1;
+            if(IsDebuggerPresent())
+                test_no_exec__ = 1;
 #endif
 #ifdef ACUTEST_LINUX__
-        if(test_is_tracer_present__())
-            test_no_exec__ = 1;
+            if(test_is_tracer_present__())
+                test_no_exec__ = 1;
 #endif
+        }
     }
 
     /* Run the tests */
