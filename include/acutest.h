@@ -685,7 +685,7 @@ test_is_tracer_present__(void)
 
         buf[n_read] = '\0';
         field = strstr(buf, pattern);
-        if(field != NULL) {
+        if(field != NULL  &&  field < buf + sizeof(buf) - 32) {
             pid_t tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
             tracer_present = (tracer_pid != 0);
             break;
