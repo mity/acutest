@@ -88,7 +88,7 @@
  * in the current test. Intended use is to output some computated output
  * versus the expected value, e.g. like this:
  *
- *   if(!TEST_CHECK(produced != expected) == 0)) {
+ *   if(!TEST_CHECK(produced == expected)) {
  *       TEST_MSG("Expected: %d", expected);
  *       TEST_MSG("Produced: %d", produced);
  *   }
