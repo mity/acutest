@@ -85,7 +85,7 @@
 /* printf-like macro for outputting an extra information about a failure.
  *
  * Note it does not output anything if there was not (yet) failed condition
- * in the current test. Intended use is to output some computated output
+ * in the current test. Intended use is to output some computed output
  * versus the expected value, e.g. like this:
  *
  *   if(!TEST_CHECK(produced == expected)) {
