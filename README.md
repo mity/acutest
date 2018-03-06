@@ -65,14 +65,6 @@ Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
 or other number if an internal error occurs.
 
 
-## FAQ
-
-**Q:** Wasn't this project known as "CUTest"?
-
-**A:** Yes. It has been renamed as the original name was
-[too much overloaded](https://github.com/mity/cutest/issues/6).
-
-
 ## Writing Unit Tests
 
 To use Acutest, simply include the header file `"acutest.h"` on the beginning
@@ -178,6 +170,14 @@ To see all the options, simply run the binary with the option --help.
 ```sh
 $ ./test_example --help
 ```
+
+
+## FAQ
+
+**Q:** Wasn't this project known as "CUTest"?
+
+**A:** Yes. It has been renamed as the original name was
+[too much overloaded](https://github.com/mity/cutest/issues/6).
 
 
 ## License
