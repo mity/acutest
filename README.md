@@ -183,7 +183,7 @@ $ ./test_example oo      # Runs 'foo-1', 'foo-2' and 'foomatic' (relaxed match)
 $ ./test_example 1       # Runs 'foo-1' and 'bar-1' (word match)
 ```
 
-You may used `--list` or `-l` to just list all unit tests implemented by the
+You may use `--list` or `-l` to just list all unit tests implemented by the
 given test suite:
 
 ```sh
