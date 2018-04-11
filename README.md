@@ -65,14 +65,6 @@ Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
 or other number if an internal error occurs.
 
 
-## FAQ
-
-**Q:** Wasn't this project known as "CUTest"?
-
-**A:** Yes. It has been renamed as the original name was
-[too much overloaded](https://github.com/mity/cutest/issues/6).
-
-
 ## Writing Unit Tests
 
 To use Acutest, simply include the header file `"acutest.h"` on the beginning
@@ -153,31 +145,65 @@ More comprehensive description of API can be found in comments in the header
 
 ## Running Unit Tests
 
-When the C file with the tests is compiled, the resulted testing binary can be
-used to run the tests.
+When the source file implementing the tests is compiled, the resulted testing
+binary can be used to run the tests.
 
 By default (without any command line options), it runs all implemented unit
 tests. It can also run only subset of the unit tests as specified on the
 command line:
 
 ```sh
-$ ./test_example                # Run all tests in the suite
-$ ./test_example test1 test2    # Run only tests "test1" and "test2"
-$ ./test_example --skip test3   # Run all tests with the exception of "test3"
+$ ./test_example                # Runs all tests in the suite
+$ ./test_example test1 test2    # Runs only tests specified
+$ ./test_example --skip test3   # Runs all tests but those specified
 ```
 
-If the command line argument does not match any test name, a relaxed test
-lookup is used. In this mode, any test name containg a substring matching
-the argument, will be run (or skipped if used together with `--skip`).
+Acutest implements several levels of unit test selection. Note the first rule 
+which successfully finds non-empty set of unit tests applies:
 
-By adopting a reasonable test naming strategy, this can be used for running
-(or skipping) whole groups of related tests with single command line argument.
+1. Exact match: Applies when the command line argument matches exactly name
+   of any unit test.
 
-To see all the options, simply run the binary with the option --help.
+2. Word match: Applies when the command line argument matches whole word
+   of any unit test. (Space ` `, tabulator `\t`, dash `-` and underscore `_`
+   are understood as word delimiters in test names.)
+
+3. Relaxed match: Applies when the command line argument matches any substring
+   in name of unit test.
+
+By adopting an appropriate test naming strategy, this allows user to run (or
+to skip if `--skip` is used) whole groups of related tests with a single
+command line argument. For example consider test suite `test_example` which
+implements tests `foo-1`, `foo-2`, `foomatic`, `bar-1` and `bar-10`:
+
+```sh
+$ ./test_example bar-1   # Runs only the test 'bar-1' (exact match)
+$ ./test_example foo     # Runs 'foo-1' and 'foo-2' (word match)
+$ ./test_example oo      # Runs 'foo-1', 'foo-2' and 'foomatic' (relaxed match)
+$ ./test_example 1       # Runs 'foo-1' and 'bar-1' (word match)
+```
+
+You may use `--list` or `-l` to just list all unit tests implemented by the
+given test suite:
+
+```sh
+$ ./test_example --list
+```
+
+To see all the supported command line options, run the binary with the option
+`--help`:
 
 ```sh
 $ ./test_example --help
 ```
+
+
+## FAQ
+
+**Q:** Wasn't this project known as "CUTest"?
+
+**A:** Yes. It has been renamed as the original name was
+[too much overloaded](https://github.com/mity/cutest/issues/6).
 
 
 ## License
