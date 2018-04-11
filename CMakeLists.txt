@@ -17,7 +17,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 elseif(MSVC)
     # Specify proper C runtime library:
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MTd")
