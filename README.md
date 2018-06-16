@@ -158,7 +158,7 @@ $ ./test_example test1 test2    # Runs only tests specified
 $ ./test_example --skip test3   # Runs all tests but those specified
 ```
 
-Acutest implements several levels of unit test selection. Note the first rule 
+Acutest implements several levels of unit test selection. Note the first rule
 which successfully finds non-empty set of unit tests applies:
 
 1. Exact match: Applies when the command line argument matches exactly name
