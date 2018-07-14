@@ -81,6 +81,33 @@
 #define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
+#define TEST_CPU_MEASURE_CHECK_(x, n, ...) ({ \
+    clock_t measurements[(n)] = {0}; \
+    int count = 0; \
+    unsigned int check = 0; \
+    for (int i = 0; i < (n) && ++count; i++) { \
+        clock_t t1 = clock(); \
+        check = test_check__((x), __FILE__, __LINE__, __VA_ARGS__);\
+        clock_t t2 = clock(); \
+        measurements[i] = t2 - t1; \
+        if (!check)     break; \
+    } \
+    putchar('\n'); \
+    printSD(measurements, (n)); \
+}) \
+
+#define TEST_CPU_MEASURE(x, n) ({ \
+    clock_t measurements[(n)] = {0}; \
+    for (int i = 0; i < (n); i++) { \
+        clock_t t1 = clock(); \
+        #x; \
+        clock_t t2 = clock(); \
+        measurements[i] = t2 - t1; \
+    } \
+    putchar('\n'); \
+    printSD(measurements, (n)); \
+}) \
+
 
 /* printf-like macro for outputting an extra information about a failure.
  *
@@ -116,6 +143,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <math.h>
+#include <time.h>
+
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define ACUTEST_UNIX__      1
@@ -156,6 +187,11 @@ struct test__ {
     const char* name;
     void (*func)(void);
 };
+
+typedef struct {
+    float mean;
+    float deviation;
+} measure__;
 
 extern const struct test__ test_list__[];
 
@@ -703,6 +739,27 @@ test_is_tracer_present__(void)
     return tracer_present;
 }
 #endif
+
+measure__ printSD(clock_t data[], unsigned int size)
+{
+    measure__ result = {0};
+    float sum, sd;
+    sum = sd = 0.0;
+
+    for (int i = 0; i < size; i++) {
+        printf("(%d -> %f) ", i+1, (double)data[i] / CLOCKS_PER_SEC);
+        sum += data[i];
+    }
+
+    result.mean = sum / (size * CLOCKS_PER_SEC);
+    for (int i = 0; i < size; i++) {
+        sd += pow((float)data[i] / CLOCKS_PER_SEC - result.mean, 2);
+    }
+
+    result.deviation = sqrt(sd) / size;
+    printf("\nMean: %f, Standard Deviation: %f\n", result.mean, result.deviation);
+    return result;
+}
 
 int
 main(int argc, char** argv)
