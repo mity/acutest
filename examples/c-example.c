@@ -44,10 +44,21 @@ test_crash(void)
     TEST_CHECK_(1 == 1, "We likely never get here, due to the crash above.");
 }
 
+void
+test_measure(void)
+{
+    float threshold = 0.000005;
+    measure__ result = TEST_CPU_MEASURE(sin(M_PI / 2), 5);
+    TEST_CHECK_(!(result.deviation > threshold), "Deviation Exceeds %f threshold", threshold);
+
+    result = TEST_CPU_MEASURE_CHECK_(sin(M_PI / 2) == 1.0, 5, "sin(M_PI / 2) != 1.0 as expected");
+    TEST_CHECK_(!(result.deviation > threshold), "Deviation Exceeds %f threshold", threshold);
+}
 
 TEST_LIST = {
     { "tutorial", test_tutorial },
     { "fail",     test_fail },
     { "crash",    test_crash },
+    { "measure",  test_measure },
     { NULL, NULL }
 };
