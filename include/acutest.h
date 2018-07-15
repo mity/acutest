@@ -83,20 +83,20 @@
 
 #define TEST_CPU_START(n) \
 if ((n) > 0) { \
-    clock_t measurements[(n)] = {0};  \
-    const int nn = (n); \
-    int count = 0; \
-    unsigned int check = 0; \
-    int i; \
-    for (i = 0; i < nn && ++count; i++) { \
-        clock_t t1 = clock(); \
+    clock_t measurements__[(n)] = {0};  \
+    const int nn__ = (n); \
+    int count__ = 0; \
+    unsigned int check__ = 0; \
+    int i__; \
+    for (i__ = 0; i__ < nn__ && ++count__; i__++) { \
+        clock_t t1__ = clock(); \
 
 #define TEST_CPU_END \
-        clock_t t2 = clock(); \
-        measurements[i] = t2 - t1; \
-        if (!check)     break; \
+        clock_t t2__ = clock(); \
+        measurements__[i__] = t2__ - t1__; \
+        if (!check__)     break; \
     } \
-    printSD(measurements, nn); \
+    printAvg_(measurements__, nn__); \
 }
 
 /* printf-like macro for outputting an extra information about a failure.
@@ -725,7 +725,7 @@ test_is_tracer_present__(void)
 }
 #endif
 
-void printSD(clock_t data[], unsigned int size)
+void printAvg_(clock_t data[], unsigned int size)
 {
     float sum, mean;
     unsigned int i = 0;
@@ -738,7 +738,7 @@ void printSD(clock_t data[], unsigned int size)
     mean = sum / (size * CLOCKS_PER_SEC);
 
     if (!test_current_failures__) {
-        test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "(Duration: %fsec) ", mean);
+        test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "(%s: %fsec) ", (size > 1) ? "Avg Duration" : "Duration", mean);
     }
 }
 

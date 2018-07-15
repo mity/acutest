@@ -47,8 +47,11 @@ test_crash(void)
 void
 test_measure(void)
 {
-    TEST_CPU_START(10);
-    TEST_CHECK(sin(M_PI / 2) == 1.0);
+    int i;
+    TEST_CPU_START(1);
+    for (i = 0; i < 1000000; i++) {
+        TEST_CHECK(1 == 1);
+    }
     TEST_CPU_END;
 }
 
