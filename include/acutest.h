@@ -85,7 +85,8 @@
     clock_t measurements[(n)] = {0}; \
     int count = 0; \
     unsigned int check = 0; \
-    for (int i = 0; i < (n) && ++count; i++) { \
+    int i; \
+    for (i = 0; i < (n) && ++count; i++) { \
         clock_t t1 = clock(); \
         check = test_check__((x), __FILE__, __LINE__, __VA_ARGS__);\
         clock_t t2 = clock(); \
@@ -98,7 +99,8 @@
 
 #define TEST_CPU_MEASURE(x, n) ({ \
     clock_t measurements[(n)] = {0}; \
-    for (int i = 0; i < (n); i++) { \
+    int i; \
+    for (i = 0; i < (n); i++) { \
         clock_t t1 = clock(); \
         #x; \
         clock_t t2 = clock(); \
@@ -747,7 +749,7 @@ measure__ printSD(clock_t data[], unsigned int size)
     unsigned int i = 0;
     sum = sd = 0.0;
     result.mean = result.deviation = 0.0;
-    
+
     for (i = 0; i < size; i++) {
         printf("(%d -> %f) ", i+1, (double)data[i] / CLOCKS_PER_SEC);
         sum += data[i];
