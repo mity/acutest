@@ -81,38 +81,23 @@
 #define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
-static float DEVIATION_THRESHOLD = 5.0;
-#define TEST_CPU_MEASURE_CHECK_(x, n, ...) { \
-    clock_t measurements[(n)] = {0}; \
+#define TEST_CPU_START(n) \
+if ((n) > 0) { \
+    clock_t measurements[(n)] = {0};  \
+    const int nn = (n); \
     int count = 0; \
     unsigned int check = 0; \
     int i; \
-    for (i = 0; i < (n) && ++count; i++) { \
+    for (i = 0; i < nn && ++count; i++) { \
         clock_t t1 = clock(); \
-        check = test_check__((x), __FILE__, __LINE__, __VA_ARGS__);\
+
+#define TEST_CPU_END \
         clock_t t2 = clock(); \
         measurements[i] = t2 - t1; \
         if (!check)     break; \
     } \
-    putchar('\n'); \
-    if (printSD(measurements, (n)).deviation > DEVIATION_THRESHOLD) \
-        test_check__((0), __FILE__, __LINE__, "'%s' exceeds %f deviation threshold", #x, DEVIATION_THRESHOLD); \
-} \
-
-#define TEST_CPU_MEASURE(x, n) { \
-    clock_t measurements[(n)] = {0}; \
-    int i; \
-    for (i = 0; i < (n); i++) { \
-        clock_t t1 = clock(); \
-        #x; \
-        clock_t t2 = clock(); \
-        measurements[i] = t2 - t1; \
-    } \
-    putchar('\n'); \
-    if (printSD(measurements, (n)).deviation > DEVIATION_THRESHOLD) \
-        test_check__((0), __FILE__, __LINE__, "'%s' exceeds %f deviation threshold", #x, DEVIATION_THRESHOLD); \
-} \
-
+    printSD(measurements, nn); \
+}
 
 /* printf-like macro for outputting an extra information about a failure.
  *
@@ -192,11 +177,6 @@ struct test__ {
     const char* name;
     void (*func)(void);
 };
-
-typedef struct {
-    float mean;
-    float deviation;
-} measure__;
 
 extern const struct test__ test_list__[];
 
@@ -745,27 +725,21 @@ test_is_tracer_present__(void)
 }
 #endif
 
-measure__ printSD(clock_t data[], unsigned int size)
+void printSD(clock_t data[], unsigned int size)
 {
-    measure__ result;
-    float sum, sd;
+    float sum, mean;
     unsigned int i = 0;
-    sum = sd = 0.0;
-    result.mean = result.deviation = 0.0;
+    sum = mean = 0.0;
 
     for (i = 0; i < size; i++) {
-        printf("(%d -> %f) ", i+1, (double)data[i] / CLOCKS_PER_SEC);
         sum += data[i];
     }
 
-    result.mean = sum / (size * CLOCKS_PER_SEC);
-    for (i = 0; i < size; i++) {
-        sd += pow((float)data[i] / CLOCKS_PER_SEC - result.mean, 2);
-    }
+    mean = sum / (size * CLOCKS_PER_SEC);
 
-    result.deviation = sqrt(sd) / size;
-    printf("\nMean: %f, Standard Deviation: %f\n", result.mean, result.deviation);
-    return result;
+    if (!test_current_failures__) {
+        test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "(Duration: %fsec) ", mean);
+    }
 }
 
 int

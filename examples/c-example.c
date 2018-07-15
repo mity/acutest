@@ -47,8 +47,9 @@ test_crash(void)
 void
 test_measure(void)
 {
-    TEST_CPU_MEASURE(sin(M_PI / 2), 5);
-    TEST_CPU_MEASURE_CHECK_(sin(M_PI / 2) == 1.0, 5, "sin(M_PI / 2) != 1.0 as expected");
+    TEST_CPU_START(10);
+    TEST_CHECK(sin(M_PI / 2) == 1.0);
+    TEST_CPU_END;
 }
 
 TEST_LIST = {
