@@ -81,7 +81,8 @@
 #define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
-#define TEST_CPU_MEASURE_CHECK_(x, n, ...) ({ \
+static float DEVIATION_THRESHOLD = 5.0;
+#define TEST_CPU_MEASURE_CHECK_(x, n, ...) { \
     clock_t measurements[(n)] = {0}; \
     int count = 0; \
     unsigned int check = 0; \
@@ -94,10 +95,11 @@
         if (!check)     break; \
     } \
     putchar('\n'); \
-    printSD(measurements, (n)); \
-}) \
+    if (printSD(measurements, (n)).deviation > DEVIATION_THRESHOLD) \
+        test_check__((0), __FILE__, __LINE__, "'%s' exceeds %f deviation threshold", #x, DEVIATION_THRESHOLD); \
+} \
 
-#define TEST_CPU_MEASURE(x, n) ({ \
+#define TEST_CPU_MEASURE(x, n) { \
     clock_t measurements[(n)] = {0}; \
     int i; \
     for (i = 0; i < (n); i++) { \
@@ -107,8 +109,9 @@
         measurements[i] = t2 - t1; \
     } \
     putchar('\n'); \
-    printSD(measurements, (n)); \
-}) \
+    if (printSD(measurements, (n)).deviation > DEVIATION_THRESHOLD) \
+        test_check__((0), __FILE__, __LINE__, "'%s' exceeds %f deviation threshold", #x, DEVIATION_THRESHOLD); \
+} \
 
 
 /* printf-like macro for outputting an extra information about a failure.

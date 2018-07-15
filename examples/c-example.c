@@ -47,12 +47,8 @@ test_crash(void)
 void
 test_measure(void)
 {
-    float threshold = 0.000005;
-    measure__ result = TEST_CPU_MEASURE(sin(M_PI / 2), 5);
-    TEST_CHECK_(!(result.deviation > threshold), "Deviation Exceeds %f threshold", threshold);
-
-    result = TEST_CPU_MEASURE_CHECK_(sin(M_PI / 2) == 1.0, 5, "sin(M_PI / 2) != 1.0 as expected");
-    TEST_CHECK_(!(result.deviation > threshold), "Deviation Exceeds %f threshold", threshold);
+    TEST_CPU_MEASURE(sin(M_PI / 2), 5);
+    TEST_CPU_MEASURE_CHECK_(sin(M_PI / 2) == 1.0, 5, "sin(M_PI / 2) != 1.0 as expected");
 }
 
 TEST_LIST = {
