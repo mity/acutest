@@ -742,17 +742,19 @@ test_is_tracer_present__(void)
 
 measure__ printSD(clock_t data[], unsigned int size)
 {
-    measure__ result = {0};
+    measure__ result;
     float sum, sd;
+    unsigned int i = 0;
     sum = sd = 0.0;
-
-    for (int i = 0; i < size; i++) {
+    result.mean = result.deviation = 0.0;
+    
+    for (i = 0; i < size; i++) {
         printf("(%d -> %f) ", i+1, (double)data[i] / CLOCKS_PER_SEC);
         sum += data[i];
     }
 
     result.mean = sum / (size * CLOCKS_PER_SEC);
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
         sd += pow((float)data[i] / CLOCKS_PER_SEC - result.mean, 2);
     }
 
