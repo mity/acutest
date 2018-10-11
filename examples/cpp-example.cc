@@ -24,13 +24,13 @@ public:
 
 void test_std_exception(void)
 {
-    throw TestException("CUTest knows how to catch me :-)");
+    throw TestException("Acutest knows how to catch me :-)");
 }
 
 
 void test_strange_exception(void)
 {
-    throw "It deals also with exception not derived from std::exception";
+    throw "Acutest can also catch exceptions not derived from std::exception.";
 }
 
 
