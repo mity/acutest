@@ -56,7 +56,7 @@
  *
  *   void test_func(void);
  */
-#define TEST_LIST              const struct test__ test_list__[]
+#define TEST_LIST               const struct test__ test_list__[]
 
 
 /* Macros for testing whether an unit test succeeds or fails. These macros
@@ -78,8 +78,29 @@
  *       TEST_CHECK(ptr->member2 > 200);
  *   }
  */
-#define TEST_CHECK_(cond,...)  test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
-#define TEST_CHECK(cond)       test_check__((cond), __FILE__, __LINE__, "%s", #cond)
+#define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
+#define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
+
+
+/* Sometimes it is useful to split execution of more complex unit tests to some
+ * smaller parts and associate that part with some name.
+ *
+ * This is especially useful if the given unit test is a loop over some
+ * testing inputs; using these macros allow to use sort of subtitle for
+ * each iteration of the loop (e.g. outputting the input or some name of it),
+ * so that if any TEST_CHECK condition fails in the loop, it can be easily
+ * seen which iteration and which triggers the failure, without the need
+ * to manually output that in every single TEST_CHECK in the loop body.
+ *
+ * TEST_CASE allows to specify only single string as the name of the case,
+ * TEST_CASE_ provides all the power of printf-like string formatting.
+ *
+ * Note that the test cases cannot be nested. Starting a new test case ends
+ * implicitly the previous one. To end the test case explicitly (e.g. to end
+ * the last test case after exiting the loop), you may use TEST_CASE(NULL).
+ */
+#define TEST_CASE_(...)         test_case__(__VA_ARGS__)
+#define TEST_CASE(name)         test_case__("%s", name);
 
 
 /* printf-like macro for outputting an extra information about a failure.
@@ -96,13 +117,14 @@
  * The macro can deal with multi-line output fairly well. It also automatically
  * adds a final new-line if there is none present.
  */
-#define TEST_MSG(...)          test_message__(__VA_ARGS__)
+#define TEST_MSG(...)           test_message__(__VA_ARGS__)
+
 
 /* Maximal output per TEST_MSG call. Longer messages are cut.
  * You may define another limit prior including "acutest.h"
  */
 #ifndef TEST_MSG_MAXSIZE
-    #define TEST_MSG_MAXSIZE   1024
+    #define TEST_MSG_MAXSIZE    1024
 #endif
 
 
@@ -160,6 +182,7 @@ struct test__ {
 extern const struct test__ test_list__[];
 
 int test_check__(int cond, const char* file, int line, const char* fmt, ...);
+void test_case__(const char* fmt, ...);
 void test_message__(const char* fmt, ...);
 
 
@@ -178,7 +201,9 @@ static int test_stat_failed_units__ = 0;
 static int test_stat_run_units__ = 0;
 
 static const struct test__* test_current_unit__ = NULL;
+static char test_case_name__[64] = "";
 static int test_current_already_logged__ = 0;
+static int test_case_current_already_logged__ = 0;
 static int test_verbose_level__ = 2;
 static int test_current_failures__ = 0;
 static int test_colorize__ = 0;
@@ -278,7 +303,13 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
     if(test_verbose_level__ >= verbose_level) {
         va_list args;
 
-        printf("  ");
+        if(!test_case_current_already_logged__  &&  test_case_name__[0]) {
+            test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "  Case %s:\n", test_case_name__);
+            test_current_already_logged__++;
+            test_case_current_already_logged__++;
+        }
+
+        printf(test_case_name__[0] ? "    " : "  ");
 
         if(file != NULL) {
             if(test_verbose_level__ < 3) {
@@ -313,6 +344,34 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
 }
 
 void
+test_case__(const char* fmt, ...)
+{
+    va_list args;
+
+    if(test_verbose_level__ < 2)
+        return;
+
+    if(test_case_name__[0]) {
+        test_case_current_already_logged__ = 0;
+        test_case_name__[0] = '\0';
+    }
+
+    if(fmt == NULL)
+        return;
+
+    va_start(args, fmt);
+    vsnprintf(test_case_name__, sizeof(test_case_name__) - 1, fmt, args);
+    va_end(args);
+    test_case_name__[sizeof(test_case_name__) - 1] = '\0';
+
+    if(test_verbose_level__ >= 3) {
+        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "  Case %s:\n", test_case_name__);
+        test_current_already_logged__++;
+        test_case_current_already_logged__++;
+    }
+}
+
+void
 test_message__(const char* fmt, ...)
 {
     char buffer[TEST_MSG_MAXSIZE];
@@ -341,8 +400,10 @@ test_message__(const char* fmt, ...)
         printf("    %.*s\n", (int)(line_end - line_beg), line_beg);
         line_beg = line_end + 1;
     }
-    if(line_beg[0] != '\0')
-        printf("    %s\n", line_beg);
+    if(line_beg[0] != '\0') {
+        printf(test_case_name__[0] ? "      " : "    ");
+        printf("%s\n", line_beg);
+    }
 }
 
 static void
@@ -487,6 +548,7 @@ test_do_run__(const struct test__* test)
         printf("   ]\n");
     }
 
+    test_case__(NULL);
     test_current_unit__ = NULL;
     return (test_current_failures__ == 0) ? 0 : -1;
 }
