@@ -925,6 +925,7 @@ static void
 test_help__(void)
 {
     printf("Usage: %s [options] [test...]\n", test_argv0__);
+    printf("\n");
     printf("Run the specified unit tests; or if the option '--skip' is used, run all\n");
     printf("tests in the suite but those listed.  By default, if no tests are specified\n");
     printf("on the command line, all unit tests in the suite are run.\n");
@@ -935,10 +936,10 @@ test_help__(void)
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -E, --no-exec         Same as --exec=never\n");
     printf("      --no-summary      Suppress printing of test results summary\n");
-    printf("      --tap             Enable TAP-compliant output\n");
+    printf("      --tap             Produce TAP-compliant output\n");
     printf("                          (See https://testanything.org/)\n");
     printf("  -l, --list            List unit tests in the suite and exit\n");
-    printf("  -v, --verbose         Enable more verbose output\n");
+    printf("  -v, --verbose         Make output more verbose\n");
     printf("      --verbose=LEVEL   Set verbose level to LEVEL:\n");
     printf("                          0 ... Be silent\n");
     printf("                          1 ... Output one line per test (and summary)\n");
@@ -946,6 +947,7 @@ test_help__(void)
     printf("                          3 ... As 1 and all conditions (and extended summary)\n");
     printf("      --color=WHEN      Enable colorized output\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
+    printf("      --no-color        Same as --color=never\n");
     printf("  -h, --help            Display this help and exit\n");
 
     if(test_list_size__ < 16) {
