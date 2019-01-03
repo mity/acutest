@@ -83,14 +83,15 @@
 
 
 /* Sometimes it is useful to split execution of more complex unit tests to some
- * smaller parts and associate that part with some name.
+ * smaller parts and associate those parts with some names.
  *
- * This is especially useful if the given unit test is a loop over some
- * testing inputs; using these macros allow to use sort of subtitle for
- * each iteration of the loop (e.g. outputting the input or some name of it),
- * so that if any TEST_CHECK condition fails in the loop, it can be easily
- * seen which iteration and which triggers the failure, without the need
- * to manually output that in every single TEST_CHECK in the loop body.
+ * This is especially handy if the given unit test is implemented as a loop
+ * over some vector of multiple testing inputs. Using these macros allow to use
+ * sort of subtitle for each iteration of the loop (e.g. outputting the input
+ * itself or a name associated to it), so that if any TEST_CHECK condition
+ * fails in the loop, it can be easily seen which iteration triggers the
+ * failure, without the need to manually output the iteration-specific data in
+ * every single TEST_CHECK inside the loop body.
  *
  * TEST_CASE allows to specify only single string as the name of the case,
  * TEST_CASE_ provides all the power of printf-like string formatting.
