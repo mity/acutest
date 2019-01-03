@@ -245,7 +245,7 @@ test_print_in_color__(int color, const char* fmt, ...)
             case TEST_COLOR_GREEN_INTENSIVE__:   col_str = "\033[1;32m"; break;
             case TEST_COLOR_RED_INTENSIVE__:     col_str = "\033[1;31m"; break;
             case TEST_COLOR_DEFAULT_INTENSIVE__: col_str = "\033[1m"; break;
-            default:                                col_str = "\033[0m"; break;
+            default:                             col_str = "\033[0m"; break;
         }
         printf("%s", col_str);
         n = printf("%s", buffer);
@@ -267,7 +267,7 @@ test_print_in_color__(int color, const char* fmt, ...)
             case TEST_COLOR_GREEN_INTENSIVE__:   attr = FOREGROUND_GREEN | FOREGROUND_INTENSITY; break;
             case TEST_COLOR_RED_INTENSIVE__:     attr = FOREGROUND_RED | FOREGROUND_INTENSITY; break;
             case TEST_COLOR_DEFAULT_INTENSIVE__: attr = FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY; break;
-            default:                                attr = 0; break;
+            default:                             attr = 0; break;
         }
         if(attr != 0)
             SetConsoleTextAttribute(h, attr);
