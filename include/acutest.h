@@ -549,56 +549,7 @@ test_lookup__(const char* pattern)
     return n;
 }
 
-/* Call directly the given test unit function. */
-static int
-test_do_run__(const struct test__* test, int index)
-{
-    test_current_unit__ = test;
-    test_current_index__ = index;
-    test_current_failures__ = 0;
-    test_current_already_logged__ = 0;
 
-    test_begin_test_line__(test);
-
-#ifdef __cplusplus
-    try {
-#endif
-
-        /* This is good to do for case the test unit e.g. crashes. */
-        fflush(stdout);
-        fflush(stderr);
-
-        test->func();
-
-#ifdef __cplusplus
-    } catch(std::exception& e) {
-        const char* what = e.what();
-        if(what != NULL)
-            test_check__(0, NULL, 0, "Threw std::exception: %s", what);
-        else
-            test_check__(0, NULL, 0, "Threw std::exception");
-    } catch(...) {
-        test_check__(0, NULL, 0, "Threw an exception");
-    }
-#endif
-
-    if(test_verbose_level__ >= 3) {
-        test_line_indent__(1);
-        switch(test_current_failures__) {
-            case 0:  test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "  All conditions have passed.\n\n"); break;
-            case 1:  test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  One condition has FAILED.\n\n"); break;
-            default: test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  %d conditions have FAILED.\n\n", test_current_failures__); break;
-        }
-    } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
-        test_finish_test_line__(0);
-    }
-
-    test_case__(NULL);
-    test_current_unit__ = NULL;
-    return (test_current_failures__ == 0) ? 0 : -1;
-}
-
-#if defined(ACUTEST_UNIX__) || defined(ACUTEST_WIN__)
 /* Called if anything goes bad in Acutest, or if the unit test ends in other
  * way then by normal returning from its function (e.g. exception or some
  * abnormal child process termination). */
@@ -622,14 +573,74 @@ test_error__(const char* fmt, ...)
 
     if(test_verbose_level__ >= 2) {
         test_line_indent__(1);
-        test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "Error: ");
+        if(test_verbose_level__ >= 3)
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "ERROR: ");
         va_start(args, fmt);
         vprintf(fmt, args);
         va_end(args);
         printf("\n");
     }
+
+    if(test_verbose_level__ >= 3) {
+        printf("\n");
+    }
 }
+
+/* Call directly the given test unit function. */
+static int
+test_do_run__(const struct test__* test, int index)
+{
+    test_current_unit__ = test;
+    test_current_index__ = index;
+    test_current_failures__ = 0;
+    test_current_already_logged__ = 0;
+
+    test_begin_test_line__(test);
+
+#ifdef __cplusplus
+    try {
 #endif
+
+        /* This is good to do for case the test unit e.g. crashes. */
+        fflush(stdout);
+        fflush(stderr);
+
+        test->func();
+
+        if(test_verbose_level__ >= 3) {
+            test_line_indent__(1);
+            if(test_current_failures__ == 0) {
+                test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "SUCCESS: ");
+                printf("All conditions have passed.\n\n");
+            } else {
+                test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED: ");
+                printf("%d condition%s %s failed.\n\n",
+                        test_current_failures__,
+                        (test_current_failures__ == 1) ? "" : "s",
+                        (test_current_failures__ == 1) ? "has" : "have");
+            }
+        } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
+            test_finish_test_line__(0);
+        }
+
+        test_case__(NULL);
+        test_current_unit__ = NULL;
+        return (test_current_failures__ == 0) ? 0 : -1;
+
+#ifdef __cplusplus
+    } catch(std::exception& e) {
+        const char* what = e.what();
+        if(what != NULL)
+            test_error__("Threw std::exception: %s", what);
+        else
+            test_error__("Threw std::exception");
+        return -1;
+    } catch(...) {
+        test_error__("Threw an exception");
+        return -1;
+    }
+#endif
+}
 
 /* Trigger the unit test. If possible (and not suppressed) it starts a child
  * process who calls test_do_run__(), otherwise it calls test_do_run__()
@@ -1201,8 +1212,9 @@ main(int argc, char** argv)
             printf(" All unit tests have passed.\n");
         } else {
             test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED:");
-            printf(" %d of %d unit tests have failed.\n",
-                    test_stat_failed_units__, test_stat_run_units__);
+            printf(" %d of %d unit tests %s failed.\n",
+                    test_stat_failed_units__, test_stat_run_units__,
+                    (test_stat_failed_units__ == 1) ? "has" : "have");
         }
 
         if(test_verbose_level__ >= 3)
