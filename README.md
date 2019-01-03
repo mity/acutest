@@ -31,6 +31,7 @@ C++ exceptions.
   optional features may use more if available on the particular system.
 * Trivial interface for writing unit tests: Few preprocessor macros described
   further below.
+* Support for [TAP (Test Anything Protocol)](https://testanything.org/).
 
 **Windows specific features:**
 * By default, every unit test is executed as a child process.
