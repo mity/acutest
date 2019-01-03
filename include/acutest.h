@@ -195,7 +195,7 @@ static char* test_flags__ = NULL;
 static size_t test_count__ = 0;
 static int test_no_exec__ = -1;
 static int test_no_summary__ = 0;
-static int test_compy_with_tap__ = 0;
+static int test_tap__ = 0;
 static int test_skip_mode__ = 0;
 static int test_worker__ = 0;
 static int test_worker_index__ = 0;
@@ -283,7 +283,7 @@ test_print_in_color__(int color, const char* fmt, ...)
 static void
 test_begin_test_line__(const struct test__* test)
 {
-    if(!test_compy_with_tap__) {
+    if(!test_tap__) {
         if(test_verbose_level__ >= 3) {
             test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
             test_current_already_logged__++;
@@ -304,7 +304,7 @@ test_begin_test_line__(const struct test__* test)
 static void
 test_finish_test_line__(int result)
 {
-    if(test_compy_with_tap__) {
+    if(test_tap__) {
         const char* str = (result == 0) ? "ok" : "not ok";
         printf("%s %u - %s\n", str, test_current_index__ + 1, test_current_unit__->name);
     } else {
@@ -322,7 +322,7 @@ test_line_indent__(int level)
     static const char spaces[] = "                ";
     int n = level * 2;
 
-    if(test_compy_with_tap__  &&  n > 0) {
+    if(test_tap__  &&  n > 0) {
         n--;
         printf("#");
     }
@@ -611,7 +611,7 @@ test_error__(const char* fmt, ...)
         return;
 
     if(test_verbose_level__ <= 2  &&  !test_current_already_logged__  &&  test_current_unit__ != NULL) {
-        if(test_compy_with_tap__) {
+        if(test_tap__) {
             test_finish_test_line__(-1);
         } else {
             printf("[ ");
@@ -697,7 +697,7 @@ test_run__(const struct test__* test, int index)
          * through a command line arguments. */
         _snprintf(buffer, sizeof(buffer)-1,
                  "%s --worker=%d --no-exec --no-summary %s --verbose=%d --color=%s -- \"%s\"",
-                 test_argv0__, index, test_compy_with_tap__ ? "--tap" : "",
+                 test_argv0__, index, test_tap__ ? "--tap" : "",
                  test_verbose_level__, test_colorize__ ? "always" : "never",
                  test->name);
         memset(&startupInfo, 0, sizeof(startupInfo));
@@ -984,7 +984,7 @@ test_cmdline_callback__(int id, const char* arg)
             break;
 
         case 't':
-            test_compy_with_tap__ = 1;
+            test_tap__ = 1;
             break;
 
         case 'l':
@@ -1152,7 +1152,7 @@ main(int argc, char** argv)
         }
     }
 
-    if(test_compy_with_tap__) {
+    if(test_tap__) {
         /* TAP requires we know test result ("ok", "not ok") before we output
          * anything about the test, and this gets problematic for larger verbose
          * levels. */
