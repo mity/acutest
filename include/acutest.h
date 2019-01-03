@@ -649,6 +649,10 @@ test_run__(const struct test__* test, int index)
         pid_t pid;
         int exit_code;
 
+        /* Make sure the child starts with empty I/O buffers. */
+        fflush(stdout);
+        fflush(stderr);
+
         pid = fork();
         if(pid == (pid_t)-1) {
             test_error__("Cannot fork. %s [%d]", strerror(errno), errno);
