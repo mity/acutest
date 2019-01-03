@@ -195,12 +195,16 @@ static char* test_flags__ = NULL;
 static size_t test_count__ = 0;
 static int test_no_exec__ = -1;
 static int test_no_summary__ = 0;
+static int test_tap__ = 0;
 static int test_skip_mode__ = 0;
+static int test_worker__ = 0;
+static int test_worker_index__ = 0;
 
 static int test_stat_failed_units__ = 0;
 static int test_stat_run_units__ = 0;
 
 static const struct test__* test_current_unit__ = NULL;
+static int test_current_index__ = 0;
 static char test_case_name__[64] = "";
 static int test_current_already_logged__ = 0;
 static int test_case_current_already_logged__ = 0;
@@ -276,6 +280,60 @@ test_print_in_color__(int color, const char* fmt, ...)
 #endif
 }
 
+static void
+test_begin_test_line__(const struct test__* test)
+{
+    if(!test_tap__) {
+        if(test_verbose_level__ >= 3) {
+            test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
+            test_current_already_logged__++;
+        } else if(test_verbose_level__ >= 1) {
+            int n;
+            char spaces[48];
+
+            n = test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
+            memset(spaces, ' ', sizeof(spaces));
+            if(n < (int) sizeof(spaces))
+                printf("%.*s", (int) sizeof(spaces) - n, spaces);
+        } else {
+            test_current_already_logged__ = 1;
+        }
+    }
+}
+
+static void
+test_finish_test_line__(int result)
+{
+    if(test_tap__) {
+        const char* str = (result == 0) ? "ok" : "not ok";
+        printf("%s %u - %s\n", str, test_current_index__ + 1, test_current_unit__->name);
+    } else {
+        int color = (result == 0) ? TEST_COLOR_GREEN_INTENSIVE__ : TEST_COLOR_RED_INTENSIVE__;
+        const char* str = (result == 0) ? "OK" : "FAILED";
+        printf("[ ");
+        test_print_in_color__(color, str);
+        printf(" ]\n");
+    }
+}
+
+static void
+test_line_indent__(int level)
+{
+    static const char spaces[] = "                ";
+    int n = level * 2;
+
+    if(test_tap__  &&  n > 0) {
+        n--;
+        printf("#");
+    }
+
+    while(n > 16) {
+        printf("%s", spaces);
+        n -= 16;
+    }
+    printf("%.*s", n, spaces);
+}
+
 int
 test_check__(int cond, const char* file, int line, const char* fmt, ...)
 {
@@ -288,11 +346,9 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         result_color = TEST_COLOR_GREEN__;
         verbose_level = 3;
     } else {
-        if(!test_current_already_logged__  &&  test_current_unit__ != NULL) {
-            printf("[ ");
-            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED");
-            printf(" ]\n");
-        }
+        if(!test_current_already_logged__  &&  test_current_unit__ != NULL)
+            test_finish_test_line__(-1);
+
         result_str = "failed";
         result_color = TEST_COLOR_RED__;
         verbose_level = 2;
@@ -304,13 +360,13 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         va_list args;
 
         if(!test_case_current_already_logged__  &&  test_case_name__[0]) {
-            test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "  Case %s:\n", test_case_name__);
+            test_line_indent__(1);
+            test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Case %s:\n", test_case_name__);
             test_current_already_logged__++;
             test_case_current_already_logged__++;
         }
 
-        printf(test_case_name__[0] ? "    " : "  ");
-
+        test_line_indent__(test_case_name__[0] ? 2 : 1);
         if(file != NULL) {
             if(test_verbose_level__ < 3) {
 #ifdef ACUTEST_WIN__
@@ -365,7 +421,8 @@ test_case__(const char* fmt, ...)
     test_case_name__[sizeof(test_case_name__) - 1] = '\0';
 
     if(test_verbose_level__ >= 3) {
-        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "  Case %s:\n", test_case_name__);
+        test_line_indent__(1);
+        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Case %s:\n", test_case_name__);
         test_current_already_logged__++;
         test_case_current_already_logged__++;
     }
@@ -397,11 +454,12 @@ test_message__(const char* fmt, ...)
         line_end = strchr(line_beg, '\n');
         if(line_end == NULL)
             break;
-        printf("    %.*s\n", (int)(line_end - line_beg), line_beg);
+        test_line_indent__(test_case_name__[0] ? 3 : 2);
+        printf("%.*s\n", (int)(line_end - line_beg), line_beg);
         line_beg = line_end + 1;
     }
     if(line_beg[0] != '\0') {
-        printf(test_case_name__[0] ? "      " : "    ");
+        test_line_indent__(test_case_name__[0] ? 3 : 2);
         printf("%s\n", line_beg);
     }
 }
@@ -493,26 +551,14 @@ test_lookup__(const char* pattern)
 
 /* Call directly the given test unit function. */
 static int
-test_do_run__(const struct test__* test)
+test_do_run__(const struct test__* test, int index)
 {
     test_current_unit__ = test;
+    test_current_index__ = index;
     test_current_failures__ = 0;
     test_current_already_logged__ = 0;
 
-    if(test_verbose_level__ >= 3) {
-        test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s:\n", test->name);
-        test_current_already_logged__++;
-    } else if(test_verbose_level__ >= 1) {
-        int n;
-        char spaces[48];
-
-        n = test_print_in_color__(TEST_COLOR_DEFAULT_INTENSIVE__, "Test %s... ", test->name);
-        memset(spaces, ' ', sizeof(spaces));
-        if(n < (int) sizeof(spaces))
-            printf("%.*s", (int) sizeof(spaces) - n, spaces);
-    } else {
-        test_current_already_logged__ = 1;
-    }
+    test_begin_test_line__(test);
 
 #ifdef __cplusplus
     try {
@@ -537,15 +583,14 @@ test_do_run__(const struct test__* test)
 #endif
 
     if(test_verbose_level__ >= 3) {
+        test_line_indent__(1);
         switch(test_current_failures__) {
             case 0:  test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "  All conditions have passed.\n\n"); break;
             case 1:  test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  One condition has FAILED.\n\n"); break;
             default: test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  %d conditions have FAILED.\n\n", test_current_failures__); break;
         }
     } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
-        printf("[   ");
-        test_print_in_color__(TEST_COLOR_GREEN_INTENSIVE__, "OK");
-        printf("   ]\n");
+        test_finish_test_line__(0);
     }
 
     test_case__(NULL);
@@ -566,13 +611,18 @@ test_error__(const char* fmt, ...)
         return;
 
     if(test_verbose_level__ <= 2  &&  !test_current_already_logged__  &&  test_current_unit__ != NULL) {
-        printf("[ ");
-        test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED");
-        printf(" ]\n");
+        if(test_tap__) {
+            test_finish_test_line__(-1);
+        } else {
+            printf("[ ");
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED");
+            printf(" ]\n");
+        }
     }
 
     if(test_verbose_level__ >= 2) {
-        test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "  Error: ");
+        test_line_indent__(1);
+        test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "Error: ");
         va_start(args, fmt);
         vprintf(fmt, args);
         va_end(args);
@@ -585,7 +635,7 @@ test_error__(const char* fmt, ...)
  * process who calls test_do_run__(), otherwise it calls test_do_run__()
  * directly. */
 static void
-test_run__(const struct test__* test)
+test_run__(const struct test__* test, int index)
 {
     int failed = 1;
 
@@ -599,13 +649,17 @@ test_run__(const struct test__* test)
         pid_t pid;
         int exit_code;
 
+        /* Make sure the child starts with empty I/O buffers. */
+        fflush(stdout);
+        fflush(stderr);
+
         pid = fork();
         if(pid == (pid_t)-1) {
             test_error__("Cannot fork. %s [%d]", strerror(errno), errno);
             failed = 1;
         } else if(pid == 0) {
             /* Child: Do the test. */
-            failed = (test_do_run__(test) != 0);
+            failed = (test_do_run__(test, index) != 0);
             exit(failed ? 1 : 0);
         } else {
             /* Parent: Wait until child terminates and analyze its exit code. */
@@ -646,9 +700,10 @@ test_run__(const struct test__* test)
         /* Windows has no fork(). So we propagate all info into the child
          * through a command line arguments. */
         _snprintf(buffer, sizeof(buffer)-1,
-                 "%s --no-exec --no-summary --verbose=%d --color=%s -- \"%s\"",
-                 test_argv0__, test_verbose_level__,
-                 test_colorize__ ? "always" : "never", test->name);
+                 "%s --worker=%d --no-exec --no-summary %s --verbose=%d --color=%s -- \"%s\"",
+                 test_argv0__, index, test_tap__ ? "--tap" : "",
+                 test_verbose_level__, test_colorize__ ? "always" : "never",
+                 test->name);
         memset(&startupInfo, 0, sizeof(startupInfo));
         startupInfo.cb = sizeof(STARTUPINFO);
         if(CreateProcessA(NULL, buffer, NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo)) {
@@ -665,13 +720,13 @@ test_run__(const struct test__* test)
 #else
 
         /* A platform where we don't know how to run child process. */
-        failed = (test_do_run__(test) != 0);
+        failed = (test_do_run__(test, index) != 0);
 
 #endif
 
     } else {
         /* Child processes suppressed through --no-exec. */
-        failed = (test_do_run__(test) != 0);
+        failed = (test_do_run__(test, index) != 0);
     }
 
     test_current_unit__ = NULL;
@@ -868,6 +923,8 @@ test_help__(void)
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -E, --no-exec         Same as --exec=never\n");
     printf("      --no-summary      Suppress printing of test results summary\n");
+    printf("      --tap             Enable TAP-compliant output\n");
+    printf("                          (See https://testanything.org/)\n");
     printf("  -l, --list            List unit tests in the suite and exit\n");
     printf("  -v, --verbose         Enable more verbose output\n");
     printf("      --verbose=LEVEL   Set verbose level to LEVEL:\n");
@@ -890,11 +947,13 @@ static const TEST_CMDLINE_OPTION__ test_cmdline_options__[] = {
     {  0,   "exec",         'e', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     { 'E',  "no-exec",      'E', 0 },
     {  0,   "no-summary",   'S', 0 },
+    {  0,   "tap",          'T', 0 },
     { 'l',  "list",         'l', 0 },
     { 'v',  "verbose",      'v', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     {  0,   "color",        'c', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     {  0,   "no-color",     'C', 0 },
     { 'h',  "help",         'h', 0 },
+    {  0,   "worker",       'w', TEST_CMDLINE_OPTFLAG_REQUIREDARG__ },  /* internal */
     {  0,   NULL,            0,  0 }
 };
 
@@ -928,6 +987,10 @@ test_cmdline_callback__(int id, const char* arg)
             test_no_summary__ = 1;
             break;
 
+        case 'T':
+            test_tap__ = 1;
+            break;
+
         case 'l':
             test_list_names__();
             exit(0);
@@ -957,6 +1020,11 @@ test_cmdline_callback__(int id, const char* arg)
         case 'h':
             test_help__();
             exit(0);
+
+        case 'w':
+            test_worker__ = 1;
+            test_worker_index__ = atoi(arg);
+            break;
 
         case 0:
             if(test_lookup__(arg) == 0) {
@@ -1088,16 +1156,31 @@ main(int argc, char** argv)
         }
     }
 
+    if(test_tap__) {
+        /* TAP requires we know test result ("ok", "not ok") before we output
+         * anything about the test, and this gets problematic for larger verbose
+         * levels. */
+        if(test_verbose_level__ > 2)
+            test_verbose_level__ = 2;
+
+        /* TAP harness should provide some summary. */
+        test_no_summary__ = 1;
+
+        if(!test_worker__)
+            printf("1..%d\n", (int) test_count__);
+    }
+
     /* Run the tests */
     if(!test_skip_mode__) {
         /* Run the listed tests. */
         for(i = 0; i < (int) test_count__; i++)
-            test_run__(tests__[i]);
+            test_run__(tests__[i], test_worker_index__ + i);
     } else {
         /* Run all tests except those listed. */
+        int index = test_worker_index__;
         for(i = 0; test_list__[i].func != NULL; i++) {
             if(!test_flags__[i])
-                test_run__(&test_list__[i]);
+                test_run__(&test_list__[i], index++);
         }
     }
 
