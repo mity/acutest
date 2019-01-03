@@ -919,7 +919,7 @@ test_help__(void)
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -E, --no-exec         Same as --exec=never\n");
     printf("      --no-summary      Suppress printing of test results summary\n");
-    printf("  -t, --tap             Enable TAP-compliant output\n");
+    printf("      --tap             Enable TAP-compliant output\n");
     printf("                          (See https://testanything.org/)\n");
     printf("  -l, --list            List unit tests in the suite and exit\n");
     printf("  -v, --verbose         Enable more verbose output\n");
@@ -943,7 +943,7 @@ static const TEST_CMDLINE_OPTION__ test_cmdline_options__[] = {
     {  0,   "exec",         'e', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     { 'E',  "no-exec",      'E', 0 },
     {  0,   "no-summary",   'S', 0 },
-    { 't',  "tap",          't', 0 },
+    {  0,   "tap",          'T', 0 },
     { 'l',  "list",         'l', 0 },
     { 'v',  "verbose",      'v', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     {  0,   "color",        'c', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
@@ -983,7 +983,7 @@ test_cmdline_callback__(int id, const char* arg)
             test_no_summary__ = 1;
             break;
 
-        case 't':
+        case 'T':
             test_tap__ = 1;
             break;
 
