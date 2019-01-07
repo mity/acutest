@@ -932,7 +932,7 @@ test_help__(void)
     printf("\n");
     printf("Options:\n");
     printf("  -s, --skip            Execute all unit tests but the listed ones\n");
-    printf("      --exec=WHEN       If supported, execute unit tests as child processes\n");
+    printf("      --exec[=WHEN]     If supported, execute unit tests as child processes\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -E, --no-exec         Same as --exec=never\n");
     printf("      --no-summary      Suppress printing of test results summary\n");
@@ -945,7 +945,7 @@ test_help__(void)
     printf("                          1 ... Output one line per test (and summary)\n");
     printf("                          2 ... As 1 and failed conditions (this is default)\n");
     printf("                          3 ... As 1 and all conditions (and extended summary)\n");
-    printf("      --color=WHEN      Enable colorized output\n");
+    printf("      --color[=WHEN]    Enable colorized output\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("      --no-color        Same as --color=never\n");
     printf("  -h, --help            Display this help and exit\n");
