@@ -279,13 +279,18 @@ static int test_timer__ = 0;
         printf("%.6lf secs", duration);
     }
 #else
-    static void
+    static int test_timer_start__;
+    static int test_timer_end__;
+
+    void
     test_timer_init__(void)
     {}
 
     static void
-    test_timer_get_time__(LARGE_INTEGER* ts)
-    {}
+    test_timer_get_time__(int* ts)
+    {
+        (void) ts;
+    }
 
     static void
     test_timer_print_diff__(void)
