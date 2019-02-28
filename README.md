@@ -175,8 +175,8 @@ Acutest implements several levels of unit test selection:
    selected.
 
 By adopting an appropriate test naming strategy, this allows user to run (or
-to skip if `--skip` is used) whole groups of related tests with a single
-command line argument.
+to skip if `--skip` is used) whole group of related tests with a single command
+line argument.
 
 For example consider test suite `test_example` which implements tests `foo-1`,
 `foo-2`, `foomatic`, `bar-1` and `bar-10`:
@@ -184,7 +184,7 @@ For example consider test suite `test_example` which implements tests `foo-1`,
 ```sh
 $ ./test_example bar-1   # Runs only the test 'bar-1' (exact match)
 $ ./test_example foo     # Runs 'foo-1' and 'foo-2' (word match)
-$ ./test_example oo      # Runs 'foo-1', 'foo-2' and 'foomatic' (relaxed match)
+$ ./test_example oo      # Runs 'foo-1', 'foo-2' and 'foomatic' (substring match)
 $ ./test_example 1       # Runs 'foo-1' and 'bar-1' (word match)
 ```
 
@@ -195,8 +195,8 @@ given test suite:
 $ ./test_example --list
 ```
 
-To see all the supported command line options, run the binary with the option
-`--help`:
+To see description for all the supported command line options, run the binary
+with the option `--help`:
 
 ```sh
 $ ./test_example --help
