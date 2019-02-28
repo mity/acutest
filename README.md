@@ -159,23 +159,27 @@ $ ./test_example test1 test2    # Runs only tests specified
 $ ./test_example --skip test3   # Runs all tests but those specified
 ```
 
-Acutest implements several levels of unit test selection. Note the first rule
-which successfully finds non-empty set of unit tests applies:
+Actually, the command line argument can select more then just one test unit.
+Acutest implements several levels of unit test selection:
 
-1. Exact match: Applies when the command line argument matches exactly name
-   of any unit test.
+1. *Exact match*: When the argument matches exactly the whole name of some unit
+   test then just the given test is selected.
 
-2. Word match: Applies when the command line argument matches whole word
-   of any unit test. (Space ` `, tabulator `\t`, dash `-` and underscore `_`
-   are understood as word delimiters in test names.)
+2. *Word match*: When the argument does not match any complete test name, but
+   it does match whole word in one or more test names, then all such tests are
+   selected. (Note that space ` `, tabulator `\t`, dash `-` and underscore `_`
+   are seen as word delimiters in test names.)
 
-3. Relaxed match: Applies when the command line argument matches any substring
-   in name of unit test.
+3. *Substring match*: If even the word match failed to select any test, then
+   all tests with a name which contains the argument as its substring are
+   selected.
 
 By adopting an appropriate test naming strategy, this allows user to run (or
 to skip if `--skip` is used) whole groups of related tests with a single
-command line argument. For example consider test suite `test_example` which
-implements tests `foo-1`, `foo-2`, `foomatic`, `bar-1` and `bar-10`:
+command line argument.
+
+For example consider test suite `test_example` which implements tests `foo-1`,
+`foo-2`, `foomatic`, `bar-1` and `bar-10`:
 
 ```sh
 $ ./test_example bar-1   # Runs only the test 'bar-1' (exact match)
