@@ -80,6 +80,27 @@
  */
 #define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
+#ifdef __cplusplus
+#define TEST_THROW(code, exc)                                                  \
+  {                                                                            \
+    try {                                                                      \
+      code;                                                                    \
+      test_check__(false, __FILE__, __LINE__, "%s should throw %s", #code,     \
+                   #exc);                                                      \
+    } catch (...) {                                                            \
+    }                                                                          \
+  };
+#define TEST_THROW_WHAT(code, text)                                            \
+  {                                                                            \
+    try {                                                                      \
+      code;                                                                    \
+      test_check__(false, __FILE__, __LINE__, "%s should throw", #code);       \
+    } catch (exception & e) {                                                  \
+      test_check__((e.what() != text), __FILE__, __LINE__, "'%s != %s'",       \
+                   e.what(), text);                                            \
+    }                                                                          \
+  };
+#endif
 
 
 /* Sometimes it is useful to split execution of more complex unit tests to some
