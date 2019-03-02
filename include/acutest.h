@@ -82,16 +82,16 @@
 #define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
 /* Macros to verify that the code throws an exception.  The exception type
- * its passed as the second argument. TEST_CATCH_ behaves like TEST_CHECK_
+ * its passed as the second argument. TEST_CATCH_EXC_ behaves like TEST_CHECK_
  * accept additional arguments for formatting the error message.
  *
- *   TEST_CATCH(function_that_throw(), myCastomException)
+ *   TEST_CATCH_EXC(function_that_throw(), myCastomException);
  *
  * If the function_that_throw throws myCustomException, the test passes
  */
 #ifdef __cplusplus
-#define TEST_CATCH(code, exc)                                                  \
-  {                                                                            \
+#define TEST_CATCH_EXC(code, exc)                                              \
+  do {                                                                         \
     try {                                                                      \
       try {                                                                    \
         code;                                                                  \
@@ -107,9 +107,9 @@
         test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
       }                                                                        \
     }                                                                          \
-  };
-#define TEST_CATCH_(code, exc, ...)                                            \
-  {                                                                            \
+  } while (0)
+#define TEST_CATCH_EXC_(code, exc, ...)                                        \
+  do {                                                                         \
     try {                                                                      \
       try {                                                                    \
         code;                                                                  \
@@ -124,7 +124,7 @@
         test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
       }                                                                        \
     }                                                                          \
-  };
+  } while (0)
 #endif
 
 
