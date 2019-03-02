@@ -80,24 +80,49 @@
  */
 #define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
+
+/* Macros to verify that the code throws an exception.  The exception type
+ * its passed as the second argument. TEST_CATCH_ behaves like TEST_CHECK_
+ * accept additional arguments for formatting the error message.
+ *
+ *   TEST_CATCH(function_that_throw(), myCastomException)
+ *
+ * If the function_that_throw throws myCustomException, the test passes
+ */
 #ifdef __cplusplus
-#define TEST_THROW(code, exc)                                                  \
+#define TEST_CATCH(code, exc)                                                  \
   {                                                                            \
     try {                                                                      \
-      code;                                                                    \
-      test_check__(false, __FILE__, __LINE__, "%s should throw %s", #code,     \
-                   #exc);                                                      \
-    } catch (...) {                                                            \
+      try {                                                                    \
+        code;                                                                  \
+        test_check__(false, __FILE__, __LINE__, "%s should throw %s", #code,   \
+                     #exc);                                                    \
+      } catch (exc &) {                                                        \
+      }                                                                        \
+    } catch (std::exception & e) {                                             \
+      if (e.what() != "") {                                                    \
+        test_check__(false, __FILE__, __LINE__,                                \
+                     "threw unexpected exception: %s", e.what());              \
+      } else {                                                                 \
+        test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
+      }                                                                        \
     }                                                                          \
   };
-#define TEST_THROW_WHAT(code, text)                                            \
+#define TEST_CATCH_(code, exc, ...)                                            \
   {                                                                            \
     try {                                                                      \
-      code;                                                                    \
-      test_check__(false, __FILE__, __LINE__, "%s should throw", #code);       \
-    } catch (exception & e) {                                                  \
-      test_check__((e.what() != text), __FILE__, __LINE__, "'%s != %s'",       \
-                   e.what(), text);                                            \
+      try {                                                                    \
+        code;                                                                  \
+        test_check__(false, __FILE__, __LINE__, __VA_ARGS__);                  \
+      } catch (exc &) {                                                        \
+      }                                                                        \
+    } catch (std::exception & e) {                                             \
+      if (e.what() != "") {                                                    \
+        test_check__(false, __FILE__, __LINE__,                                \
+                     "threw unexpected exception: %s", e.what());              \
+      } else {                                                                 \
+        test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
+      }                                                                        \
     }                                                                          \
   };
 #endif
