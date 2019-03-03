@@ -100,7 +100,7 @@
       } catch (exc &) {                                                        \
       }                                                                        \
     } catch (std::exception & e) {                                             \
-      if (e.what() != "") {                                                    \
+      if (e.what() != NULL) {                                                  \
         test_check__(false, __FILE__, __LINE__,                                \
                      "threw unexpected exception: %s", e.what());              \
       } else {                                                                 \
@@ -117,7 +117,7 @@
       } catch (exc &) {                                                        \
       }                                                                        \
     } catch (std::exception & e) {                                             \
-      if (e.what() != "") {                                                    \
+      if (e.what() != NULL) {                                                  \
         test_check__(false, __FILE__, __LINE__,                                \
                      "threw unexpected exception: %s", e.what());              \
       } else {                                                                 \
