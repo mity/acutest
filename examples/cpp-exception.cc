@@ -1,7 +1,6 @@
 #include "acutest.h"
 
-#include <exception>
-#include <iostream>
+#include <stdexcept>
 
 class MyException : public std::invalid_argument {
 public:
