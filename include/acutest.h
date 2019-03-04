@@ -85,21 +85,21 @@
  * its passed as the second argument. TEST_CATCH_EXC_ behaves like TEST_CHECK_
  * accept additional arguments for formatting the error message.
  *
- *   TEST_CATCH_EXC(function_that_throw(), myCastomException);
+ *   TEST_CATCH_EXC(function_that_throw(), ExceptionType);
  *
- * If the function_that_throw throws myCustomException, the test passes
+ * If the function_that_throw throws ExceptionType, the test passes
  */
 #ifdef __cplusplus
-#define TEST_CATCH_EXC(code, exc)                                              \
+#define TEST_CATCH_EXC(code, exc_type)                                         \
   do {                                                                         \
     try {                                                                      \
       try {                                                                    \
         code;                                                                  \
         test_check__(false, __FILE__, __LINE__, "%s should throw %s", #code,   \
-                     #exc);                                                    \
-      } catch (exc &) {                                                        \
+                     #exc_type);                                               \
+      } catch (const exc_type &) {                                             \
       }                                                                        \
-    } catch (std::exception & e) {                                             \
+    } catch (const std::exception & e) {                                       \
       if (e.what() != NULL) {                                                  \
         test_check__(false, __FILE__, __LINE__,                                \
                      "threw unexpected exception: %s", e.what());              \
@@ -108,15 +108,15 @@
       }                                                                        \
     }                                                                          \
   } while (0)
-#define TEST_CATCH_EXC_(code, exc, ...)                                        \
+#define TEST_CATCH_EXC_(code, exc_type, ...)                                   \
   do {                                                                         \
     try {                                                                      \
       try {                                                                    \
         code;                                                                  \
         test_check__(false, __FILE__, __LINE__, __VA_ARGS__);                  \
-      } catch (exc &) {                                                        \
+      } catch (const exc_type &) {                                             \
       }                                                                        \
-    } catch (std::exception & e) {                                             \
+    } catch (const std::exception & e) {                                       \
       if (e.what() != NULL) {                                                  \
         test_check__(false, __FILE__, __LINE__,                                \
                      "threw unexpected exception: %s", e.what());              \
