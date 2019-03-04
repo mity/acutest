@@ -78,8 +78,8 @@
  *       TEST_CHECK(ptr->member2 > 200);
  *   }
  */
-#define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, #cond, __VA_ARGS__)
-#define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, #cond, "")
+#define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
+#define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
 /* Macros to verify that the code throws an exception.  The exception type
  * its passed as the second argument. TEST_CATCH_EXC_ behaves like TEST_CHECK_
@@ -90,39 +90,40 @@
  * If the function_that_throw throws ExceptionType, the test passes
  */
 #ifdef __cplusplus
-#define TEST_CATCH_EXC(code, exc_type)                                                \
-  do {                                                                                \
-    try {                                                                             \
-      try {                                                                           \
-        code;                                                                         \
-        test_check__(false, __FILE__, __LINE__, #code, "should throw %s", #exc_type); \
-      } catch (const exc_type &) {                                                    \
-      }                                                                               \
-    } catch (const std::exception & e) {                                              \
-      if (e.what() != NULL) {                                                         \
-        test_check__(false, __FILE__, __LINE__, #code,                                \
-                     "threw unexpected exception: %s", e.what());                     \
-      } else {                                                                        \
-        test_check__(false, __FILE__, __LINE__, #code, "threw unexpected exception"); \
-      }                                                                               \
-    }                                                                                 \
+#define TEST_CATCH_EXC(code, exc_type)                                         \
+  do {                                                                         \
+    try {                                                                      \
+      try {                                                                    \
+        code;                                                                  \
+        test_check__(false, __FILE__, __LINE__, "%s should throw %s", #code,   \
+                     #exc_type);                                               \
+      } catch (const exc_type &) {                                             \
+      }                                                                        \
+    } catch (const std::exception & e) {                                       \
+      if (e.what() != NULL) {                                                  \
+        test_check__(false, __FILE__, __LINE__,                                \
+                     "threw unexpected exception: %s", e.what());              \
+      } else {                                                                 \
+        test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
+      }                                                                        \
+    }                                                                          \
   } while (0)
-#define TEST_CATCH_EXC_(code, exc_type, ...)                                          \
-  do {                                                                                \
-    try {                                                                             \
-      try {                                                                           \
-        code;                                                                         \
-        test_check__(false, __FILE__, __LINE__, #code, __VA_ARGS__);                  \
-      } catch (const exc_type &) {                                                    \
-      }                                                                               \
-    } catch (const std::exception & e) {                                              \
-      if (e.what() != NULL) {                                                         \
-        test_check__(false, __FILE__, __LINE__, #code,                                \
-                     "threw unexpected exception: %s", e.what());                     \
-      } else {                                                                        \
-        test_check__(false, __FILE__, __LINE__, #code, "threw unexpected exception"); \
-      }                                                                               \
-    }                                                                                 \
+#define TEST_CATCH_EXC_(code, exc_type, ...)                                   \
+  do {                                                                         \
+    try {                                                                      \
+      try {                                                                    \
+        code;                                                                  \
+        test_check__(false, __FILE__, __LINE__, __VA_ARGS__);                  \
+      } catch (const exc_type &) {                                             \
+      }                                                                        \
+    } catch (const std::exception & e) {                                       \
+      if (e.what() != NULL) {                                                  \
+        test_check__(false, __FILE__, __LINE__,                                \
+                     "threw unexpected exception: %s", e.what());              \
+      } else {                                                                 \
+        test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
+      }                                                                        \
+    }                                                                          \
   } while (0)
 #endif
 
@@ -232,7 +233,7 @@ struct test__ {
 
 extern const struct test__ test_list__[];
 
-int test_check__(int cond, const char* file, int line, const char* cond_text, const char* fmt, ...);
+int test_check__(int cond, const char* file, int line, const char* fmt, ...);
 void test_case__(const char* fmt, ...);
 void test_message__(const char* fmt, ...);
 
@@ -479,7 +480,7 @@ test_line_indent__(int level)
 }
 
 int
-test_check__(int cond, const char* file, int line, const char* cond_text, const char* fmt, ...)
+test_check__(int cond, const char* file, int line, const char* fmt, ...)
 {
     const char *result_str;
     int result_color;
@@ -530,7 +531,6 @@ test_check__(int cond, const char* file, int line, const char* cond_text, const 
             printf("%s:%d: Check ", file, line);
         }
 
-        printf("'%s' ", cond_text);
         va_start(args, fmt);
         vprintf(fmt, args);
         va_end(args);
