@@ -38,6 +38,12 @@ void test_catch_exception_by_type(void)
   TEST_CATCH_EXC(throw TestException("expected"), TestException);
 }
 
+void test_catch_exc_fail(void)
+{
+  TEST_CATCH_EXC_(TestException("don't throw"), TestException, "This test fail");
+}
+
+
 void test_unexpected_exception(void)
 {
   TEST_CATCH_EXC(throw std::invalid_argument("unexpected"), TestException);
@@ -49,5 +55,6 @@ TEST_LIST = {
     { "strange-exception", test_strange_exception },
     { "expected-exception", test_catch_exception_by_type },
     { "unexpected-exception", test_unexpected_exception },
+    { "description-failed-test", test_catch_exc_fail },
     { NULL, NULL }
 };
