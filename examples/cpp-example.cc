@@ -38,16 +38,21 @@ void test_catch_exception_by_type(void)
   TEST_CATCH_EXC(throw TestException("expected"), TestException);
 }
 
-void test_unexpected_exception(void)
+void test_catch_unexpected_exception(void)
 {
   TEST_CATCH_EXC(throw std::invalid_argument("unexpected"), TestException);
 }
 
+void test_catch_nostd_exception(void)
+{
+  TEST_CATCH_EXC_(test_strange_exception(), TestException, "invoke test_strange_exception()");
+}
 
 TEST_LIST = {
     { "std-exception",     test_std_exception },
     { "strange-exception", test_strange_exception },
     { "expected-exception", test_catch_exception_by_type },
-    { "unexpected-exception", test_unexpected_exception },
+    { "unexpected-exception", test_catch_unexpected_exception },
+    { "nostd-exception", test_catch_nostd_exception },
     { NULL, NULL }
 };

@@ -90,41 +90,38 @@
  * If the function_that_throw throws ExceptionType, the test passes
  */
 #ifdef __cplusplus
-#define TEST_CATCH_EXC(code, exc_type)                                         \
-  do {                                                                         \
-    try {                                                                      \
-      try {                                                                    \
-        code;                                                                  \
-        test_check__(false, __FILE__, __LINE__, "%s should throw %s", #code,   \
-                     #exc_type);                                               \
-      } catch (const exc_type &) {                                             \
-      }                                                                        \
-    } catch (const std::exception & e) {                                       \
-      if (e.what() != NULL) {                                                  \
-        test_check__(false, __FILE__, __LINE__,                                \
-                     "threw unexpected exception: %s", e.what());              \
-      } else {                                                                 \
-        test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
-      }                                                                        \
-    }                                                                          \
-  } while (0)
-#define TEST_CATCH_EXC_(code, exc_type, ...)                                   \
-  do {                                                                         \
-    try {                                                                      \
-      try {                                                                    \
-        code;                                                                  \
-        test_check__(false, __FILE__, __LINE__, __VA_ARGS__);                  \
-      } catch (const exc_type &) {                                             \
-      }                                                                        \
-    } catch (const std::exception & e) {                                       \
-      if (e.what() != NULL) {                                                  \
-        test_check__(false, __FILE__, __LINE__,                                \
-                     "threw unexpected exception: %s", e.what());              \
-      } else {                                                                 \
-        test_check__(false, __FILE__, __LINE__, "threw unexpected exception"); \
-      }                                                                        \
-    }                                                                          \
-  } while (0)
+#define TEST_CATCH_EXC(code, exctype)                                          \
+    do {                                                                       \
+        bool exc_ok__ = false;                                                 \
+        const char *msg__ = NULL;                                              \
+        try {                                                                  \
+            code;                                                              \
+            msg__ = "No exception thrown.";                                    \
+        } catch(const exctype &) {                                             \
+            exc_ok__= true;                                                    \
+        } catch(...) {                                                         \
+            msg__ = "Unexpected exception thrown.";                            \
+        }                                                                      \
+        test_check__(exc_ok__, __FILE__, __LINE__, #code " throws " #exctype); \
+        if(msg__ != NULL)                                                      \
+            test_message__("%s", msg__);                                       \
+    } while(0)
+#define TEST_CATCH_EXC_(code, exctype, ...)                                    \
+    do {                                                                       \
+        bool exc_ok__ = false;                                                 \
+        const char *msg__ = NULL;                                              \
+        try {                                                                  \
+            code;                                                              \
+            msg__ = "No exception thrown.";                                    \
+        } catch(const exctype &) {                                             \
+            exc_ok__= true;                                                    \
+        } catch(...) {                                                         \
+            msg__ = "Unexpected exception thrown.";                            \
+        }                                                                      \
+        test_check__(exc_ok__, __FILE__, __LINE__, __VA_ARGS__);               \
+        if(msg__ != NULL)                                                      \
+            test_message__("%s", msg__);                                       \
+    } while(0)
 #endif
 
 
