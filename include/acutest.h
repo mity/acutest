@@ -103,7 +103,7 @@
         try {                                                                  \
             code;                                                              \
             msg__ = "No exception thrown.";                                    \
-        } catch(const exctype &) {                                             \
+        } catch(exctype&) {                                                    \
             exc_ok__= true;                                                    \
         } catch(...) {                                                         \
             msg__ = "Unexpected exception thrown.";                            \
@@ -119,7 +119,7 @@
         try {                                                                  \
             code;                                                              \
             msg__ = "No exception thrown.";                                    \
-        } catch(const exctype &) {                                             \
+        } catch(exctype&) {                                                    \
             exc_ok__= true;                                                    \
         } catch(...) {                                                         \
             msg__ = "Unexpected exception thrown.";                            \
