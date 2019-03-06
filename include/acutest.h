@@ -81,15 +81,21 @@
 #define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
-/* Macros to verify that the code throws an exception.  The exception type
- * its passed as the second argument. TEST_CATCH_EXC_ behaves like TEST_CHECK_
- * accept additional arguments for formatting the error message.
- *
- *   TEST_CATCH_EXC(function_that_throw(), ExceptionType);
- *
- * If the function_that_throw throws ExceptionType, the test passes
- */
 #ifdef __cplusplus
+/* Macros to verify that the code (the 1st argument) throws exception of given
+ * type (the 2nd argument). (Note these macros are only available in C++.)
+ *
+ * TEST_CATCH_EXC_ is like TEST_CATCH_EXC but accepts custom printf-like
+ * message.
+ *
+ * For example:
+ *
+ *   TEST_CATCH_EXC(function_that_throw(), ExpectedExceptionType);
+ *
+ * If the function_that_throw() throws ExpectedExceptionType, the check passes.
+ * If the function throws anything incompatible with ExpectedExceptionType
+ * (or if it does not thrown an exception at all), the check fails.
+ */
 #define TEST_CATCH_EXC(code, exctype)                                          \
     do {                                                                       \
         bool exc_ok__ = false;                                                 \
@@ -122,7 +128,7 @@
         if(msg__ != NULL)                                                      \
             test_message__("%s", msg__);                                       \
     } while(0)
-#endif
+#endif  /* #ifdef __cplusplus */
 
 
 /* Sometimes it is useful to split execution of more complex unit tests to some
