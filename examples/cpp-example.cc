@@ -22,37 +22,90 @@ public:
 };
 
 
-void test_std_exception(void)
+enum What {
+    NO_THROW = 0,
+    THROW_TEST_EXC,
+    THROW_INVALID_ARG,
+    THROW_CHAR_PTR,
+    THROW_INT
+};
+
+/* This dummy function represents some code which we want to test.
+ * As we are in C++, they can throw some exceptions.
+ */
+static void
+some_function(What what, const char* msg = NULL)
 {
-    throw TestException("Acutest knows how to catch me :-)");
+    switch(what) {
+        case NO_THROW:
+            /* noop */
+            break;
+
+        case THROW_TEST_EXC:
+            throw TestException(msg != NULL ? msg : "TestException");
+            break;
+
+        case THROW_INVALID_ARG:
+            throw std::invalid_argument(msg != NULL ? msg : "std::invalid_argument");
+            break;
+
+        case THROW_CHAR_PTR:
+            throw msg;
+            break;
+
+        case THROW_INT:
+            throw 42;
+            break;
+    }
 }
 
 
-void test_strange_exception(void)
+void test_exception_type(void)
 {
-    throw "Acutest can also catch exceptions not derived from std::exception.";
+    /* In C++, we may want to test whether some code throws an expected
+     * exception type. */
+    TEST_EXCEPTION(some_function(THROW_TEST_EXC), TestException);
+    TEST_EXCEPTION(some_function(THROW_INVALID_ARG), std::invalid_argument);
+
+    /* Naturally, testing for a type the actual exception is derived from,
+     * is ok too. */
+    TEST_EXCEPTION(some_function(THROW_TEST_EXC), std::exception);
+    TEST_EXCEPTION(some_function(THROW_INVALID_ARG), std::exception);
+
+    /* Uncommon types used as exceptions work too. */
+    TEST_EXCEPTION(some_function(THROW_CHAR_PTR), const char*);
+    TEST_EXCEPTION(some_function(THROW_INT), int);
+
+    /* These checks fail because the given code does not throw an exception
+     * at all, or throws something incompatible. */
+    TEST_EXCEPTION(some_function(NO_THROW), std::exception);
+    TEST_EXCEPTION(some_function(THROW_INT), std::exception);
+    TEST_EXCEPTION(some_function(THROW_INVALID_ARG), TestException);
+
+    /* With TEST_CATCH_EXC_, we may use a custom message. */
+    TEST_EXCEPTION_(some_function(THROW_INT), std::exception, "we may use a custom message");
 }
 
-void test_catch_exception_by_type(void)
+void test_uncaught_std_exception(void)
 {
-  TEST_CATCH_EXC(throw TestException("expected"), TestException);
+    /* If the test throws unhandled exception, Acutest aborts the test unit
+     * and considers it a failure. */
+    some_function(THROW_TEST_EXC, "Acutest knows how to catch me :-)");
 }
 
-void test_catch_unexpected_exception(void)
+void test_uncaught_strange_exception(void)
 {
-  TEST_CATCH_EXC(throw std::invalid_argument("unexpected"), TestException);
-}
-
-void test_catch_nostd_exception(void)
-{
-  TEST_CATCH_EXC_(test_strange_exception(), TestException, "invoke test_strange_exception()");
+    /* If the test throws unhandled exception, Acutest aborts the test unit
+     * and considers it a failure.
+     *
+     * Even if it is not derived from std::exception.
+     */
+    some_function(THROW_CHAR_PTR, "Acutest knows how to catch me :-)");
 }
 
 TEST_LIST = {
-    { "std-exception",     test_std_exception },
-    { "strange-exception", test_strange_exception },
-    { "expected-exception", test_catch_exception_by_type },
-    { "unexpected-exception", test_catch_unexpected_exception },
-    { "nostd-exception", test_catch_nostd_exception },
+    { "test_exception_type", test_exception_type },
+    { "uncaught-std-exception", test_uncaught_std_exception },
+    { "uncaught-strange-exception", test_uncaught_strange_exception },
     { NULL, NULL }
 };

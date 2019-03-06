@@ -85,18 +85,18 @@
 /* Macros to verify that the code (the 1st argument) throws exception of given
  * type (the 2nd argument). (Note these macros are only available in C++.)
  *
- * TEST_CATCH_EXC_ is like TEST_CATCH_EXC but accepts custom printf-like
+ * TEST_EXCEPTION_ is like TEST_EXCEPTION but accepts custom printf-like
  * message.
  *
  * For example:
  *
- *   TEST_CATCH_EXC(function_that_throw(), ExpectedExceptionType);
+ *   TEST_EXCEPTION(function_that_throw(), ExpectedExceptionType);
  *
  * If the function_that_throw() throws ExpectedExceptionType, the check passes.
  * If the function throws anything incompatible with ExpectedExceptionType
  * (or if it does not thrown an exception at all), the check fails.
  */
-#define TEST_CATCH_EXC(code, exctype)                                          \
+#define TEST_EXCEPTION(code, exctype)                                          \
     do {                                                                       \
         bool exc_ok__ = false;                                                 \
         const char *msg__ = NULL;                                              \
@@ -112,7 +112,7 @@
         if(msg__ != NULL)                                                      \
             test_message__("%s", msg__);                                       \
     } while(0)
-#define TEST_CATCH_EXC_(code, exctype, ...)                                    \
+#define TEST_EXCEPTION_(code, exctype, ...)                                    \
     do {                                                                       \
         bool exc_ok__ = false;                                                 \
         const char *msg__ = NULL;                                              \
