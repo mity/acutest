@@ -185,12 +185,33 @@
 #endif
 
 
+/* Macro for dumping a block of memory.
+ *
+ * Its inteded use is very similar to what TEST_MSG is for, but instead of
+ * generating any printf-like message, this is for dumping raw block of a
+ * memory in a hexadecimal form:
+ *
+ * TEST_CHECK(size_produced == size_expected && memcmp(addr_produced, addr_expected, size_produced) == 0);
+ * TEST_DUMP("Expected:", addr_expected, size_expected);
+ * TEST_DUMP("Produced:", addr_produced, size_produced);
+ */
+#define TEST_DUMP(title, addr, size)    test_dump__(title, addr, size)
+
+/* Maximal output per TEST_DUMP call (in bytes to dump). Longer blocks are cut.
+ * You may define another limit prior including "acutest.h"
+ */
+#ifndef TEST_DUMP_MAXSIZE
+    #define TEST_DUMP_MAXSIZE   1024
+#endif
+
+
 /**********************
  *** Implementation ***
  **********************/
 
 /* The unit test files should not rely on anything below. */
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -246,6 +267,7 @@ extern const struct test__ test_list__[];
 int test_check__(int cond, const char* file, int line, const char* fmt, ...);
 void test_case__(const char* fmt, ...);
 void test_message__(const char* fmt, ...);
+void test_dump__(const char* title, const void* addr, size_t size);
 
 
 #ifndef TEST_NO_MAIN
@@ -618,6 +640,60 @@ test_message__(const char* fmt, ...)
     if(line_beg[0] != '\0') {
         test_line_indent__(test_case_name__[0] ? 3 : 2);
         printf("%s\n", line_beg);
+    }
+}
+
+void
+test_dump__(const char* title, const void* addr, size_t size)
+{
+    static const size_t BYTES_PER_LINE = 16;
+    size_t line_beg;
+    size_t truncate = 0;
+
+    if(test_verbose_level__ < 2)
+        return;
+
+    /* We allow extra message only when something is already wrong in the
+     * current test. */
+    if(test_current_unit__ == NULL  ||  !test_cond_failed__)
+        return;
+
+    if(size > TEST_DUMP_MAXSIZE) {
+        truncate = size - TEST_DUMP_MAXSIZE;
+        size = TEST_DUMP_MAXSIZE;
+    }
+
+    test_line_indent__(test_case_name__[0] ? 3 : 2);
+    printf((title[strlen(title)-1] == ':') ? "%s\n" : "%s:\n", title);
+
+    for(line_beg = 0; line_beg < size; line_beg += BYTES_PER_LINE) {
+        size_t line_end = line_beg + BYTES_PER_LINE;
+        size_t off;
+
+        test_line_indent__(test_case_name__[0] ? 4 : 3);
+        printf("%08x: ", line_beg);
+        for(off = line_beg; off < line_end; off++) {
+            if(off < size)
+                printf(" %02x", ((unsigned char*)addr)[off]);
+            else
+                printf("   ");
+        }
+
+        printf("  ");
+        for(off = line_beg; off < line_end; off++) {
+            unsigned char byte = ((unsigned char*)addr)[off];
+            if(off < size)
+                printf("%c", (iscntrl(byte) ? '.' : byte));
+            else
+                break;
+        }
+
+        printf("\n");
+    }
+
+    if(truncate > 0) {
+        test_line_indent__(test_case_name__[0] ? 4 : 3);
+        printf("           ... (and more %u bytes)\n", (unsigned) truncate);
     }
 }
 
