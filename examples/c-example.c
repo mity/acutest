@@ -34,6 +34,12 @@ test_fail(void)
         TEST_MSG("a: %d", a);
         TEST_MSG("b: %d", b);
     }
+
+    /* The macros TEST_MSG() do write down something only when the precedin
+     * condition fails, so we can avoid the 'if'. */
+    TEST_CHECK(a + b == 3);
+    TEST_MSG("a: %d", a);
+    TEST_MSG("b: %d", b);
 }
 
 void

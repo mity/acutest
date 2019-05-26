@@ -155,14 +155,21 @@
 
 /* printf-like macro for outputting an extra information about a failure.
  *
- * Note it does not output anything if there was not (yet) failed condition
- * in the current test. Intended use is to output some computed output
- * versus the expected value, e.g. like this:
+ * Intended use is to output some computed output versus the expected value,
+ * e.g. like this:
  *
  *   if(!TEST_CHECK(produced == expected)) {
  *       TEST_MSG("Expected: %d", expected);
  *       TEST_MSG("Produced: %d", produced);
  *   }
+ *
+ * Note the message is only written down if the most recent use of any checking
+ * macro (like e.g. TEST_CHECK or TEST_EXCEPTION) in the current test failed.
+ * This means the above is equivalent to just this:
+ *
+ *   TEST_CHECK(produced == expected);
+ *   TEST_MSG("Expected: %d", expected);
+ *   TEST_MSG("Produced: %d", produced);
  *
  * The macro can deal with multi-line output fairly well. It also automatically
  * adds a final new-line if there is none present.
@@ -254,6 +261,7 @@ static int test_tap__ = 0;
 static int test_skip_mode__ = 0;
 static int test_worker__ = 0;
 static int test_worker_index__ = 0;
+static int test_cond_failed__ = 0;
 
 static int test_stat_failed_units__ = 0;
 static int test_stat_run_units__ = 0;
@@ -544,7 +552,8 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         test_current_already_logged__++;
     }
 
-    return (cond != 0);
+    test_cond_failed__ = (cond == 0);
+    return !test_cond_failed__;
 }
 
 void
@@ -589,7 +598,7 @@ test_message__(const char* fmt, ...)
 
     /* We allow extra message only when something is already wrong in the
      * current test. */
-    if(!test_current_already_logged__  ||  test_current_unit__ == NULL)
+    if(test_current_unit__ == NULL  ||  !test_cond_failed__)
         return;
 
     va_start(args, fmt);
@@ -742,6 +751,7 @@ test_do_run__(const struct test__* test, int index)
     test_current_index__ = index;
     test_current_failures__ = 0;
     test_current_already_logged__ = 0;
+    test_cond_failed__ = 0;
 
     test_timer_init__();
 
