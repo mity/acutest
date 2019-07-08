@@ -1203,6 +1203,7 @@ test_help__(void)
     printf("      --no-summary      Suppress printing of test results summary\n");
     printf("      --tap             Produce TAP-compliant output\n");
     printf("                          (See https://testanything.org/)\n");
+    printf("  -x, --xml-output=FILE Enable XUnit output to the given file\n");
     printf("  -l, --list            List unit tests in the suite and exit\n");
     printf("  -v, --verbose         Make output more verbose\n");
     printf("      --verbose=LEVEL   Set verbose level to LEVEL:\n");
@@ -1213,7 +1214,6 @@ test_help__(void)
     printf("      --color[=WHEN]    Enable colorized output\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("      --no-color        Same as --color=never\n");
-    printf("  -x, --xml-output=FILE Enable XUnit output to the given file\n");
     printf("  -h, --help            Display this help and exit\n");
 
     if(test_list_size__ < 16) {
