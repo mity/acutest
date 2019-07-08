@@ -1328,7 +1328,11 @@ test_cmdline_callback__(int id, const char* arg)
             test_worker_index__ = atoi(arg);
             break;
         case 'x':
-            test_xml_output__ = fopen(arg, "wb");
+            test_xml_output__ = fopen(arg, "w");
+            if (!test_xml_output__) {
+                fprintf(stderr, "Unable to open '%s': %s\n", arg, strerror(errno));
+                exit(2);
+            }
             break;
 
         case 0:
@@ -1513,14 +1517,11 @@ main(int argc, char** argv)
             (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
             (int)test_list_size__ - test_stat_run_units__);
         for(i = 0; test_list__[i].func != NULL; i++) {
-            int run = (test_flags__[i] & TEST_FLAG_RUN);
-            if (test_skip_mode__) /* Run all tests except those listed. */
-                run = !run;
             fprintf(test_xml_output__, "  <testcase name=\"%s\">\n",
             test_list__[i].name);
             if (test_flags__[i] & TEST_FLAG_FAILURE)
                 fprintf(test_xml_output__, "    <failure />\n");
-            if (!run)
+            if (!(test_flags__[i] & TEST_FLAG_FAILURE) && !(test_flags__[i] & TEST_FLAG_SUCCESS))
                 fprintf(test_xml_output__, "    <skipped />\n");
             fprintf(test_xml_output__, "  </testcase>\n");
         }
