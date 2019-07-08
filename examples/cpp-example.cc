@@ -103,9 +103,15 @@ void test_uncaught_strange_exception(void)
     some_function(THROW_CHAR_PTR, "Acutest knows how to catch me :-)");
 }
 
+void test_success(void)
+{
+    /* Do nothing */
+}
+
 TEST_LIST = {
     { "test_exception_type", test_exception_type },
     { "uncaught-std-exception", test_uncaught_std_exception },
     { "uncaught-strange-exception", test_uncaught_strange_exception },
+    { "success", test_success },
     { NULL, NULL }
 };
