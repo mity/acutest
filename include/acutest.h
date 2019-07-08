@@ -263,9 +263,9 @@ struct test__ {
 };
 
 enum {
-    TEST_FLAG_RUN = 1 << 0,
-    TEST_FLAG_SUCCESS = 1 << 1,
-    TEST_FLAG_FAILURE = 1 << 2,
+    TEST_FLAG_RUN__ = 1 << 0,
+    TEST_FLAG_SUCCESS__ = 1 << 1,
+    TEST_FLAG_FAILURE__ = 1 << 2,
 };
 
 extern const struct test__ test_list__[];
@@ -716,17 +716,17 @@ test_list_names__(void)
 static void
 test_remember__(int i)
 {
-    if(test_flags__[i] & TEST_FLAG_RUN)
+    if(test_flags__[i] & TEST_FLAG_RUN__)
         return;
 
-    test_flags__[i] |= TEST_FLAG_RUN;
+    test_flags__[i] |= TEST_FLAG_RUN__;
     test_count__++;
 }
 
 static void
 test_set_success__(int i, int success)
 {
-    test_flags__[i] |= success ? TEST_FLAG_SUCCESS : TEST_FLAG_FAILURE;
+    test_flags__[i] |= success ? TEST_FLAG_SUCCESS__ : TEST_FLAG_FAILURE__;
 }
 
 static int
@@ -1479,7 +1479,7 @@ main(int argc, char** argv)
 
     int index = test_worker_index__;
     for(i = 0; test_list__[i].func != NULL; i++) {
-        int run = (test_flags__[i] & TEST_FLAG_RUN);
+        int run = (test_flags__[i] & TEST_FLAG_RUN__);
         if (test_skip_mode__) /* Run all tests except those listed. */
             run = !run;
         if(run)
@@ -1519,9 +1519,9 @@ main(int argc, char** argv)
         for(i = 0; test_list__[i].func != NULL; i++) {
             fprintf(test_xml_output__, "  <testcase name=\"%s\">\n",
             test_list__[i].name);
-            if (test_flags__[i] & TEST_FLAG_FAILURE)
+            if (test_flags__[i] & TEST_FLAG_FAILURE__)
                 fprintf(test_xml_output__, "    <failure />\n");
-            if (!(test_flags__[i] & TEST_FLAG_FAILURE) && !(test_flags__[i] & TEST_FLAG_SUCCESS))
+            if (!(test_flags__[i] & TEST_FLAG_FAILURE__) && !(test_flags__[i] & TEST_FLAG_SUCCESS__))
                 fprintf(test_xml_output__, "    <skipped />\n");
             fprintf(test_xml_output__, "  </testcase>\n");
         }
