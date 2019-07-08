@@ -262,6 +262,12 @@ struct test__ {
     void (*func)(void);
 };
 
+enum {
+    TEST_FLAG_RUN = 1 << 0,
+    TEST_FLAG_SUCCESS = 1 << 1,
+    TEST_FLAG_FAILURE = 1 << 2,
+};
+
 extern const struct test__ test_list__[];
 
 int test_check__(int cond, const char* file, int line, const char* fmt, ...);
@@ -274,8 +280,7 @@ void test_dump__(const char* title, const void* addr, size_t size);
 
 static char* test_argv0__ = NULL;
 static size_t test_list_size__ = 0;
-static const struct test__** tests__ = NULL;
-static char* test_flags__ = NULL;
+static unsigned char* test_flags__ = NULL;
 static size_t test_count__ = 0;
 static int test_no_exec__ = -1;
 static int test_no_summary__ = 0;
@@ -284,6 +289,7 @@ static int test_skip_mode__ = 0;
 static int test_worker__ = 0;
 static int test_worker_index__ = 0;
 static int test_cond_failed__ = 0;
+static FILE *test_xml_output__ = NULL;
 
 static int test_stat_failed_units__ = 0;
 static int test_stat_run_units__ = 0;
@@ -710,13 +716,17 @@ test_list_names__(void)
 static void
 test_remember__(int i)
 {
-    if(test_flags__[i])
+    if(test_flags__[i] & TEST_FLAG_RUN)
         return;
-    else
-        test_flags__[i] = 1;
 
-    tests__[test_count__] = &test_list__[i];
+    test_flags__[i] |= TEST_FLAG_RUN;
     test_count__++;
+}
+
+static void
+test_set_success__(int i, int success)
+{
+    test_flags__[i] |= success ? TEST_FLAG_SUCCESS : TEST_FLAG_FAILURE;
 }
 
 static int
@@ -892,7 +902,7 @@ test_do_run__(const struct test__* test, int index)
  * process who calls test_do_run__(), otherwise it calls test_do_run__()
  * directly. */
 static void
-test_run__(const struct test__* test, int index)
+test_run__(const struct test__* test, int index, int master_index)
 {
     int failed = 1;
 
@@ -992,6 +1002,8 @@ test_run__(const struct test__* test, int index)
     test_stat_run_units__++;
     if(failed)
         test_stat_failed_units__++;
+
+    test_set_success__(master_index, !failed);
 }
 
 #if defined(ACUTEST_WIN__)
@@ -1201,6 +1213,7 @@ test_help__(void)
     printf("      --color[=WHEN]    Enable colorized output\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("      --no-color        Same as --color=never\n");
+    printf("  -x, --xml-output=FILE Enable XUnit output to the given file\n");
     printf("  -h, --help            Display this help and exit\n");
 
     if(test_list_size__ < 16) {
@@ -1226,6 +1239,7 @@ static const TEST_CMDLINE_OPTION__ test_cmdline_options__[] = {
     {  0,   "no-color",     'C', 0 },
     { 'h',  "help",         'h', 0 },
     {  0,   "worker",       'w', TEST_CMDLINE_OPTFLAG_REQUIREDARG__ },  /* internal */
+    { 'x',  "xml-output",   'x', TEST_CMDLINE_OPTFLAG_REQUIREDARG__ },
     {  0,   NULL,            0,  0 }
 };
 
@@ -1312,6 +1326,9 @@ test_cmdline_callback__(int id, const char* arg)
         case 'w':
             test_worker__ = 1;
             test_worker_index__ = atoi(arg);
+            break;
+        case 'x':
+            test_xml_output__ = fopen(arg, "wb");
             break;
 
         case 0:
@@ -1404,9 +1421,8 @@ main(int argc, char** argv)
     for(i = 0; test_list__[i].func != NULL; i++)
         test_list_size__++;
 
-    tests__ = (const struct test__**) malloc(sizeof(const struct test__*) * test_list_size__);
-    test_flags__ = (char*) malloc(sizeof(char) * test_list_size__);
-    if(tests__ == NULL || test_flags__ == NULL) {
+    test_flags__ = (unsigned char*) malloc(sizeof(unsigned char) * test_list_size__);
+    if(test_flags__ == NULL) {
         fprintf(stderr, "Out of memory.\n");
         exit(2);
     }
@@ -1422,8 +1438,7 @@ main(int argc, char** argv)
     /* By default, we want to run all tests. */
     if(test_count__ == 0) {
         for(i = 0; test_list__[i].func != NULL; i++)
-            tests__[i] = &test_list__[i];
-        test_count__ = test_list_size__;
+            test_remember__(i);
     }
 
     /* Guess whether we want to run unit tests as child processes. */
@@ -1458,18 +1473,13 @@ main(int argc, char** argv)
             printf("1..%d\n", (int) test_count__);
     }
 
-    /* Run the tests */
-    if(!test_skip_mode__) {
-        /* Run the listed tests. */
-        for(i = 0; i < (int) test_count__; i++)
-            test_run__(tests__[i], test_worker_index__ + i);
-    } else {
-        /* Run all tests except those listed. */
-        int index = test_worker_index__;
-        for(i = 0; test_list__[i].func != NULL; i++) {
-            if(!test_flags__[i])
-                test_run__(&test_list__[i], index++);
-        }
+    int index = test_worker_index__;
+    for(i = 0; test_list__[i].func != NULL; i++) {
+        int run = (test_flags__[i] & TEST_FLAG_RUN);
+        if (test_skip_mode__) /* Run all tests except those listed. */
+            run = !run;
+        if(run)
+            test_run__(&test_list__[i], index++, i);
     }
 
     /* Write a summary */
@@ -1497,7 +1507,27 @@ main(int argc, char** argv)
             printf("\n");
     }
 
-    free((void*) tests__);
+    if (test_xml_output__) {
+        fprintf(test_xml_output__, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        fprintf(test_xml_output__, "<testsuite name=\"acutest\" tests=\"%d\" errors=\"%d\" failures=\"%d\" skip=\"%d\">\n",
+            (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
+            (int)test_list_size__ - test_stat_run_units__);
+        for(i = 0; test_list__[i].func != NULL; i++) {
+            int run = (test_flags__[i] & TEST_FLAG_RUN);
+            if (test_skip_mode__) /* Run all tests except those listed. */
+                run = !run;
+            fprintf(test_xml_output__, "  <testcase name=\"%s\">\n",
+            test_list__[i].name);
+            if (test_flags__[i] & TEST_FLAG_FAILURE)
+                fprintf(test_xml_output__, "    <failure />\n");
+            if (!run)
+                fprintf(test_xml_output__, "    <skipped />\n");
+            fprintf(test_xml_output__, "  </testcase>\n");
+        }
+        fprintf(test_xml_output__, "</testsuite>\n");
+        fclose(test_xml_output__);
+    }
+
     free((void*) test_flags__);
 
     return (test_stat_failed_units__ == 0) ? 0 : 1;
