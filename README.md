@@ -207,10 +207,17 @@ $ ./test_example --help
 
 ## FAQ
 
-**Q:** Wasn't this project known as "CUTest"?
+**Q: Wasn't this project known as "CUTest"?**
 
-**A:** Yes. It has been renamed as the original name was
+**A:** Yes. It has been renamed as the original name was found to be
 [too much overloaded](https://github.com/mity/cutest/issues/6).
+
+**Q: Do I need to distribute file `README.md` and/or `LICENSE.md`?**
+
+**A:** No. The header `acutest.h` includes URL to our repo, copyright note and
+the MIT license terms inside of it. So as long as you leave those intact, we
+are completely fine if you only add the header into your project. After all,
+the all-in-one-header is the purpose of it.
 
 
 ## License
