@@ -1,7 +1,7 @@
 
 # The MIT License (MIT)
 
-Copyright © 2013-2017 Martin Mitáš
+Copyright © 2013-2019 Martin Mitáš
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the “Software”),
