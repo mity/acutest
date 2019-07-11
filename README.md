@@ -70,6 +70,8 @@ or other number if an internal error occurs.
 
 ## Writing Unit Tests
 
+### Basic Use
+
 To use Acutest, simply include the header file `"acutest.h"` on the beginning
 of the C/C++ source file implementing one or more unit tests. Note the header
 provides implementation of the `main()` function.
@@ -85,13 +87,12 @@ prototype:
 void test_example(void);
 ```
 
-The tests can use preprocessor macro `TEST_CHECK` or `TEST_CHECK_` to validate the
-test conditions. They can be used multiple times, and if any of those conditions
-fails, the particular test is considered to fail.
+The tests can use some preprocessor macros to validate the test conditions.
+They can be used multiple times, and if any of those conditions fails, the
+particular test is considered to fail.
 
-(The macro `TEST_CHECK_` can be used only if your C preprocessor supports variadic
-macros: it takes printf-like extra arguments to provide a custom error message
-if the condition fails.)
+`TEST_CHECK` is the most commonly used testing macros which simply test a
+boolean condition and fail if the condition evaluates to false (or zero).
 
 For example:
 
@@ -106,10 +107,6 @@ void test_example(void)
 
     mem = realloc(mem, 20);
     TEST_CHECK(mem != NULL);
-
-    a = 1;
-    b = 2;
-    TEST_CHECK_(a + b == 3, "Expected %d, got %d", 3, a + b);
 }
 ```
 
@@ -135,21 +132,164 @@ TEST_LIST = {
 
 Note the test list has to be ended with zeroed record.
 
-Finally you just compile the C/C++ test suite source file as a simple program.
-For example, assuming `cc` is your C compiler:
+For a basic test suites this is more or less all you need to know. However
+Acutest provides some more macros which can be useful in some specific
+situations. We cover them in the following sub-sections.
+
+### Testing C++ Exceptions
+
+For C++, there is an additional macro `TEST_EXCEPTION` for verifying the given
+code (typically just a function or a method call) throw the expected type of
+exception. The check fails if the function does not throw any exception or
+if it throws anything incompatible.
+
+For example:
+
+```C++
+void test_example(void)
+{
+    TEST_EXCEPTION(CallSomeFunction(), std::exception);
+}
+```
+
+### Richer Failure Diagnosis
+
+If a condition check fails, it is often useful to provide some additional
+information about the situation so the problem is easier to debug. Acutest
+provides the macros `TEST_MSG` and `TEST_DUMP` for this purpose.
+
+The former one outputs any `printf`-like message, the other one outputs a
+hexadecimal dump of a provided memory block.
+
+Note that both macros only output anything in the most recently checking
+macro failed.
+
+So for example:
+
+```
+void test_example(void)
+{
+    char produced[100];
+    char expected[] = "Hello World!";
+
+    SomeSprintfLikeFunction(expected, "Hello %s!", world);
+    TEST_CHECK(strlen(produced) == strlen(expected));
+    TEST_MESSAGE("Expected: %s", expected);
+    TEST_MESSAGE("Produced: %s", produced);
+
+    /* Or if the function would provide some binary stuff, we might rather
+     * use TEST_DUMP instead and output a hexadecimal dump. */
+    TEST_DUMP("Expected:", expected, strlen(expected));
+    TEST_DUMP("Produced:", produced, strlen(produced));
+}
+```
+
+(Note that `TEST_MSG` requires the compiler with variadic macros support.)
+
+### Test Vectors
+
+Sometimes, it is useful to construct the testing function as a loop over
+some data verifying that for some input vector we get always the expected
+output vector. For example we are verifying some kind of hashing function
+and some specification provides a set of test vectors for it.
+
+In such cases, it is convenient to output a message what iteration we are
+checking so that, if any check fails, we can easily in the output log for which
+input vector it has happened.
+
+Acutest provides the macro `TEST_CASE` for this purpose.
+
+For example, assuming we are testing `SomeFunction()` which, for a given byte
+array of some size returns another array of bytes (in a newly `malloc`-ed
+buffer), we could something like this:
+
+```C
+struct TestVector {
+    const char* name;
+    const uint8_t* input;
+    size_t input_size;
+    const uint8_t* expected_output;
+    size_t expected_output_size;
+};
+
+struct TestVector test_vectors[] = {
+    /* some data */
+};
+
+void test_example(void)
+{
+    int i;
+    const uint8_t* output;
+    size_t output_size;
+
+    for(i = 0; i < sizeof(test_vectors) / sizeof(test_vectors[0]); i++) {
+        struct TestVector* vec = &test_vectors[i];
+
+        TEST_CASE(vec.name);
+
+        output = SomeFunction(vec->input, vec->input_size, &output_size);
+        if(TEST_CHECK(output != NULL)) {
+            TEST_CHECK(output_size == vec->expected_output_size);
+            TEST_CHECK(memcmp(output, vec->expected_output, output_size) == 0);
+            free(output);
+        }
+    }
+
+    /* Reset the iteration name.
+     *
+     * This is actually only needed if our tests does some more checks after
+     * the loop above. */
+    TEST_CASE(NULL);
+}
+```
+
+### Custom Log Messages
+
+Many of the macros mentioned in the earlier sections have a variant which
+allows to output a custom messages instead of some default ones.
+
+All of these have the same name as the aforementioned macros with the
+additional underscore suffix and they also expect `printf`-like string format
+(and corresponding additional arguments).
+
+So for example instead of
+```C++
+TEST_CHECK(a == b);
+TEST_EXCEPTION(SomeFunction(), std::exception);
+```
+we can use
+```C++
+TEST_CHECK_(a == b, "%d is equal to %d", a, b);
+TEST_EXCEPTION_(SomeFunction(), std::exception, "SomeFunction() throws std::exception");
+```
+
+Similarly instead instead of
+```C
+TEST_CASE("name");
+```
+we can use richer
+```C
+TEST_CASE("iteration #%d", 42);
+```
+
+However note all of these can only be used if your compiler supports variadic
+macros.
+
+
+## Building the Test Suite
+
+When we are done with implementing the tests, we can simply compile it as
+a simple C/C++ program. For example, assuming `cc` is your C compiler:
 
 ```sh
 $ cc test_example.c -o test_example
 ```
 
-More comprehensive description of API can be found in comments in the header
-`"acutest.h"`.
-
 
 ## Running Unit Tests
 
-When the source file implementing the tests is compiled, the resulted testing
-binary can be used to run the tests.
+When the test suite is compiled, the resulted testing binary can be used to run
+the tests.
 
 By default (without any command line options), it runs all implemented unit
 tests. It can also run only subset of the unit tests as specified on the
