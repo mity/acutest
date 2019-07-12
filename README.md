@@ -166,7 +166,7 @@ macro failed.
 
 So for example:
 
-```
+```C
 void test_example(void)
 {
     char produced[100];
