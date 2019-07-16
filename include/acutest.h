@@ -262,6 +262,11 @@ struct test__ {
     void (*func)(void);
 };
 
+struct test_detail__ {
+    uint8_t flags;
+    double duration;
+};
+
 enum {
     TEST_FLAG_RUN__ = 1 << 0,
     TEST_FLAG_SUCCESS__ = 1 << 1,
@@ -280,7 +285,7 @@ void test_dump__(const char* title, const void* addr, size_t size);
 
 static char* test_argv0__ = NULL;
 static size_t test_list_size__ = 0;
-static unsigned char* test_flags__ = NULL;
+static struct test_detail__ *test_details__ = NULL;
 static size_t test_count__ = 0;
 static int test_no_exec__ = -1;
 static int test_no_summary__ = 0;
@@ -305,9 +310,10 @@ static int test_colorize__ = 0;
 static int test_timer__ = 0;
 
 #if defined ACUTEST_WIN__
+    typedef LARGE_INTEGER test_timer_type__;
     static LARGE_INTEGER test_timer_freq__;
-    static LARGE_INTEGER test_timer_start__;
-    static LARGE_INTEGER test_timer_end__;
+    static test_timer_type__ test_timer_start__;
+    static test_timer_type__ test_timer_end__;
 
     static void
     test_timer_init__(void)
@@ -321,17 +327,24 @@ static int test_timer__ = 0;
         QueryPerformanceCounter(ts);
     }
 
-    static void
-    test_timer_print_diff__(void)
+    static double
+    test_timer_diff__(LARGE_INTEGER start, LARGE_INTEGER end)
     {
         double duration = test_timer_end__.QuadPart - test_timer_start__.QuadPart;
         duration /= test_timer_freq__.QuadPart;
-        printf("%.6lf secs", duration);
+        return duration;
+    }
+
+    static void
+    test_timer_print_diff__(void)
+    {
+        printf("%.6lf secs", test_timer_diff__(test_timer_start__, test_timer_end__));
     }
 #elif defined ACUTEST_HAS_POSIX_TIMER__
     static clockid_t test_timer_id__;
-    struct timespec test_timer_start__;
-    struct timespec test_timer_end__;
+    typedef struct timespec test_timer_type__;
+    static test_timer_type__ test_timer_start__;
+    static test_timer_type__ test_timer_end__;
 
     static void
     test_timer_init__(void)
@@ -353,19 +366,26 @@ static int test_timer__ = 0;
         clock_gettime(test_timer_id__, ts);
     }
 
+    static double
+    test_timer_diff__(struct timespec start, struct timespec end)
+    {
+        return ((double) end.tv_sec +
+                (double) end.tv_nsec * 10e-9)
+               -
+               ((double) start.tv_sec +
+                (double) start.tv_nsec * 10e-9);
+    }
+
     static void
     test_timer_print_diff__(void)
     {
-        double duration = ((double) test_timer_end__.tv_sec +
-                           (double) test_timer_end__.tv_nsec * 10e-9)
-                          -
-                          ((double) test_timer_start__.tv_sec +
-                           (double) test_timer_start__.tv_nsec * 10e-9);
-        printf("%.6lf secs", duration);
+        printf("%.6lf secs", 
+            test_timer_diff__(test_timer_start__, test_timer_end__));
     }
 #else
-    static int test_timer_start__;
-    static int test_timer_end__;
+    typedef int test_timer_type__;
+    static test_timer_type__ test_timer_start__;
+    static test_timer_type__ test_timer_end__;
 
     void
     test_timer_init__(void)
@@ -375,6 +395,12 @@ static int test_timer__ = 0;
     test_timer_get_time__(int* ts)
     {
         (void) ts;
+    }
+
+    static double
+    test_timer_diff__(int start, int end)
+    {
+        return 0.0;
     }
 
     static void
@@ -677,7 +703,7 @@ test_dump__(const char* title, const void* addr, size_t size)
         size_t off;
 
         test_line_indent__(test_case_name__[0] ? 4 : 3);
-        printf("%08x: ", line_beg);
+        printf("%08llx: ", (unsigned long long)line_beg);
         for(off = line_beg; off < line_end; off++) {
             if(off < size)
                 printf(" %02x", ((unsigned char*)addr)[off]);
@@ -716,17 +742,23 @@ test_list_names__(void)
 static void
 test_remember__(int i)
 {
-    if(test_flags__[i] & TEST_FLAG_RUN__)
+    if(test_details__[i].flags & TEST_FLAG_RUN__)
         return;
 
-    test_flags__[i] |= TEST_FLAG_RUN__;
+    test_details__[i].flags |= TEST_FLAG_RUN__;
     test_count__++;
 }
 
 static void
 test_set_success__(int i, int success)
 {
-    test_flags__[i] |= success ? TEST_FLAG_SUCCESS__ : TEST_FLAG_FAILURE__;
+    test_details__[i].flags |= success ? TEST_FLAG_SUCCESS__ : TEST_FLAG_FAILURE__;
+}
+
+static void
+test_set_duration__(int i, double duration)
+{
+    test_details__[i].duration = duration;
 }
 
 static int
@@ -905,9 +937,11 @@ static void
 test_run__(const struct test__* test, int index, int master_index)
 {
     int failed = 1;
+    test_timer_type__ start, end;
 
     test_current_unit__ = test;
     test_current_already_logged__ = 0;
+    test_timer_get_time__(&start);
 
     if(!test_no_exec__) {
 
@@ -996,6 +1030,7 @@ test_run__(const struct test__* test, int index, int master_index)
         /* Child processes suppressed through --no-exec. */
         failed = (test_do_run__(test, index) != 0);
     }
+    test_timer_get_time__(&end);
 
     test_current_unit__ = NULL;
 
@@ -1004,6 +1039,7 @@ test_run__(const struct test__* test, int index, int master_index)
         test_stat_failed_units__++;
 
     test_set_success__(master_index, !failed);
+    test_set_duration__(master_index, test_timer_diff__(start, end));
 }
 
 #if defined(ACUTEST_WIN__)
@@ -1425,12 +1461,11 @@ main(int argc, char** argv)
     for(i = 0; test_list__[i].func != NULL; i++)
         test_list_size__++;
 
-    test_flags__ = (unsigned char*) malloc(sizeof(unsigned char) * test_list_size__);
-    if(test_flags__ == NULL) {
+    test_details__ = (struct test_detail__*)calloc(test_list_size__, sizeof(struct test_detail__));
+    if(test_details__ == NULL) {
         fprintf(stderr, "Out of memory.\n");
         exit(2);
     }
-    memset((void*) test_flags__, 0, sizeof(char) * test_list_size__);
 
     /* Parse options */
     test_cmdline_read__(test_cmdline_options__, argc, argv, test_cmdline_callback__);
@@ -1479,7 +1514,7 @@ main(int argc, char** argv)
 
     int index = test_worker_index__;
     for(i = 0; test_list__[i].func != NULL; i++) {
-        int run = (test_flags__[i] & TEST_FLAG_RUN__);
+        int run = (test_details__[i].flags & TEST_FLAG_RUN__);
         if (test_skip_mode__) /* Run all tests except those listed. */
             run = !run;
         if(run)
@@ -1517,11 +1552,11 @@ main(int argc, char** argv)
             (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
             (int)test_list_size__ - test_stat_run_units__);
         for(i = 0; test_list__[i].func != NULL; i++) {
-            fprintf(test_xml_output__, "  <testcase name=\"%s\">\n",
-            test_list__[i].name);
-            if (test_flags__[i] & TEST_FLAG_FAILURE__)
+            struct test_detail__ *details = &test_details__[i];
+            fprintf(test_xml_output__, "  <testcase name=\"%s\" time=\"%.2f\">\n", test_list__[i].name, details->duration);
+            if (details->flags & TEST_FLAG_FAILURE__)
                 fprintf(test_xml_output__, "    <failure />\n");
-            if (!(test_flags__[i] & TEST_FLAG_FAILURE__) && !(test_flags__[i] & TEST_FLAG_SUCCESS__))
+            if (!(details->flags & TEST_FLAG_FAILURE__) && !(details->flags & TEST_FLAG_SUCCESS__))
                 fprintf(test_xml_output__, "    <skipped />\n");
             fprintf(test_xml_output__, "  </testcase>\n");
         }
@@ -1529,7 +1564,7 @@ main(int argc, char** argv)
         fclose(test_xml_output__);
     }
 
-    free((void*) test_flags__);
+    free((void*) test_details__);
 
     return (test_stat_failed_units__ == 0) ? 0 : 1;
 }
