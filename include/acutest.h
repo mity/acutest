@@ -872,8 +872,6 @@ test_do_run__(const struct test__* test, int index)
     test_current_already_logged__ = 0;
     test_cond_failed__ = 0;
 
-    test_timer_init__();
-
     test_begin_test_line__(test);
 
 #ifdef __cplusplus
@@ -1469,7 +1467,6 @@ main(int argc, char** argv)
         fprintf(stderr, "Out of memory.\n");
         exit(2);
     }
-    memset(test_details__, 0, test_list_size__ * sizeof(struct test_detail__));
 
     /* Parse options */
     test_cmdline_read__(test_cmdline_options__, argc, argv, test_cmdline_callback__);
