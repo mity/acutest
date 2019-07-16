@@ -1554,7 +1554,7 @@ main(int argc, char** argv)
         char suite_name[_MAX_FNAME];
         _splitpath(argv[0], NULL, NULL, suite_name, NULL);
 #else
-        const char *suite_name = arg[0];
+        const char *suite_name = argv[0];
 #endif
         fprintf(test_xml_output__, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         fprintf(test_xml_output__, "<testsuite name=\"%s\" tests=\"%d\" errors=\"%d\" failures=\"%d\" skip=\"%d\">\n",
