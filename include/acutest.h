@@ -704,7 +704,7 @@ test_dump__(const char* title, const void* addr, size_t size)
         size_t off;
 
         test_line_indent__(test_case_name__[0] ? 4 : 3);
-        printf("%08llx: ", (unsigned long long)line_beg);
+        printf("%08lx: ", (unsigned long)line_beg);
         for(off = line_beg; off < line_end; off++) {
             if(off < size)
                 printf(" %02x", ((unsigned char*)addr)[off]);
