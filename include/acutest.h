@@ -212,7 +212,6 @@
 /* The unit test files should not rely on anything below. */
 
 #include <ctype.h>
-#include <libgen.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -221,6 +220,7 @@
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define ACUTEST_UNIX__      1
     #include <errno.h>
+    #include <libgen.h>
     #include <unistd.h>
     #include <sys/types.h>
     #include <sys/wait.h>
@@ -1548,9 +1548,17 @@ main(int argc, char** argv)
     }
 
     if (test_xml_output__) {
+#if defined ACUTEST_UNIX__
+        char *suite_name = basename(argv[0]);
+#elif defined ACUTEST_WIN__
+        char suite_name[_MAX_FNAME];
+        _splitpath(argv[0], NULL, NULL, suite_name, NULL);
+#else
+        const char *suite_name = arg[0];
+#endif
         fprintf(test_xml_output__, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         fprintf(test_xml_output__, "<testsuite name=\"%s\" tests=\"%d\" errors=\"%d\" failures=\"%d\" skip=\"%d\">\n",
-            basename(argv[0]), (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
+            suite_name, (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
             (int)test_list_size__ - test_stat_run_units__);
         for(i = 0; test_list__[i].func != NULL; i++) {
             struct test_detail__ *details = &test_details__[i];
