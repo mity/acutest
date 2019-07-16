@@ -212,6 +212,7 @@
 /* The unit test files should not rely on anything below. */
 
 #include <ctype.h>
+#include <libgen.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1548,8 +1549,8 @@ main(int argc, char** argv)
 
     if (test_xml_output__) {
         fprintf(test_xml_output__, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        fprintf(test_xml_output__, "<testsuite name=\"acutest\" tests=\"%d\" errors=\"%d\" failures=\"%d\" skip=\"%d\">\n",
-            (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
+        fprintf(test_xml_output__, "<testsuite name=\"%s\" tests=\"%d\" errors=\"%d\" failures=\"%d\" skip=\"%d\">\n",
+            basename(argv[0]), (int)test_list_size__, test_stat_failed_units__, test_stat_failed_units__,
             (int)test_list_size__ - test_stat_run_units__);
         for(i = 0; test_list__[i].func != NULL; i++) {
             struct test_detail__ *details = &test_details__[i];
