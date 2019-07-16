@@ -263,7 +263,7 @@ struct test__ {
 };
 
 struct test_detail__ {
-    uint8_t flags;
+    unsigned char flags;
     double duration;
 };
 
