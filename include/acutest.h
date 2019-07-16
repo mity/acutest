@@ -331,7 +331,7 @@ static int test_timer__ = 0;
     static double
     test_timer_diff__(LARGE_INTEGER start, LARGE_INTEGER end)
     {
-        double duration = test_timer_end__.QuadPart - test_timer_start__.QuadPart;
+        double duration = end.QuadPart - start.QuadPart;
         duration /= test_timer_freq__.QuadPart;
         return duration;
     }
@@ -1457,6 +1457,8 @@ main(int argc, char** argv)
     test_colorize__ = 0;
 #endif
 
+    test_timer_init__();
+
     /* Count all test units */
     test_list_size__ = 0;
     for(i = 0; test_list__[i].func != NULL; i++)
@@ -1467,6 +1469,7 @@ main(int argc, char** argv)
         fprintf(stderr, "Out of memory.\n");
         exit(2);
     }
+    memset(test_details__, 0, test_list_size__ * sizeof(struct test_detail__));
 
     /* Parse options */
     test_cmdline_read__(test_cmdline_options__, argc, argv, test_cmdline_callback__);
