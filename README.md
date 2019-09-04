@@ -269,7 +269,7 @@ TEST_CASE("name");
 ```
 we can use richer
 ```C
-TEST_CASE("iteration #%d", 42);
+TEST_CASE_("iteration #%d", 42);
 ```
 
 However note all of these can only be used if your compiler supports variadic
