@@ -401,6 +401,8 @@ static int test_timer__ = 0;
     static double
     test_timer_diff__(int start, int end)
     {
+        (void) start;
+        (void) end;
         return 0.0;
     }
 
