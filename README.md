@@ -9,24 +9,20 @@ Home: http://github.com/mity/acutest
 
 ## What Is Acutest
 
-"Acutest" means "Another C Unit Testing" and it is intended to do exactly that,
-while being as simple as possible to use it, not to stand in the developer's
-way and minimize any external dependencies.
+Acutest is C/C++ unit testing facility aiming to be as simple as possible, to
+not to stand in the developer's way and to minimize any external dependencies.
 
 To achieve that, the complete implementation resides in a single C header file,
 and its core depends only on few standard C library functions.
-
-Acutest supports C as well as C++, and it can deal with unit tests which throw
-C++ exceptions.
 
 
 ## Overview
 
 **Main features:**
 * Unit tests in C or C++ are supported.
-* No need to install/setup/configure testing framework. Acutest is just single
-  C/C++ header, `"acutest.h"`.
-* The header provides program entry point (function `main()`).
+* No need to install/setup/configure any testing framework. Acutest is just
+  single a header file, `acutest.h`.
+* The header provides the program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
   optional features may use more if available on the particular system.
 * Trivial interface for writing unit tests: Few preprocessor macros described
@@ -35,22 +31,22 @@ C++ exceptions.
   (use `--tap` option).
 * Rudimentary support for xUnit-compatible XML output (use `--xml-output=FILE`).
 
-**Windows specific features:**
-* By default, every unit test is executed as a child process.
-* By default, if the output is directed to a terminal, the output is colorized.
-* Acutest installs a SEH filter to print out uncaught SEH exceptions.
+**C++ specific features:**
+* Acutest catches any C++ exception thrown from any unit test function. When
+  that happens, the given test is considered to fail.
+* If the exception is derived from `std::exception`, `what()` is written out
+  in the error message.
 
 **Unix specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
 
-**C++ specific features:**
-* Acutest catches C++ exceptions thrown from unit test functions. Such unit
-  tests are considered to fail.
-* If the exception is derived from `std::exception`, `what()` is written out
-  in the error message.
+**Windows specific features:**
+* By default, every unit test is executed as a child process.
+* By default, if the output is directed to a terminal, the output is colorized.
+* Acutest installs a SEH filter to print out uncaught SEH exceptions.
 
-Any C/C++ module implementing one or more unit tests and including `"acutest.h"`,
+Any C/C++ module implementing one or more unit tests and including `acutest.h`,
 can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
 tests, as specified with its command line options.
@@ -61,19 +57,19 @@ overridden on the command line.
 
 We say any unit test succeeds if all conditions (preprocessor macros `TEST_CHECK`
 or `TEST_CHECK_`) called throughout its execution pass, the test does not throw
-an exception (C++ only), and (on Windows/Unix) the unit test subprocess is not
+any exception (C++ only), and (on Windows/Unix) the unit test subprocess is not
 interrupted/terminated (e.g. by a signal on Unix or SEH on Windows).
 
-Exit code of the test suite is 0 if all unit tests pass, 1 if any of them fails,
-or other number if an internal error occurs.
+Exit code of the test suite is 0 if all executed unit tests pass, 1 if any of
+them fails, or any other number if an internal error occurs.
 
 
 ## Writing Unit Tests
 
 ### Basic Use
 
-To use Acutest, simply include the header file `"acutest.h"` on the beginning
-of the C/C++ source file implementing one or more unit tests. Note the header
+To use Acutest, simply include the header file `acutest.h` on the beginning of
+the C/C++ source file implementing one or more unit tests. Note the header
 provides implementation of the `main()` function.
 
 ```C
@@ -91,8 +87,8 @@ The tests can use some preprocessor macros to validate the test conditions.
 They can be used multiple times, and if any of those conditions fails, the
 particular test is considered to fail.
 
-`TEST_CHECK` is the most commonly used testing macros which simply test a
-boolean condition and fail if the condition evaluates to false (or zero).
+`TEST_CHECK` is the most commonly used testing macros which simply tests a
+boolean condition and fails if the condition evaluates to false (or zero).
 
 For example:
 
@@ -110,17 +106,18 @@ void test_example(void)
 }
 ```
 
-Note that the tests should be independent on each other. Whenever the test
-suite is invoked, the user may run any number of tests in the suite, in any
-order. Furthermore by default, on platforms where supported, each unit test
-is executed as a standalone (sub)process.
+Note that the tests should be completely independent on each other. Whenever
+the test suite is invoked, the user may run any number of tests in the suite,
+in any order. Furthermore by default, on platforms where supported, each unit
+test is executed as a standalone (sub)process.
 
 Finally, the test suite source file has to list the unit tests, using the
 macro `TEST_LIST`. The list specifies name of each test (it has to be unique)
 and pointer to a function implementing the test. I recommend names which are
-easy to use on command line, i.e. especially avoid space and other special
-characters in them. Also avoid using dash as a first character, as it would
-be then interpreted as a command line option, not a test name.
+easy to use on command line: especially avoid space and other special
+characters which might require escaping in shell; also avoid dash (`-`) as a
+first character of the name, as it could then be interpreted as a command line
+option and not as a test name.
 
 ```C
 TEST_LIST = {
@@ -174,8 +171,8 @@ void test_example(void)
 
     SomeSprintfLikeFunction(expected, "Hello %s!", world);
     TEST_CHECK(strlen(produced) == strlen(expected));
-    TEST_MESSAGE("Expected: %s", expected);
-    TEST_MESSAGE("Produced: %s", produced);
+    TEST_MSG("Expected: %s", expected);
+    TEST_MSG("Produced: %s", produced);
 
     /* Or if the function would provide some binary stuff, we might rather
      * use TEST_DUMP instead and output a hexadecimal dump. */
@@ -301,8 +298,9 @@ $ ./test_example test1 test2    # Runs only tests specified
 $ ./test_example --skip test3   # Runs all tests but those specified
 ```
 
-Actually, the command line argument can select more then just one test unit.
-Acutest implements several levels of unit test selection:
+Note that a single command line argument can select whole group of test units
+because Acutest implements several levels of unit test selection (the 1st one
+matching at least one test unit is used):
 
 1. *Exact match*: When the argument matches exactly the whole name of some unit
    test then just the given test is selected.
@@ -317,8 +315,8 @@ Acutest implements several levels of unit test selection:
    selected.
 
 By adopting an appropriate test naming strategy, this allows user to run (or
-to skip if `--skip` is used) whole group of related tests with a single command
-line argument.
+to skip if `--skip` is used) easily whole family of related tests with a single
+command line argument.
 
 For example consider test suite `test_example` which implements tests `foo-1`,
 `foo-2`, `foomatic`, `bar-1` and `bar-10`:
@@ -352,18 +350,19 @@ $ ./test_example --help
 **A:** Yes. It has been renamed as the original name was found to be
 [too much overloaded](https://github.com/mity/cutest/issues/6).
 
+
 **Q: Do I need to distribute file `README.md` and/or `LICENSE.md`?**
 
 **A:** No. The header `acutest.h` includes URL to our repo, copyright note and
-the MIT license terms inside of it. So as long as you leave those intact, we
-are completely fine if you only add the header into your project. After all,
-the all-in-one-header is the purpose of it.
+the MIT license terms inside of it. As long as you leave those intact, we are
+completely fine if you only add the header into your project. After all,
+the simple use and all-in-one-header nature of it is our primary aim.
 
 
 ## License
 
 Acutest is covered with MIT license, see the file `LICENSE.md` or beginning of
-`"acutest.h"` for its full text.
+`acutest.h` for its full text.
 
 
 ## More Information
