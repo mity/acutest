@@ -87,7 +87,7 @@ The tests can use some preprocessor macros to validate the test conditions.
 They can be used multiple times, and if any of those conditions fails, the
 particular test is considered to fail.
 
-`TEST_CHECK` is the most commonly used testing macros which simply tests a
+`TEST_CHECK` is the most commonly used testing macro which simply tests a
 boolean condition and fails if the condition evaluates to false (or zero).
 
 For example:
@@ -123,7 +123,7 @@ option and not as a test name.
 TEST_LIST = {
    { "example", test_example },
    ...
-   { 0 }
+   { NULL, NULL }
 };
 ```
 
@@ -183,22 +183,26 @@ void test_example(void)
 
 (Note that `TEST_MSG` requires the compiler with variadic macros support.)
 
-### Test Vectors
+### Loops over Test Vectors
 
-Sometimes, it is useful to construct the testing function as a loop over
-some data verifying that for some input vector we get always the expected
-output vector. For example we are verifying some kind of hashing function
-and some specification provides a set of test vectors for it.
+Sometimes, it is useful to construct the testing function as a loop over some
+data providing a collection of test vectors and their respective expected
+outputs. For example imagine our unit test is supposed to verify some kind
+of a hashing function and we've got a collection of test vectors for it in
+its specification.
 
-In such cases, it is convenient to output a message what iteration we are
-checking so that, if any check fails, we can easily in the output log for which
-input vector it has happened.
+In such cases, it is very useful to get some name in the output log so that
+if any check fails, it is easy to identify the guilty test vector. However,
+it may be impractical to add such name to every checking macro.
 
-Acutest provides the macro `TEST_CASE` for this purpose.
+To solve this, Acutest provides the macro `TEST_CASE`. The macro specifies
+a string serving as the test vector name. When used, Acutest makes sure that
+the provided name precedes any message from subsequent condition checks in its
+output log (until `TEST_CASE` is used again or the whole unit test ends).
 
-For example, assuming we are testing `SomeFunction()` which, for a given byte
-array of some size returns another array of bytes (in a newly `malloc`-ed
-buffer), we could something like this:
+For example lets assume we are testing `SomeFunction()` which is supposed,
+for a given byte array of some size, return another some another array of bytes
+in a newly `malloc`-ed buffer. Then we can do something like this:
 
 ```C
 struct TestVector {
@@ -222,8 +226,14 @@ void test_example(void)
     for(i = 0; i < sizeof(test_vectors) / sizeof(test_vectors[0]); i++) {
         struct TestVector* vec = &test_vectors[i];
 
+        /* Output the name of the tested test vector. */
         TEST_CASE(vec.name);
 
+        /* Now, we can check the function produces what it should for the
+         * current test vector. If any of the following checking macros
+         * produces any output (either because the check fails, or because
+         * high `--verbose` level is used), Acutest also outputs the  currently
+         * tested vector's name. */
         output = SomeFunction(vec->input, vec->input_size, &output_size);
         if(TEST_CHECK(output != NULL)) {
             TEST_CHECK(output_size == vec->expected_output_size);
@@ -231,14 +241,25 @@ void test_example(void)
             free(output);
         }
     }
-
-    /* Reset the iteration name.
-     *
-     * This is actually only needed if our tests does some more checks after
-     * the loop above. */
-    TEST_CASE(NULL);
 }
 ```
+
+To explicitly reset the test vector name, typically after such a loop if the
+unit test makes some subsequent checks not related to any particular test
+vector anymore, use `NULL` as the macro's parameter:
+
+```C
+void test_example(void)
+{
+    ...
+
+    /* Reset the test vector name. */
+    TEST_CASE(NULL);
+
+    ...
+}
+```
+
 
 ### Custom Log Messages
 
