@@ -21,7 +21,7 @@ and its core depends only on few standard C library functions.
 **Main features:**
 * Unit tests in C or C++ are supported.
 * No need to install/setup/configure any testing framework. Acutest is just
-  single a header file, `acutest.h`.
+  a single header file, `acutest.h`.
 * The header provides the program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
   optional features may use more if available on the particular system.
