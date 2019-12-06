@@ -1,5 +1,5 @@
-[![Build status (travis-ci.com)](https://img.shields.io/travis/mity/acutest/master.svg?label=linux%20build)](https://travis-ci.org/mity/acutest)
-[![Build status (appveyor.com)](https://img.shields.io/appveyor/ci/mity/acutest/master.svg?label=windows%20build)](https://ci.appveyor.com/project/mity/acutest/branch/master)
+[![Linux Build Status (travis-ci.com)](https://img.shields.io/travis/mity/acutest/master.svg?logo=linux&label=linux%20build)](https://travis-ci.org/mity/acutest)
+[![Windows Build Status (appveyor.com)](https://img.shields.io/appveyor/ci/mity/acutest/master.svg?logo=windows&label=windows%20build)](https://ci.appveyor.com/project/mity/acutest/branch/master)
 
 
 # Acutest Readme
