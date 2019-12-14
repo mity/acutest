@@ -99,13 +99,13 @@
  */
 #define TEST_ASSERT_(cond,...)                                                 \
     do {                                                                       \
-        test_check__((cond), __FILE__, __LINE__, __VA_ARGS__);                 \
-        test_abort__();                                                        \
+        if (!test_check__((cond), __FILE__, __LINE__, __VA_ARGS__))            \
+            test_abort__();                                                    \
     } while(0)
 #define TEST_ASSERT(cond)                                                      \
     do {                                                                       \
-        test_check__((cond), __FILE__, __LINE__, "%s", #cond);                 \
-        test_abort__();                                                        \
+        if (!test_check__((cond), __FILE__, __LINE__, "%s", #cond))            \
+            test_abort__();                                                    \
     } while(0)
 
 
