@@ -106,6 +106,15 @@ void test_example(void)
 }
 ```
 
+`TEST_ASSERT` is similar to `TEST_CHECK` but, if it fails, it aborts execution
+of the current unit test instantly, either by calling `abort()` if the test
+is executed as a child process, or via `longjmp()` if it is not.
+
+(Therefore you should use it only if you understand the costs connected with
+such brutal abortion of the test, like e.g. unflushed file descriptors, memory
+leaks, C++ objects destructed without calling their destructors etc., depending
+on what your unit test does...)
+
 Note that the tests should be completely independent on each other. Whenever
 the test suite is invoked, the user may run any number of tests in the suite,
 in any order. Furthermore by default, on platforms where supported, each unit
@@ -273,15 +282,17 @@ additional underscore suffix and they also expect `printf`-like string format
 So for example instead of
 ```C++
 TEST_CHECK(a == b);
+TEST_ASSERT(x < y);
 TEST_EXCEPTION(SomeFunction(), std::exception);
 ```
 we can use
 ```C++
 TEST_CHECK_(a == b, "%d is equal to %d", a, b);
+TEST_ASSERT_(x < y, "%d is lower than %d", x, y);
 TEST_EXCEPTION_(SomeFunction(), std::exception, "SomeFunction() throws std::exception");
 ```
 
-Similarly instead instead of
+Similarly, instead of
 ```C
 TEST_CASE("name");
 ```

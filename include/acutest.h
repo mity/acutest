@@ -81,6 +81,34 @@
 #define TEST_CHECK_(cond,...)   test_check__((cond), __FILE__, __LINE__, __VA_ARGS__)
 #define TEST_CHECK(cond)        test_check__((cond), __FILE__, __LINE__, "%s", #cond)
 
+
+/* These macros are the same as TEST_CHECK_ and TEST_CHECK except that if the
+ * condition fails, the currently executed unit test is immediately aborted.
+ *
+ * That is done either by calling abort() if the unit test is executed as a
+ * child process; or via longjmp() if the unit test is executed within the
+ * main Acutest process.
+ *
+ * As a side effect of such abortion, your unit tests may cause memory leaks,
+ * unflushed file descriptors, and other fenomena caused by the abortion.
+ *
+ * Therefore you should not use these as a general replacement for TEST_CHECK.
+ * Use it with some caution, especially if your test causes some other side
+ * effects to the outside world (e.g. communicating with some server, inserting
+ * into a database etc.).
+ */
+#define TEST_ASSERT_(cond,...)                                                 \
+    do {                                                                       \
+        test_check__((cond), __FILE__, __LINE__, __VA_ARGS__);                 \
+        test_abort__();                                                        \
+    } while(0)
+#define TEST_ASSERT(cond)                                                      \
+    do {                                                                       \
+        test_check__((cond), __FILE__, __LINE__, "%s", #cond);                 \
+        test_abort__();                                                        \
+    } while(0)
+
+
 #ifdef __cplusplus
 /* Macros to verify that the code (the 1st argument) throws exception of given
  * type (the 2nd argument). (Note these macros are only available in C++.)
@@ -216,6 +244,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
     #define ACUTEST_UNIX__      1
@@ -280,6 +309,7 @@ int test_check__(int cond, const char* file, int line, const char* fmt, ...);
 void test_case__(const char* fmt, ...);
 void test_message__(const char* fmt, ...);
 void test_dump__(const char* title, const void* addr, size_t size);
+void test_abort__(void);
 
 
 #ifndef TEST_NO_MAIN
@@ -309,6 +339,9 @@ static int test_verbose_level__ = 2;
 static int test_current_failures__ = 0;
 static int test_colorize__ = 0;
 static int test_timer__ = 0;
+
+static int test_abort_has_jmp_buf__ = 0;
+static jmp_buf test_abort_jmp_buf__;
 
 #if defined ACUTEST_WIN__
     typedef LARGE_INTEGER test_timer_type__;
@@ -732,6 +765,15 @@ test_dump__(const char* title, const void* addr, size_t size)
     }
 }
 
+void
+test_abort__(void)
+{
+    if(test_abort_has_jmp_buf__)
+        longjmp(test_abort_jmp_buf__, 1);
+    else
+        abort();
+}
+
 static void
 test_list_names__(void)
 {
@@ -884,8 +926,16 @@ test_do_run__(const struct test__* test, int index)
         fflush(stdout);
         fflush(stderr);
 
+        if(!test_worker__) {
+            test_abort_has_jmp_buf__ = 1;
+            if(setjmp(test_abort_jmp_buf__) != 0)
+                goto aborted;
+        }
+
         test_timer_get_time__(&test_timer_start__);
         test->func();
+aborted:
+        test_abort_has_jmp_buf__ = 0;
         test_timer_get_time__(&test_timer_end__);
 
         if(test_verbose_level__ >= 3) {
@@ -919,13 +969,12 @@ test_do_run__(const struct test__* test, int index)
 #ifdef __cplusplus
     } catch(std::exception& e) {
         const char* what = e.what();
+        test_check__(0, NULL, 0, "Threw std::exception");
         if(what != NULL)
-            test_error__("Threw std::exception: %s", what);
-        else
-            test_error__("Threw std::exception");
+            test_message__("std::exception::what(): %s", what);
         return -1;
     } catch(...) {
-        test_error__("Threw an exception");
+        test_check__(0, NULL, 0, "Threw an exception");
         return -1;
     }
 #endif
@@ -961,6 +1010,7 @@ test_run__(const struct test__* test, int index, int master_index)
             failed = 1;
         } else if(pid == 0) {
             /* Child: Do the test. */
+            test_worker__ = 1;
             failed = (test_do_run__(test, index) != 0);
             exit(failed ? 1 : 0);
         } else {
