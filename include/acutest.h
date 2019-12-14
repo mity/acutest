@@ -1096,13 +1096,15 @@ test_run__(const struct test__* test, int index, int master_index)
 #if defined(ACUTEST_WIN__)
 /* Callback for SEH events. */
 static LONG CALLBACK
-test_exception_filter__(EXCEPTION_POINTERS *ptrs)
+test_seh_exception_filter__(EXCEPTION_POINTERS *ptrs)
 {
-    test_error__("Unhandled SEH exception %08lx at %p.",
-                 ptrs->ExceptionRecord->ExceptionCode,
-                 ptrs->ExceptionRecord->ExceptionAddress);
+    test_check__(0, NULL, 0, "Unhandled SEH exception");
+    test_message__("Exception code:    0x%08lx", ptrs->ExceptionRecord->ExceptionCode);
+    test_message__("Exception address: 0x%p", ptrs->ExceptionRecord->ExceptionAddress);
+
     fflush(stdout);
     fflush(stderr);
+
     return EXCEPTION_EXECUTE_HANDLER;
 }
 #endif
@@ -1524,7 +1526,7 @@ main(int argc, char** argv)
     test_cmdline_read__(test_cmdline_options__, argc, argv, test_cmdline_callback__);
 
 #if defined(ACUTEST_WIN__)
-    SetUnhandledExceptionFilter(test_exception_filter__);
+    SetUnhandledExceptionFilter(test_seh_exception_filter__);
 #endif
 
     /* By default, we want to run all tests. */
