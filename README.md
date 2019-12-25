@@ -180,13 +180,14 @@ void test_example(void)
     char produced[100];
     char expected[] = "Hello World!";
 
-    SomeSprintfLikeFunction(expected, "Hello %s!", world);
-    TEST_CHECK(strlen(produced) == strlen(expected));
+    SomeSprintfLikeFunction(produced, "Hello %s!", "world");
+    TEST_CHECK(strcmp(produced, expected) == 0);
     TEST_MSG("Expected: %s", expected);
     TEST_MSG("Produced: %s", produced);
 
-    /* Or if the function would provide some binary stuff, we might rather
-     * use TEST_DUMP instead and output a hexadecimal dump. */
+    /* Or, if the function could provide some binary stuff, we might rather
+     * use TEST_DUMP instead in order to output a hexadecimal dump of the data.
+     */
     TEST_DUMP("Expected:", expected, strlen(expected));
     TEST_DUMP("Produced:", produced, strlen(produced));
 }
