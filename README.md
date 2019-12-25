@@ -51,17 +51,19 @@ can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
 tests, as specified with its command line options.
 
-By default, all unit tests in the program are run and (on Windows and Unix)
+By default, all unit tests in the test suite are run and (on Windows and Unix)
 every unit test is executed in a context of its own subprocess. Both can be
 overridden on the command line.
 
-We say any unit test succeeds if all conditions (preprocessor macros `TEST_CHECK`
-or `TEST_CHECK_`) called throughout its execution pass, the test does not throw
-any exception (C++ only), and (on Windows/Unix) the unit test subprocess is not
-interrupted/terminated (e.g. by a signal on Unix or SEH on Windows).
+We say any unit test succeeds if and only if:
+1. all condition checks (as described below) called throughout its execution
+   pass;
+2. the test does not throw any exception (C++ only); and
+3. (on Windows or Unix) the unit test subprocess is not interrupted/terminated
+   (e.g. by a signal on Unix or SEH on Windows).
 
-Exit code of the test suite is 0 if all executed unit tests pass, 1 if any of
-them fails, or any other number if an internal error occurs.
+Exit code of the test suite is 0 if all the executed unit tests pass, 1 if any
+of them fails, or any other number if an internal error occurs.
 
 
 ## Writing Unit Tests
@@ -113,7 +115,7 @@ is executed as a child process, or via `longjmp()` if it is not.
 (Therefore you should use it only if you understand the costs connected with
 such brutal abortion of the test, like e.g. unflushed file descriptors, memory
 leaks, C++ objects destructed without calling their destructors etc., depending
-on what your unit test does...)
+on what your unit test does.)
 
 Note that the tests should be completely independent on each other. Whenever
 the test suite is invoked, the user may run any number of tests in the suite,
@@ -167,8 +169,8 @@ provides the macros `TEST_MSG` and `TEST_DUMP` for this purpose.
 The former one outputs any `printf`-like message, the other one outputs a
 hexadecimal dump of a provided memory block.
 
-Note that both macros only output anything in the most recently checking
-macro failed.
+Note that both macros output anything only when the most recently checking
+macro has failed.
 
 So for example:
 
@@ -210,8 +212,8 @@ the provided name precedes any message from subsequent condition checks in its
 output log (until `TEST_CASE` is used again or the whole unit test ends).
 
 For example lets assume we are testing `SomeFunction()` which is supposed,
-for a given byte array of some size, return another some another array of bytes
-in a newly `malloc`-ed buffer. Then we can do something like this:
+for a given byte array of some size, return another array of bytes in a newly
+`malloc`-ed buffer. Then we can do something like this:
 
 ```C
 struct TestVector {
@@ -330,17 +332,17 @@ $ ./test_example test1 test2    # Runs only tests specified
 $ ./test_example --skip test3   # Runs all tests but those specified
 ```
 
-Note that a single command line argument can select whole group of test units
+Note that a single command line argument can select a whole group of test units
 because Acutest implements several levels of unit test selection (the 1st one
 matching at least one test unit is used):
 
-1. *Exact match*: When the argument matches exactly the whole name of some unit
+1. *Exact match*: When the argument matches exactly the whole name of a unit
    test then just the given test is selected.
 
 2. *Word match*: When the argument does not match any complete test name, but
    it does match whole word in one or more test names, then all such tests are
    selected. (Note that space ` `, tabulator `\t`, dash `-` and underscore `_`
-   are seen as word delimiters in test names.)
+   are recognized as word delimiters in the test names.)
 
 3. *Substring match*: If even the word match failed to select any test, then
    all tests with a name which contains the argument as its substring are
