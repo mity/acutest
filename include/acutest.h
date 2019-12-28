@@ -3,6 +3,7 @@
  * <http://github.com/mity/acutest>
  *
  * Copyright (c) 2013-2019 Martin Mitas
+ * Copyright 2019 Garrett D'Amore
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,9 +22,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
- */
-/*
- * Portions Copyright 2019 Garrett D'Amore
  */
 
 #ifndef ACUTEST_H__
