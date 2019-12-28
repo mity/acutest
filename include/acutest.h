@@ -1284,6 +1284,7 @@ test_help__(void)
     printf("  -s, --skip            Execute all unit tests but the listed ones\n");
     printf("      --exec[=WHEN]     If supported, execute unit tests as child processes\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
+    printf("  -E, --no-exec         Same as --exec=never\n");
 #if defined ACUTEST_WIN__
     printf("  -t, --timer           Measure test duration\n");
 #elif defined ACUTEST_HAS_POSIX_TIMER__
@@ -1291,7 +1292,6 @@ test_help__(void)
     printf("      --timer=TIMER     Measure test duration, using given timer\n");
     printf("                          (TIMER is one of 'real', 'cpu')\n");
 #endif
-    printf("  -E, --no-exec         Same as --exec=never\n");
     printf("      --no-summary      Suppress printing of test results summary\n");
     printf("      --tap             Produce TAP-compliant output\n");
     printf("                          (See https://testanything.org/)\n");
