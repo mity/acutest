@@ -3,6 +3,7 @@
  * <http://github.com/mity/acutest>
  *
  * Copyright (c) 2013-2019 Martin Mitas
+ * Copyright 2019 Garrett D'Amore
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -178,7 +179,7 @@
  * the last test case after exiting the loop), you may use TEST_CASE(NULL).
  */
 #define TEST_CASE_(...)         test_case__(__VA_ARGS__)
-#define TEST_CASE(name)         test_case__("%s", name);
+#define TEST_CASE(name)         test_case__("%s", name)
 
 
 /* printf-like macro for outputting an extra information about a failure.
@@ -364,8 +365,8 @@ static jmp_buf test_abort_jmp_buf__;
     static double
     test_timer_diff__(LARGE_INTEGER start, LARGE_INTEGER end)
     {
-        double duration = end.QuadPart - start.QuadPart;
-        duration /= test_timer_freq__.QuadPart;
+        double duration = (double)(end.QuadPart - start.QuadPart);
+        duration /= (double)test_timer_freq__.QuadPart;
         return duration;
     }
 
@@ -384,12 +385,7 @@ static jmp_buf test_abort_jmp_buf__;
     test_timer_init__(void)
     {
         if(test_timer__ == 1)
-    #ifdef CLOCK_MONOTONIC_RAW
-            /* linux specific; not subject of NTP adjustments or adjtime() */
-            test_timer_id__ = CLOCK_MONOTONIC_RAW;
-    #else
             test_timer_id__ = CLOCK_MONOTONIC;
-    #endif
         else if(test_timer__ == 2)
             test_timer_id__ = CLOCK_PROCESS_CPUTIME_ID;
     }
@@ -403,11 +399,18 @@ static jmp_buf test_abort_jmp_buf__;
     static double
     test_timer_diff__(struct timespec start, struct timespec end)
     {
-        return ((double) end.tv_sec +
-                (double) end.tv_nsec * 10e-9)
-               -
-               ((double) start.tv_sec +
-                (double) start.tv_nsec * 10e-9);
+        double endns;
+        double startns;
+
+        endns = end.tv_sec;
+        endns *= 1e9;
+        endns += end.tv_nsec;
+
+        startns = start.tv_sec;
+        startns *= 1e9;
+        startns += start.tv_nsec;
+
+        return ((endns - startns)/ 1e9);
     }
 
     static void
