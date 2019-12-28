@@ -169,9 +169,6 @@ provides the macros `TEST_MSG` and `TEST_DUMP` for this purpose.
 The former one outputs any `printf`-like message, the other one outputs a
 hexadecimal dump of a provided memory block.
 
-Note that both macros output anything only when the most recently checking
-macro has failed.
-
 So for example:
 
 ```C
@@ -192,6 +189,20 @@ void test_example(void)
     TEST_DUMP("Produced:", produced, strlen(produced));
 }
 ```
+
+Note that both macros output anything only when the most recently checking
+macro has failed. In other words, these two are equivalent:
+
+```C
+if(!TEST_CHECK(some_condition != 0))
+    TEST_MSG("some message");
+```
+
+```C
+TEST_CHECK(some_condition != 0);
+TEST_MSG("some message");
+```
+
 
 (Note that `TEST_MSG` requires the compiler with variadic macros support.)
 
@@ -275,25 +286,32 @@ void test_example(void)
 
 ### Custom Log Messages
 
-Many of the macros mentioned in the earlier sections have a variant which
+Many of the macros mentioned in the earlier sections have a counterpart which
 allows to output a custom messages instead of some default ones.
 
-All of these have the same name as the aforementioned macros with the
-additional underscore suffix and they also expect `printf`-like string format
-(and corresponding additional arguments).
+All of these have the same name as the aforementioned macros, just with the
+underscore suffix added. With the suffix, they then expect `printf`-like string
+format and corresponding additional arguments.
 
-So for example instead of
+So, for example, instead of the simple checking macros
 ```C++
 TEST_CHECK(a == b);
 TEST_ASSERT(x < y);
 TEST_EXCEPTION(SomeFunction(), std::exception);
 ```
-we can use
+we can use their respective counterparts with a custom messages:
 ```C++
 TEST_CHECK_(a == b, "%d is equal to %d", a, b);
 TEST_ASSERT_(x < y, "%d is lower than %d", x, y);
 TEST_EXCEPTION_(SomeFunction(), std::exception, "SomeFunction() throws std::exception");
 ```
+
+You should use some neutral wording for them because, with the command line
+option `--verbose`, the messages are logged out even if the respective check
+passes successfully.
+
+(If you need to output some diagnostic information just in the case the check
+fails, use the macro `TEST_MSG`. That's exactly its purpose.)
 
 Similarly, instead of
 ```C
@@ -305,7 +323,8 @@ TEST_CASE_("iteration #%d", 42);
 ```
 
 However note all of these can only be used if your compiler supports variadic
-macros.
+preprocessor macros. Variadic macros became a standard part of the C language
+with C99.
 
 
 ## Building the Test Suite
