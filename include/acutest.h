@@ -326,6 +326,7 @@ static int test_skip_mode__ = 0;
 static int test_worker__ = 0;
 static int test_worker_index__ = 0;
 static int test_cond_failed__ = 0;
+static int test_was_aborted__ = 0;
 static FILE *test_xml_output__ = NULL;
 
 static int test_stat_failed_units__ = 0;
@@ -884,16 +885,6 @@ test_error__(const char* fmt, ...)
     if(test_verbose_level__ == 0)
         return;
 
-    if(test_verbose_level__ <= 2  &&  !test_current_already_logged__  &&  test_current_unit__ != NULL) {
-        if(test_tap__) {
-            test_finish_test_line__(-1);
-        } else {
-            printf("[ ");
-            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED");
-            printf(" ]\n");
-        }
-    }
-
     if(test_verbose_level__ >= 2) {
         test_line_indent__(1);
         if(test_verbose_level__ >= 3)
@@ -913,6 +904,7 @@ test_error__(const char* fmt, ...)
 static int
 test_do_run__(const struct test__* test, int index)
 {
+    test_was_aborted__ = 0;
     test_current_unit__ = test;
     test_current_index__ = index;
     test_current_failures__ = 0;
@@ -931,8 +923,10 @@ test_do_run__(const struct test__* test, int index)
 
         if(!test_worker__) {
             test_abort_has_jmp_buf__ = 1;
-            if(setjmp(test_abort_jmp_buf__) != 0)
+            if(setjmp(test_abort_jmp_buf__) != 0) {
+                test_was_aborted__ = 1;
                 goto aborted;
+            }
         }
 
         test_timer_get_time__(&test_timer_start__);
@@ -955,10 +949,14 @@ aborted:
                 }
             } else {
                 test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED: ");
-                printf("%d condition%s %s failed.\n",
-                        test_current_failures__,
-                        (test_current_failures__ == 1) ? "" : "s",
-                        (test_current_failures__ == 1) ? "has" : "have");
+                if(!test_was_aborted__) {
+                    printf("%d condition%s %s failed.\n",
+                            test_current_failures__,
+                            (test_current_failures__ == 1) ? "" : "s",
+                            (test_current_failures__ == 1) ? "has" : "have");
+                } else {
+                    printf("Aborted.\n");
+                }
             }
             printf("\n");
         } else if(test_verbose_level__ >= 1 && test_current_failures__ == 0) {
@@ -975,9 +973,23 @@ aborted:
         test_check__(0, NULL, 0, "Threw std::exception");
         if(what != NULL)
             test_message__("std::exception::what(): %s", what);
+
+        if(test_verbose_level__ >= 3) {
+            test_line_indent__(1);
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED: ");
+            printf("C++ exception.\n\n");
+        }
+
         return -1;
     } catch(...) {
         test_check__(0, NULL, 0, "Threw an exception");
+
+        if(test_verbose_level__ >= 3) {
+            test_line_indent__(1);
+            test_print_in_color__(TEST_COLOR_RED_INTENSIVE__, "FAILED: ");
+            printf("C++ exception.\n\n");
+        }
+
         return -1;
     }
 #endif
@@ -1039,9 +1051,9 @@ test_run__(const struct test__* test, int index, int master_index)
                     case SIGTERM: signame = "SIGTERM"; break;
                     default:      sprintf(tmp, "signal %d", WTERMSIG(exit_code)); signame = tmp; break;
                 }
-                test_error__("Test interrupted by %s", signame);
+                test_error__("Test interrupted by %s.", signame);
             } else {
-                test_error__("Test ended in an unexpected way [%d]", exit_code);
+                test_error__("Test ended in an unexpected way [%d].", exit_code);
             }
         }
 
@@ -1068,6 +1080,13 @@ test_run__(const struct test__* test, int index, int master_index)
             CloseHandle(processInfo.hThread);
             CloseHandle(processInfo.hProcess);
             failed = (exitCode != 0);
+            if(exitCode > 1) {
+                switch(exitCode) {
+                    case 3:             test_error__("Aborted."); break;
+                    case 0xC0000005:    test_error__("Access violation."); break;
+                    default:            test_error__("Test ended in an unexpected way [%lu].", exitCode); break;
+                }
+            }
         } else {
             test_error__("Cannot create unit test subprocess [%ld].", GetLastError());
             failed = 1;
