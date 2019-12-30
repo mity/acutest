@@ -1322,6 +1322,7 @@ test_help__(void)
     printf("                          1 ... Output one line per test (and summary)\n");
     printf("                          2 ... As 1 and failed conditions (this is default)\n");
     printf("                          3 ... As 1 and all conditions (and extended summary)\n");
+    printf("  -q, --quiet           Same as --verbose=0\n");
     printf("      --color[=WHEN]    Enable colorized output\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("      --no-color        Same as --color=never\n");
@@ -1346,6 +1347,7 @@ static const TEST_CMDLINE_OPTION__ test_cmdline_options__[] = {
     {  0,   "tap",          'T', 0 },
     { 'l',  "list",         'l', 0 },
     { 'v',  "verbose",      'v', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
+    { 'q',  "quiet",        'q', 0 },
     {  0,   "color",        'c', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     {  0,   "no-color",     'C', 0 },
     { 'h',  "help",         'h', 0 },
@@ -1410,6 +1412,10 @@ test_cmdline_callback__(int id, const char* arg)
 
         case 'v':
             test_verbose_level__ = (arg != NULL ? atoi(arg) : test_verbose_level__+1);
+            break;
+
+        case 'q':
+            test_verbose_level__ = 0;
             break;
 
         case 'c':
