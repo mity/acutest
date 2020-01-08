@@ -627,7 +627,9 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
                 lastsep2 = file-1;
             file = (lastsep1 > lastsep2 ? lastsep1 : lastsep2) + 1;
 #else
-            file = (const char*) basename(file);
+            const char* lastsep = strrchr(file, '/');
+            if(lastsep != NULL)
+                file = lastsep+1;
 #endif
             printf("%s:%d: Check ", file, line);
         }
