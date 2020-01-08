@@ -2,7 +2,7 @@
  * Acutest -- Another C/C++ Unit Test facility
  * <http://github.com/mity/acutest>
  *
- * Copyright 2013-2019 Martin Mitas
+ * Copyright 2013-2020 Martin Mitas
  * Copyright 2019 Garrett D'Amore
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -618,21 +618,17 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
 
         test_line_indent__(test_case_name__[0] ? 2 : 1);
         if(file != NULL) {
-            if(test_verbose_level__ < 3) {
 #ifdef ACUTEST_WIN__
-                const char* lastsep1 = strrchr(file, '\\');
-                const char* lastsep2 = strrchr(file, '/');
-                if(lastsep1 == NULL)
-                    lastsep1 = file-1;
-                if(lastsep2 == NULL)
-                    lastsep2 = file-1;
-                file = (lastsep1 > lastsep2 ? lastsep1 : lastsep2) + 1;
+            const char* lastsep1 = strrchr(file, '\\');
+            const char* lastsep2 = strrchr(file, '/');
+            if(lastsep1 == NULL)
+                lastsep1 = file-1;
+            if(lastsep2 == NULL)
+                lastsep2 = file-1;
+            file = (lastsep1 > lastsep2 ? lastsep1 : lastsep2) + 1;
 #else
-                const char* lastsep = strrchr(file, '/');
-                if(lastsep != NULL)
-                    file = lastsep+1;
+            file = basename(file);
 #endif
-            }
             printf("%s:%d: Check ", file, line);
         }
 
