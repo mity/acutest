@@ -1535,8 +1535,6 @@ main(int argc, char** argv)
     test_colorize__ = 0;
 #endif
 
-    test_timer_init__();
-
     /* Count all test units */
     test_list_size__ = 0;
     for(i = 0; test_list__[i].func != NULL; i++)
@@ -1550,6 +1548,9 @@ main(int argc, char** argv)
 
     /* Parse options */
     test_cmdline_read__(test_cmdline_options__, argc, argv, test_cmdline_callback__);
+
+    /* Initialize the proper timer. */
+    test_timer_init__();
 
 #if defined(ACUTEST_WIN__)
     SetUnhandledExceptionFilter(test_seh_exception_filter__);
