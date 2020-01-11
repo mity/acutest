@@ -1066,7 +1066,7 @@ test_run__(const struct test__* test, int index, int master_index)
          * through a command line arguments. */
         _snprintf(buffer, sizeof(buffer)-1,
                  "%s --worker=%d %s --no-exec --no-summary %s --verbose=%d --color=%s -- \"%s\"",
-                 test_argv0__, index, test_timer__ ? "--timer" : "",
+                 test_argv0__, index, test_timer__ ? "--time" : "",
                  test_tap__ ? "--tap" : "", test_verbose_level__,
                  test_colorize__ ? "always" : "never",
                  test->name);
@@ -1303,10 +1303,10 @@ test_help__(void)
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("  -E, --no-exec         Same as --exec=never\n");
 #if defined ACUTEST_WIN__
-    printf("  -t, --timer           Measure test duration\n");
+    printf("  -t, --time            Measure test duration\n");
 #elif defined ACUTEST_HAS_POSIX_TIMER__
-    printf("  -t, --timer           Measure test duration (real time)\n");
-    printf("      --timer=TIMER     Measure test duration, using given timer\n");
+    printf("  -t, --time            Measure test duration (real time)\n");
+    printf("      --time=TIMER      Measure test duration, using given timer\n");
     printf("                          (TIMER is one of 'real', 'cpu')\n");
 #endif
     printf("      --no-summary      Suppress printing of test results summary\n");
@@ -1337,9 +1337,11 @@ static const TEST_CMDLINE_OPTION__ test_cmdline_options__[] = {
     {  0,   "exec",         'e', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
     { 'E',  "no-exec",      'E', 0 },
 #if defined ACUTEST_WIN__
-    { 't',  "timer",        't', 0 },
+    { 't',  "time",         't', 0 },
+    {  0,   "timer",        't', 0 },   /* kept for compatibility */
 #elif defined ACUTEST_HAS_POSIX_TIMER__
-    { 't',  "timer",        't', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
+    { 't',  "time",         't', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },
+    {  0,   "timer",        't', TEST_CMDLINE_OPTFLAG_OPTIONALARG__ },  /* kept for compatibility */
 #endif
     {  0,   "no-summary",   'S', 0 },
     {  0,   "tap",          'T', 0 },
@@ -1389,7 +1391,7 @@ test_cmdline_callback__(int id, const char* arg)
                 test_timer__ = 2;
     #endif
             } else {
-                fprintf(stderr, "%s: Unrecognized argument '%s' for option --timer.\n", test_argv0__, arg);
+                fprintf(stderr, "%s: Unrecognized argument '%s' for option --time.\n", test_argv0__, arg);
                 fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0__);
                 exit(2);
             }
