@@ -37,23 +37,28 @@ and its core depends only on few standard C library functions.
 * If the exception is derived from `std::exception`, `what()` is written out
   in the error message.
 
-**Unix specific features:**
+**Unix/Posix specific features:**
 * By default, every unit test is executed as a child process.
 * By default, if the output is directed to a terminal, the output is colorized.
+* If the system offers Posix timer (`clock_gettime()`), user can measure test
+  execution times with `--time=real` (same as `--time`) and `--time=cpu`.
+
+**Linux specific features:**
+* If a debugger is detected, the default execution of tests as child processes
+  is suppressed in order to make the debugging easier.
 
 **Windows specific features:**
 * By default, every unit test is executed as a child process.
+* If a debugger is detected, the default execution of tests as child processes
+  is suppressed in order to make the debugging easier.
 * By default, if the output is directed to a terminal, the output is colorized.
 * Acutest installs a SEH filter to print out uncaught SEH exceptions.
+* User can measure test execution times with `--time`.
 
 Any C/C++ module implementing one or more unit tests and including `acutest.h`,
 can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
 tests, as specified with its command line options.
-
-By default, all unit tests in the test suite are run and (on Windows and Unix)
-every unit test is executed in a context of its own subprocess. Both can be
-overridden on the command line.
 
 We say any unit test succeeds if and only if:
 1. all condition checks (as described below) called throughout its execution
@@ -61,9 +66,6 @@ We say any unit test succeeds if and only if:
 2. the test does not throw any exception (C++ only); and
 3. (on Windows or Unix) the unit test subprocess is not interrupted/terminated
    (e.g. by a signal on Unix or SEH on Windows).
-
-Exit code of the test suite is 0 if all the executed unit tests pass, 1 if any
-of them fails, or any other number if an internal error occurs.
 
 
 ## Writing Unit Tests
@@ -341,6 +343,9 @@ $ cc test_example.c -o test_example
 
 When the test suite is compiled, the resulted testing binary can be used to run
 the tests.
+
+Exit code of the test suite is 0 if all the executed unit tests pass, 1 if any
+of them fails, or any other number if an internal error occurs.
 
 By default (without any command line options), it runs all implemented unit
 tests. It can also run only subset of the unit tests as specified on the
