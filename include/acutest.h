@@ -278,6 +278,13 @@
     #include <exception>
 #endif
 
+/* Load valgrind.h, if available. This allows to detect valgrind's presence via RUNNING_ON_VALGRIND. */
+#ifdef __has_include
+    #if __has_include(<valgrind.h>)
+        #include <valgrind.h>
+    #endif
+#endif
+
 
 /* Note our global private identifiers end with '__' to mitigate risk of clash
  * with the unit tests implementation. */
@@ -1577,6 +1584,11 @@ main(int argc, char** argv)
 #endif
 #ifdef ACUTEST_LINUX__
             if(test_is_tracer_present__())
+                test_no_exec__ = 1;
+#endif
+#ifdef RUNNING_ON_VALGRIND
+            /* RUNNING_ON_VALGRIND is provided by valgrind.h */
+            if(RUNNING_ON_VALGRIND)
                 test_no_exec__ = 1;
 #endif
         }
