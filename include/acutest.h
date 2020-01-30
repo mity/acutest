@@ -561,7 +561,7 @@ test_finish_test_line__(int result)
         int color = (result == 0) ? TEST_COLOR_GREEN_INTENSIVE__ : TEST_COLOR_RED_INTENSIVE__;
         const char* str = (result == 0) ? "OK" : "FAILED";
         printf("[ ");
-        test_print_in_color__(color, str);
+        test_print_in_color__(color, "%s", str);
         printf(" ]");
 
         if(result == 0  &&  test_timer__) {
@@ -646,7 +646,7 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         va_end(args);
 
         printf("... ");
-        test_print_in_color__(result_color, result_str);
+        test_print_in_color__(result_color, "%s", result_str);
         printf("\n");
         test_current_already_logged__++;
     }
