@@ -751,14 +751,14 @@ test_dump__(const char* title, const void* addr, size_t size)
         printf("%08lx: ", (unsigned long)line_beg);
         for(off = line_beg; off < line_end; off++) {
             if(off < size)
-                printf(" %02x", ((unsigned char*)addr)[off]);
+                printf(" %02x", ((const unsigned char*)addr)[off]);
             else
                 printf("   ");
         }
 
         printf("  ");
         for(off = line_beg; off < line_end; off++) {
-            unsigned char byte = ((unsigned char*)addr)[off];
+            unsigned char byte = ((const unsigned char*)addr)[off];
             if(off < size)
                 printf("%c", (iscntrl(byte) ? '.' : byte));
             else
