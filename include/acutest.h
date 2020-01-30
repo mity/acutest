@@ -285,6 +285,12 @@
     #endif
 #endif
 
+/* Enable the use of the non-standard keyword __attribute__ to silence warnings under some compilers */
+#if defined(__GNUC__) || defined(__clang__)
+    #define TEST_ATTRIBUTE__(_x) __attribute__ ((_x))
+#else
+    #define TEST_ATTRIBUTE__(_x)
+#endif
 
 /* Note our global private identifiers end with '__' to mitigate risk of clash
  * with the unit tests implementation. */
@@ -462,7 +468,7 @@ static jmp_buf test_abort_jmp_buf__;
 #define TEST_COLOR_GREEN_INTENSIVE__    4
 #define TEST_COLOR_RED_INTENSIVE__      5
 
-static int
+static int TEST_ATTRIBUTE__(format (printf, 2, 3))
 test_print_in_color__(int color, const char* fmt, ...)
 {
     va_list args;
@@ -561,7 +567,7 @@ test_finish_test_line__(int result)
         int color = (result == 0) ? TEST_COLOR_GREEN_INTENSIVE__ : TEST_COLOR_RED_INTENSIVE__;
         const char* str = (result == 0) ? "OK" : "FAILED";
         printf("[ ");
-        test_print_in_color__(color, str);
+        test_print_in_color__(color, "%s", str);
         printf(" ]");
 
         if(result == 0  &&  test_timer__) {
@@ -591,7 +597,7 @@ test_line_indent__(int level)
     printf("%.*s", n, spaces);
 }
 
-int
+int TEST_ATTRIBUTE__(format (printf, 4, 5))
 test_check__(int cond, const char* file, int line, const char* fmt, ...)
 {
     const char *result_str;
@@ -646,7 +652,7 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
         va_end(args);
 
         printf("... ");
-        test_print_in_color__(result_color, result_str);
+        test_print_in_color__(result_color, "%s", result_str);
         printf("\n");
         test_current_already_logged__++;
     }
@@ -655,7 +661,7 @@ test_check__(int cond, const char* file, int line, const char* fmt, ...)
     return !test_cond_failed__;
 }
 
-void
+void TEST_ATTRIBUTE__(format (printf, 1, 2))
 test_case__(const char* fmt, ...)
 {
     va_list args;
@@ -684,7 +690,7 @@ test_case__(const char* fmt, ...)
     }
 }
 
-void
+void TEST_ATTRIBUTE__(format (printf, 1, 2))
 test_message__(const char* fmt, ...)
 {
     char buffer[TEST_MSG_MAXSIZE];
@@ -751,14 +757,14 @@ test_dump__(const char* title, const void* addr, size_t size)
         printf("%08lx: ", (unsigned long)line_beg);
         for(off = line_beg; off < line_end; off++) {
             if(off < size)
-                printf(" %02x", ((unsigned char*)addr)[off]);
+                printf(" %02x", ((const unsigned char*)addr)[off]);
             else
                 printf("   ");
         }
 
         printf("  ");
         for(off = line_beg; off < line_end; off++) {
-            unsigned char byte = ((unsigned char*)addr)[off];
+            unsigned char byte = ((const unsigned char*)addr)[off];
             if(off < size)
                 printf("%c", (iscntrl(byte) ? '.' : byte));
             else
@@ -882,7 +888,7 @@ test_lookup__(const char* pattern)
 /* Called if anything goes bad in Acutest, or if the unit test ends in other
  * way then by normal returning from its function (e.g. exception or some
  * abnormal child process termination). */
-static void
+static void TEST_ATTRIBUTE__(format (printf, 1, 2))
 test_error__(const char* fmt, ...)
 {
     va_list args;
