@@ -1497,33 +1497,44 @@ test_cmdline_callback__(int id, const char* arg)
 static int
 test_is_tracer_present__(void)
 {
-    char buf[256+32+1];
+    /* Must be large enough so the line 'TracerPid: ${PID}' can fit in. */
+    static const int OVERLAP = 32;
+
+    char buf[256+OVERLAP+1];
     int tracer_present = 0;
     int fd;
-    ssize_t n_read;
+    size_t n_read = 0;
 
     fd = open("/proc/self/status", O_RDONLY);
     if(fd == -1)
         return 0;
 
-    n_read = read(fd, buf, sizeof(buf)-1);
-    while(n_read > 0) {
+    while(1) {
         static const char pattern[] = "TracerPid:";
         const char* field;
 
+        while(n_read < sizeof(buf) - 1) {
+            ssize_t n;
+
+            n = read(fd, buf + n_read, sizeof(buf) - 1 - n_read);
+            if(n <= 0)
+                break;
+            n_read += n;
+        }
         buf[n_read] = '\0';
+
         field = strstr(buf, pattern);
-        if(field != NULL  &&  field < buf + sizeof(buf) - 32) {
+        if(field != NULL  &&  field < buf + sizeof(buf) - OVERLAP) {
             pid_t tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
             tracer_present = (tracer_pid != 0);
             break;
         }
 
         if(n_read == sizeof(buf)-1) {
-            memmove(buf, buf + sizeof(buf)-1 - 32, 32);
-            n_read = read(fd, buf+32, sizeof(buf)-1-32);
-            if(n_read > 0)
-                n_read += 32;
+            memmove(buf, buf + sizeof(buf)-1 - OVERLAP, OVERLAP);
+            n_read = OVERLAP;
+        } else {
+            break;
         }
     }
 
