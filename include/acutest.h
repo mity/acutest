@@ -288,9 +288,9 @@
 
 /* Enable the use of the non-standard keyword __attribute__ to silence warnings under some compilers */
 #if defined(__GNUC__) || defined(__clang__)
-    #define TEST_ATTRIBUTE_(_x)     __attribute__((_x))
+    #define TEST_ATTRIBUTE_(attr)   __attribute__((attr))
 #else
-    #define TEST_ATTRIBUTE_(_x)
+    #define TEST_ATTRIBUTE_(attr)
 #endif
 
 /* Note our global private identifiers end with '_' to mitigate risk of clash
