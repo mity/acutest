@@ -91,7 +91,7 @@
  * main Acutest process.
  *
  * As a side effect of such abortion, your unit tests may cause memory leaks,
- * unflushed file descriptors, and other fenomena caused by the abortion.
+ * unflushed file descriptors, and other phenomena caused by the abortion.
  *
  * Therefore you should not use these as a general replacement for TEST_CHECK.
  * Use it with some caution, especially if your test causes some other side
