@@ -1581,6 +1581,9 @@ main(int argc, char** argv)
 
 #if defined(ACUTEST_WIN_)
     SetUnhandledExceptionFilter(test_seh_exception_filter_);
+#ifdef _MSC_VER
+    _set_abort_behavior(0, _WRITE_ABORT_MSG);
+#endif
 #endif
 
     /* By default, we want to run all tests. */
