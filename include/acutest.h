@@ -825,7 +825,7 @@ test_set_duration_(int i, double duration)
 static int
 test_name_contains_word_(const char* name, const char* pattern)
 {
-    static const char word_delim[] = " \t-_.";
+    static const char word_delim[] = " \t-_/.,:;";
     const char* substr;
     size_t pattern_len;
     int starts_on_word_boundary;

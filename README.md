@@ -366,8 +366,11 @@ matching at least one test unit is used):
 
 2. *Word match*: When the argument does not match any complete test name, but
    it does match whole word in one or more test names, then all such tests are
-   selected. (Note that space ` `, tabulator `\t`, dash `-` and underscore `_`
-   are recognized as word delimiters in the test names.)
+   selected.
+
+   The following characters are recognized as word delimiters: space ` `,
+   tabulator `\t`, dash `-`, underscore `_`, slash `/`, dot `.`, comma `,`,
+   colon `:`, semicolon `;`.
 
 3. *Substring match*: If even the word match failed to select any test, then
    all tests with a name which contains the argument as its substring are
