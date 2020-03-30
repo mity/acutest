@@ -1,5 +1,5 @@
 # YAML definition for Appveyor.com continuous integration.
-# See http://www.appveyor.com/docs/appveyor-yml
+# See https://www.appveyor.com/docs/appveyor-yml
 
 version: '{branch}-{build}'
 

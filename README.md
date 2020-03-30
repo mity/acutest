@@ -4,7 +4,7 @@
 
 # Acutest Readme
 
-Home: http://github.com/mity/acutest
+Home: https://github.com/mity/acutest
 
 
 ## What Is Acutest
@@ -431,7 +431,7 @@ Acutest is covered with MIT license, see the file `LICENSE.md` or beginning of
 
 The project resides on github:
 
-* http://github.com/mity/acutest
+* https://github.com/mity/acutest
 
 You can find the latest version of Acutest there, contribute with enhancements
 or report bugs.
