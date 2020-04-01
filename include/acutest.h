@@ -296,9 +296,16 @@
 /* Note our global private identifiers end with '_' to mitigate risk of clash
  * with the unit tests implementation. */
 
-
 #ifdef __cplusplus
     extern "C" {
+#endif
+
+#ifdef _MSC_VER
+    /* In the multi-platform code like ours, we cannot use the non-standard
+     * "safe" functions from Microsoft C lib like e.g. sprintf_s() instead of
+     * standard sprintf(). Hence, lets disable the warning C4996. */
+    #pragma warning(push)
+    #pragma warning(disable: 4996)
 #endif
 
 
@@ -1695,9 +1702,12 @@ main(int argc, char** argv)
 
 #endif  /* #ifndef TEST_NO_MAIN */
 
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
+
 #ifdef __cplusplus
     }  /* extern "C" */
 #endif
-
 
 #endif  /* #ifndef ACUTEST_H */
