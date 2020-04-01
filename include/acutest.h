@@ -557,7 +557,7 @@ test_finish_test_line_(int result)
     if(test_tap_) {
         const char* str = (result == 0) ? "ok" : "not ok";
 
-        printf("%s %u - %s\n", str, test_current_index_ + 1, test_current_unit_->name);
+        printf("%s %d - %s\n", str, test_current_index_ + 1, test_current_unit_->name);
 
         if(result == 0  &&  test_timer_) {
             printf("# Duration: ");
@@ -828,15 +828,13 @@ test_name_contains_word_(const char* name, const char* pattern)
     static const char word_delim[] = " \t-_/.,:;";
     const char* substr;
     size_t pattern_len;
-    int starts_on_word_boundary;
-    int ends_on_word_boundary;
 
     pattern_len = strlen(pattern);
 
     substr = strstr(name, pattern);
     while(substr != NULL) {
-        starts_on_word_boundary = (substr == name || strchr(word_delim, substr[-1]) != NULL);
-        ends_on_word_boundary = (substr[pattern_len] == '\0' || strchr(word_delim, substr[pattern_len]) != NULL);
+        int starts_on_word_boundary = (substr == name || strchr(word_delim, substr[-1]) != NULL);
+        int ends_on_word_boundary = (substr[pattern_len] == '\0' || strchr(word_delim, substr[pattern_len]) != NULL);
 
         if(starts_on_word_boundary && ends_on_word_boundary)
             return 1;
@@ -892,12 +890,12 @@ test_lookup_(const char* pattern)
 static void TEST_ATTRIBUTE_(format (printf, 1, 2))
 test_error_(const char* fmt, ...)
 {
-    va_list args;
-
     if(test_verbose_level_ == 0)
         return;
 
     if(test_verbose_level_ >= 2) {
+        va_list args;
+
         test_line_indent_(1);
         if(test_verbose_level_ >= 3)
             test_print_in_color_(TEST_COLOR_RED_INTENSIVE_, "ERROR: ");
