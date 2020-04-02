@@ -182,6 +182,14 @@
 #define TEST_CASE(name)         test_case_("%s", name)
 
 
+/* Maximal output per TEST_CASE call. Longer messages are cut.
+ * You may define another limit prior including "acutest.h"
+ */
+#ifndef TEST_CASE_MAXSIZE
+    #define TEST_CASE_MAXSIZE    64
+#endif
+
+
 /* printf-like macro for outputting an extra information about a failure.
  *
  * Intended use is to output some computed output versus the expected value,
@@ -355,7 +363,7 @@ static int test_stat_run_units_ = 0;
 
 static const struct test_* test_current_unit_ = NULL;
 static int test_current_index_ = 0;
-static char test_case_name_[64] = "";
+static char test_case_name_[TEST_CASE_MAXSIZE] = "";
 static int test_current_already_logged_ = 0;
 static int test_case_current_already_logged_ = 0;
 static int test_verbose_level_ = 2;
