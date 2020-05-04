@@ -249,7 +249,7 @@
  * initialization and/or clean-up in all the tests.
  *
  * Such test suites may use macros TEST_INIT and/or TEST_FINI prior including
- * of this header. The expansion of the macro is then used as a body of helper
+ * this header. The expansion of the macro is then used as a body of helper
  * function called just before executing every single (TEST_INIT) or just after
  * it ends (TEST_FINI).
  *
