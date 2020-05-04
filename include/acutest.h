@@ -951,9 +951,12 @@ static void
 test_init_(const char *test_name)
 {
 #ifdef TEST_INIT
-  TEST_INIT
-  ; /* Allow for a single unterminated function call */
+    TEST_INIT
+    ; /* Allow for a single unterminated function call */
 #endif
+
+    /* Suppress any warnings about unused variable. */
+    (void) test_name;
 }
 
 /* This is called after each test */
@@ -961,9 +964,12 @@ static void
 test_fini_(const char *test_name)
 {
 #ifdef TEST_FINI
-  TEST_FINI
-  ; /* Allow for a single unterminated function call */
+    TEST_FINI
+    ; /* Allow for a single unterminated function call */
 #endif
+
+    /* Suppress any warnings about unused variable. */
+    (void) test_name;
 }
 
 /* Call directly the given test unit function. */
