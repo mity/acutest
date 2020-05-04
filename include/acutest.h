@@ -970,6 +970,8 @@ test_fini_(const char *test_name)
 static int
 test_do_run_(const struct test_* test, int index)
 {
+    int status = -1;
+
     test_was_aborted_ = 0;
     test_current_unit_ = test;
     test_current_index_ = index;
@@ -1029,10 +1031,7 @@ aborted:
             test_finish_test_line_(0);
         }
 
-        test_fini_(test->name);
-        test_case_(NULL);
-        test_current_unit_ = NULL;
-        return (test_current_failures_ == 0) ? 0 : -1;
+        status = (test_current_failures_ == 0) ? 0 : -1;
 
 #ifdef __cplusplus
     } catch(std::exception& e) {
@@ -1046,8 +1045,6 @@ aborted:
             test_print_in_color_(TEST_COLOR_RED_INTENSIVE_, "FAILED: ");
             printf("C++ exception.\n\n");
         }
-
-        return -1;
     } catch(...) {
         test_check_(0, NULL, 0, "Threw an exception");
 
@@ -1056,10 +1053,14 @@ aborted:
             test_print_in_color_(TEST_COLOR_RED_INTENSIVE_, "FAILED: ");
             printf("C++ exception.\n\n");
         }
-
-        return -1;
     }
 #endif
+
+    test_fini_(test->name);
+    test_case_(NULL);
+    test_current_unit_ = NULL;
+
+    return status;
 }
 
 /* Trigger the unit test. If possible (and not suppressed) it starts a child
