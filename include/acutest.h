@@ -255,7 +255,7 @@
  *
  * Examples of various ways how to use the macro TEST_INIT:
  *
- *   #define TEST_INIT      my_init_func();     // Works even without the semicolon
+ *   #define TEST_INIT      my_init_func();
  *   #define TEST_INIT      my_init_func()      // Works even without the semicolon
  *   #define TEST_INIT      setlocale(LC_ALL, NULL);
  *   #define TEST_INIT      { setlocale(LC_ALL, NULL); my_init_func(); }
