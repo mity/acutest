@@ -228,10 +228,10 @@
  * generating any printf-like message, this is for dumping raw block of a
  * memory in a hexadecimal form:
  *
- * TEST_CHECK(size_produced == size_expected &&
- *            memcmp(addr_produced, addr_expected, size_produced) == 0);
- * TEST_DUMP("Expected:", addr_expected, size_expected);
- * TEST_DUMP("Produced:", addr_produced, size_produced);
+ *   TEST_CHECK(size_produced == size_expected &&
+ *              memcmp(addr_produced, addr_expected, size_produced) == 0);
+ *   TEST_DUMP("Expected:", addr_expected, size_expected);
+ *   TEST_DUMP("Produced:", addr_produced, size_produced);
  */
 #define TEST_DUMP(title, addr, size)    test_dump_(title, addr, size)
 
@@ -241,6 +241,27 @@
 #ifndef TEST_DUMP_MAXSIZE
     #define TEST_DUMP_MAXSIZE   1024
 #endif
+
+
+/* Common test initialiation/clean-up
+ *
+ * In some test suites, it may be needed to perform some sort of the same
+ * initialization and/or clean-up in all the tests.
+ *
+ * Such test suites may use macros TEST_INIT and/or TEST_FINI prior including
+ * of this header. The expansion of the macro is then used as a body of helper
+ * function called just before executing every single (TEST_INIT) or just after
+ * it ends (TEST_FINI).
+ *
+ * Examples of various ways how to use the macro TEST_INIT:
+ *
+ *   #define TEST_INIT      my_init_func();     // Works even without the semicolon
+ *   #define TEST_INIT      my_init_func()      // Works even without the semicolon
+ *   #define TEST_INIT      setlocale(LC_ALL, NULL);
+ *   #define TEST_INIT      { setlocale(LC_ALL, NULL); my_init_func(); }
+ *
+ * TEST_FINI is to be used in the same way.
+ */
 
 
 /**********************
