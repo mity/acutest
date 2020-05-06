@@ -31,7 +31,7 @@ enum What {
 };
 
 /* This dummy function represents some code which we want to test.
- * As we are in C++, they can throw some exceptions.
+ * As this is written in C++, they can throw exceptions.
  */
 static void
 some_function(What what, const char* msg = NULL)
@@ -72,12 +72,12 @@ void test_exception_type(void)
     TEST_EXCEPTION(some_function(THROW_TEST_EXC), std::exception);
     TEST_EXCEPTION(some_function(THROW_INVALID_ARG), std::exception);
 
-    /* Uncommon types used as exceptions work too. */
+    /* Fundemental types used as exceptions work too. */
     TEST_EXCEPTION(some_function(THROW_CHAR_PTR), const char*);
     TEST_EXCEPTION(some_function(THROW_INT), int);
 
     /* These checks fail because the given code does not throw an exception
-     * at all, or throws something incompatible. */
+     * at all, or throws a different type of exception. */
     TEST_EXCEPTION(some_function(NO_THROW), std::exception);
     TEST_EXCEPTION(some_function(THROW_INT), std::exception);
     TEST_EXCEPTION(some_function(THROW_INVALID_ARG), TestException);
@@ -96,9 +96,7 @@ void test_uncaught_std_exception(void)
 void test_uncaught_strange_exception(void)
 {
     /* If the test throws unhandled exception, Acutest aborts the test unit
-     * and considers it a failure.
-     *
-     * Even if it is not derived from std::exception.
+     * and considers it a failure even if it is not derived from std::exception.
      */
     some_function(THROW_CHAR_PTR, "Acutest knows how to catch me :-)");
 }
