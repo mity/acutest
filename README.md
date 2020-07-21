@@ -136,7 +136,7 @@ option and not as a test name.
 TEST_LIST = {
    { "example", test_example },
    ...
-   { NULL, NULL }
+   { NULL, NULL }     /* zeroed record marking the end of the list */
 };
 ```
 

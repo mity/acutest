@@ -47,7 +47,7 @@
  *       { "test1_name", test1_func_ptr },
  *       { "test2_name", test2_func_ptr },
  *       ...
- *       { 0 }
+ *       { NULL, NULL }     // zeroed record marking the end of the list
  *   };
  *
  * The list specifies names of each test (must be unique) and pointer to
@@ -56,6 +56,8 @@
  * with this prototype:
  *
  *   void test_func(void);
+ *
+ * Note the list has to be ended with a zeroed record.
  */
 #define TEST_LIST               const struct test_ test_list_[]
 
