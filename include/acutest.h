@@ -397,6 +397,20 @@ static int test_timer_ = 0;
 static int test_abort_has_jmp_buf_ = 0;
 static jmp_buf test_abort_jmp_buf_;
 
+
+static void
+test_cleanup_(void)
+{
+    free((void*) test_details_);
+}
+
+static void
+test_exit_(int exit_code)
+{
+    test_cleanup_();
+    exit(exit_code);
+}
+
 #if defined ACUTEST_WIN_
     typedef LARGE_INTEGER test_timer_type_;
     static LARGE_INTEGER test_timer_freq_;
@@ -1103,7 +1117,7 @@ test_run_(const struct test_* test, int index, int master_index)
             /* Child: Do the test. */
             test_worker_ = 1;
             failed = (test_do_run_(test, index) != 0);
-            exit(failed ? 1 : 0);
+            test_exit_(failed ? 1 : 0);
         } else {
             /* Parent: Wait until child terminates and analyze its exit code. */
             waitpid(pid, &exit_code, 0);
@@ -1452,7 +1466,7 @@ test_cmdline_callback_(int id, const char* arg)
             } else {
                 fprintf(stderr, "%s: Unrecognized argument '%s' for option --exec.\n", test_argv0_, arg);
                 fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0_);
-                exit(2);
+                test_exit_(2);
             }
             break;
 
@@ -1471,7 +1485,7 @@ test_cmdline_callback_(int id, const char* arg)
             } else {
                 fprintf(stderr, "%s: Unrecognized argument '%s' for option --time.\n", test_argv0_, arg);
                 fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0_);
-                exit(2);
+                test_exit_(2);
             }
 #endif
             break;
@@ -1486,7 +1500,8 @@ test_cmdline_callback_(int id, const char* arg)
 
         case 'l':
             test_list_names_();
-            exit(0);
+            test_exit_(0);
+            break;
 
         case 'v':
             test_verbose_level_ = (arg != NULL ? atoi(arg) : test_verbose_level_+1);
@@ -1506,7 +1521,7 @@ test_cmdline_callback_(int id, const char* arg)
             } else {
                 fprintf(stderr, "%s: Unrecognized argument '%s' for option --color.\n", test_argv0_, arg);
                 fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0_);
-                exit(2);
+                test_exit_(2);
             }
             break;
 
@@ -1516,7 +1531,8 @@ test_cmdline_callback_(int id, const char* arg)
 
         case 'h':
             test_help_();
-            exit(0);
+            test_exit_(0);
+            break;
 
         case 'w':
             test_worker_ = 1;
@@ -1526,7 +1542,7 @@ test_cmdline_callback_(int id, const char* arg)
             test_xml_output_ = fopen(arg, "w");
             if (!test_xml_output_) {
                 fprintf(stderr, "Unable to open '%s': %s\n", arg, strerror(errno));
-                exit(2);
+                test_exit_(2);
             }
             break;
 
@@ -1534,24 +1550,27 @@ test_cmdline_callback_(int id, const char* arg)
             if(test_lookup_(arg) == 0) {
                 fprintf(stderr, "%s: Unrecognized unit test '%s'\n", test_argv0_, arg);
                 fprintf(stderr, "Try '%s --list' for list of unit tests.\n", test_argv0_);
-                exit(2);
+                test_exit_(2);
             }
             break;
 
         case TEST_CMDLINE_OPTID_UNKNOWN_:
             fprintf(stderr, "Unrecognized command line option '%s'.\n", arg);
             fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0_);
-            exit(2);
+            test_exit_(2);
+            break;
 
         case TEST_CMDLINE_OPTID_MISSINGARG_:
             fprintf(stderr, "The command line option '%s' requires an argument.\n", arg);
             fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0_);
-            exit(2);
+            test_exit_(2);
+            break;
 
         case TEST_CMDLINE_OPTID_BOGUSARG_:
             fprintf(stderr, "The command line option '%s' does not expect an argument.\n", arg);
             fprintf(stderr, "Try '%s --help' for more information.\n", test_argv0_);
-            exit(2);
+            test_exit_(2);
+            break;
     }
 
     return 0;
@@ -1634,7 +1653,7 @@ main(int argc, char** argv)
     test_details_ = (struct test_detail_*)calloc(test_list_size_, sizeof(struct test_detail_));
     if(test_details_ == NULL) {
         fprintf(stderr, "Out of memory.\n");
-        exit(2);
+        test_exit_(2);
     }
 
     /* Parse options */
@@ -1753,7 +1772,7 @@ main(int argc, char** argv)
         fclose(test_xml_output_);
     }
 
-    free((void*) test_details_);
+    test_cleanup_();
 
     return (test_stat_failed_units_ == 0) ? 0 : 1;
 }
