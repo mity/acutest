@@ -110,15 +110,6 @@ void test_example(void)
 }
 ```
 
-`TEST_ASSERT` is similar to `TEST_CHECK` but, if it fails, it aborts execution
-of the current unit test instantly, either by calling `abort()` if the test
-is executed as a child process, or via `longjmp()` if it is not.
-
-(Therefore you should use it only if you understand the costs connected with
-such brutal abortion of the test, like e.g. unflushed file descriptors, memory
-leaks, C++ objects destructed without calling their destructors etc., depending
-on what your unit test does.)
-
 Note that the tests should be completely independent on each other. Whenever
 the test suite is invoked, the user may run any number of tests in the suite,
 in any order. Furthermore by default, on platforms where supported, each unit
@@ -146,12 +137,47 @@ For a basic test suites this is more or less all you need to know. However
 Acutest provides some more macros which can be useful in some specific
 situations. We cover them in the following sub-sections.
 
+### Aborting on a Check Failure
+
+There is a macro `TEST_ASSERT` which is very similar to `TEST_CHECK` but, if it
+fails, it aborts execution of the current unit test instantly.
+
+For example:
+
+```C
+void test_example(void)
+{
+    void* mem;
+    int a, b;
+
+    mem = malloc(10);
+    TEST_ASSERT(mem != NULL);
+
+    mem = realloc(mem, 20);
+    TEST_ASSERT(mem != NULL);
+}
+```
+
+The abortion in the case of failure is performed either by calling `abort()`
+(if the test is executed as a child process) or via `longjmp()` (if it is not).
+
+Therefore it should be used only if you understand the costs connected with
+such a brutal abortion of the test. Depending on what your unit test does,
+it may include unflushed file descriptors, memory leaks, C++ objects destructed
+without their destructors being called and more.
+
+In general, `TEST_CHECK` should be preferred over `TEST_ASSERT`, unless you
+know exactly what you do and why you use chose `TEST_ASSERT` in some particular
+situation.
+
 ### Testing C++ Exceptions
 
 For C++, there is an additional macro `TEST_EXCEPTION` for verifying the given
-code (typically just a function or a method call) throw the expected type of
-exception. The check fails if the function does not throw any exception or
-if it throws anything incompatible.
+code (typically just a function or a method call) throws the expected type of
+exception.
+
+The check fails if the function does not throw any exception or if it throws
+anything incompatible.
 
 For example:
 
@@ -205,27 +231,28 @@ TEST_CHECK(some_condition != 0);
 TEST_MSG("some message");
 ```
 
-
 (Note that `TEST_MSG` requires the compiler with variadic macros support.)
 
 ### Loops over Test Vectors
 
-Sometimes, it is useful to construct the testing function as a loop over some
-data providing a collection of test vectors and their respective expected
-outputs. For example imagine our unit test is supposed to verify some kind
-of a hashing function and we've got a collection of test vectors for it in
-its specification.
+Sometimes, it is useful to design your testing function as a loop over data
+providing a collection of test vectors and their respective expected outputs.
+For example imagine our unit test is supposed to verify some kind of a hashing
+function implementation and we've got a collection of test vectors for it in
+the hash specification.
 
-In such cases, it is very useful to get some name in the output log so that
-if any check fails, it is easy to identify the guilty test vector. However,
-it may be impractical to add such name to every checking macro.
+In such cases, it is very useful to get some name associated with every test
+vector and output the name in the output log so that if any check fails, it is
+easy to identify the guilty test vector. However, the loop body may execute
+dozens of checking macros and so it may be impractical to add such name to
+customize every check message in the loop.
 
 To solve this, Acutest provides the macro `TEST_CASE`. The macro specifies
 a string serving as the test vector name. When used, Acutest makes sure that
-the provided name precedes any message from subsequent condition checks in its
-output log (until `TEST_CASE` is used again or the whole unit test ends).
+in the output log the provided name precedes any message from subsequent
+condition checks.
 
-For example lets assume we are testing `SomeFunction()` which is supposed,
+For example, lets assume we are testing `SomeFunction()` which is supposed,
 for a given byte array of some size, return another array of bytes in a newly
 `malloc`-ed buffer. Then we can do something like this:
 
@@ -269,22 +296,11 @@ void test_example(void)
 }
 ```
 
-To explicitly reset the test vector name, typically after such a loop if the
-unit test makes some subsequent checks not related to any particular test
-vector anymore, use `NULL` as the macro's parameter:
-
-```C
-void test_example(void)
-{
-    ...
-
-    /* Reset the test vector name. */
-    TEST_CASE(NULL);
-
-    ...
-}
-```
-
+The specified name applies to all checks executed after the use of `TEST_CASE`
+* until the unit test ends; or
+* until `TEST_CASE` is used again to specify another name; or
+* until the name is explicitly reset bu using `TEST_CASE` with the `NULL`
+  as its argument.
 
 ### Custom Log Messages
 
