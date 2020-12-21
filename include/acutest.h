@@ -294,7 +294,7 @@
     #endif
 #endif
 
-#if defined(_gnu_linux_)
+#if defined(_gnu_linux_) || defined(__linux__)
     #define ACUTEST_LINUX_      1
     #include <fcntl.h>
     #include <sys/stat.h>
