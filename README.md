@@ -167,7 +167,7 @@ it may include unflushed file descriptors, memory leaks, C++ objects destructed
 without their destructors being called and more.
 
 In general, `TEST_CHECK` should be preferred over `TEST_ASSERT`, unless you
-know exactly what you do and why you use chose `TEST_ASSERT` in some particular
+know exactly what you do and why you chose `TEST_ASSERT` in some particular
 situation.
 
 ### Testing C++ Exceptions
@@ -299,7 +299,7 @@ void test_example(void)
 The specified name applies to all checks executed after the use of `TEST_CASE`
 * until the unit test ends; or
 * until `TEST_CASE` is used again to specify another name; or
-* until the name is explicitly reset bu using `TEST_CASE` with the `NULL`
+* until the name is explicitly reset by using `TEST_CASE` with the `NULL`
   as its argument.
 
 ### Custom Log Messages
