@@ -1118,7 +1118,7 @@ acutest_run_(const struct acutest_test_* test, int index, int master_index)
         } else if(pid == 0) {
             /* Child: Do the test. */
             acutest_worker_ = 1;
-            failed = (test_do_run_(test, index) != 0);
+            failed = (acutest_do_run_(test, index) != 0);
             acutest_exit_(failed ? 1 : 0);
         } else {
             /* Parent: Wait until child terminates and analyze its exit code. */
