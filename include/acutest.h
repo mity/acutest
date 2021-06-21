@@ -1640,7 +1640,7 @@ acutest_is_tracer_present_(void)
 
 #ifdef ACUTEST_MACOS_
 static bool
-AmIBeingDebugged(void)
+acutest_AmIBeingDebugged(void)
 {
     int junk;
     int mib[4];
@@ -1733,7 +1733,7 @@ main(int argc, char** argv)
                 acutest_no_exec_ = 1;
 #endif
 #ifdef ACUTEST_MACOS_
-            if(AmIBeingDebugged())
+            if(acutest_AmIBeingDebugged())
                 acutest_no_exec_ = 1;
 #endif
 #ifdef RUNNING_ON_VALGRIND
