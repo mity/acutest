@@ -55,6 +55,10 @@ and its core depends only on few standard C library functions.
 * Acutest installs a SEH filter to print out uncaught SEH exceptions.
 * User can measure test execution times with `--time`.
 
+**macOS specific features:**
+* If a debugger is detected, the default execution of tests as child processes
+  is suppressed in order to make the debugging easier.
+
 Any C/C++ module implementing one or more unit tests and including `acutest.h`,
 can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
