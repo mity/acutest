@@ -716,6 +716,10 @@ acutest_check_(int cond, const char* file, int line, const char* fmt, ...)
         acutest_colored_printf_(result_color, "%s", result_str);
         printf("\n");
         acutest_test_already_logged_++;
+
+        /* Explicitly flush stdout so this check's output shows up,
+         * even if the binary crashes. */
+        fflush(stdout);
     }
 
     acutest_cond_failed_ = (cond == 0);
@@ -870,6 +874,11 @@ acutest_fini_(const char *test_name)
 void
 acutest_abort_(void)
 {
+    /* Flush stdout and stderr before aborting so any test output
+     * shows up properly. */
+    fflush(stdout);
+    fflush(stderr);
+
     if(acutest_abort_has_jmp_buf_) {
         longjmp(acutest_abort_jmp_buf_, 1);
     } else {
