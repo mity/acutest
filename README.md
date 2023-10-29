@@ -1,15 +1,11 @@
-[![Linux Build Status (travis-ci.com)](https://img.shields.io/travis/mity/acutest/master.svg?logo=linux&label=linux%20build)](https://travis-ci.com/mity/acutest)
-[![Windows Build Status (appveyor.com)](https://img.shields.io/appveyor/ci/mity/acutest/master.svg?logo=windows&label=windows%20build)](https://ci.appveyor.com/project/mity/acutest/branch/master)
+# Cute Readme
+
+Home: https://github.com/Rickodesea/Cute
 
 
-# Acutest Readme
+## What Is Cute
 
-Home: https://github.com/mity/acutest
-
-
-## What Is Acutest
-
-Acutest is C/C++ unit testing facility aiming to be as simple as possible, not
+Cute is C unit test library aiming to be as simple as possible, not
 to stand in the developer's way and to minimize any external dependencies.
 
 To achieve that, the complete implementation resides in a single C header file,
@@ -19,9 +15,9 @@ and its core depends only on few standard C library functions.
 ## Overview
 
 **Main features:**
-* Unit tests in C or C++ are supported.
-* No need to install/setup/configure any testing framework. Acutest is just
-  a single header file, `acutest.h`.
+* Unit tests in C are supported.
+* No need to install/setup/configure any testing framework. Cute is just
+  a single header file, `cute.h`.
 * The header provides the program entry point (function `main()`).
 * Minimal dependencies: Core features only depend on few standard C headers,
   optional features may use more if available on the particular system.
@@ -30,12 +26,6 @@ and its core depends only on few standard C library functions.
 * Rudimentary support for [Test Anything Protocol](https://testanything.org/)
   (use `--tap` option).
 * Rudimentary support for xUnit-compatible XML output (use `--xml-output=FILE`).
-
-**C++ specific features:**
-* Acutest catches any C++ exception thrown from any unit test function. When
-  that happens, the given test is considered to fail.
-* If the exception is derived from `std::exception`, `what()` is written out
-  in the error message.
 
 **Unix/Posix specific features:**
 * By default, every unit test is executed as a child process.
@@ -52,14 +42,11 @@ and its core depends only on few standard C library functions.
 * If a debugger is detected, the default execution of tests as child processes
   is suppressed in order to make the debugging easier.
 * By default, if the output is directed to a terminal, the output is colorized.
-* Acutest installs a SEH filter to print out uncaught SEH exceptions.
+* Cute installs a SEH filter to print out uncaught SEH exceptions.
 * User can measure test execution times with `--time`.
 
-**macOS specific features:**
-* If a debugger is detected, the default execution of tests as child processes
-  is suppressed in order to make the debugging easier.
 
-Any C/C++ module implementing one or more unit tests and including `acutest.h`,
+Any C module implementing one or more unit tests and including `cute.h`,
 can be built as a standalone program. We call the resulted binary as a "test
 suite" for purposes of this document. The suite is then executed to run the
 tests, as specified with its command line options.
@@ -67,8 +54,7 @@ tests, as specified with its command line options.
 We say any unit test succeeds if and only if:
 1. all condition checks (as described below) called throughout its execution
    pass;
-2. the test does not throw any exception (C++ only); and
-3. (on Windows or Unix) the unit test subprocess is not interrupted/terminated
+2. (on Windows or Unix) the unit test subprocess is not interrupted/terminated
    (e.g. by a signal on Unix or SEH on Windows).
 
 
@@ -76,12 +62,12 @@ We say any unit test succeeds if and only if:
 
 ### Basic Use
 
-To use Acutest, simply include the header file `acutest.h` on the beginning of
-the C/C++ source file implementing one or more unit tests. Note the header
+To use Cute, simply include the header file `cute.h` on the beginning of
+the C source file implementing one or more unit tests. Note the header
 provides implementation of the `main()` function.
 
 ```C
-#include "acutest.h"
+#include "cute.h"
 ```
 
 Every test is supposed to be implemented as a function with the following
@@ -138,7 +124,7 @@ TEST_LIST = {
 Note the test list has to be ended with zeroed record.
 
 For a basic test suites this is more or less all you need to know. However
-Acutest provides some more macros which can be useful in some specific
+Cute provides some more macros which can be useful in some specific
 situations. We cover them in the following sub-sections.
 
 ### Aborting on a Check Failure
@@ -174,28 +160,10 @@ In general, `TEST_CHECK` should be preferred over `TEST_ASSERT`, unless you
 know exactly what you do and why you chose `TEST_ASSERT` in some particular
 situation.
 
-### Testing C++ Exceptions
-
-For C++, there is an additional macro `TEST_EXCEPTION` for verifying the given
-code (typically just a function or a method call) throws the expected type of
-exception.
-
-The check fails if the function does not throw any exception or if it throws
-anything incompatible.
-
-For example:
-
-```C++
-void test_example(void)
-{
-    TEST_EXCEPTION(CallSomeFunction(), std::exception);
-}
-```
-
 ### Richer Failure Diagnosis
 
 If a condition check fails, it is often useful to provide some additional
-information about the situation so the problem is easier to debug. Acutest
+information about the situation so the problem is easier to debug. Cute
 provides the macros `TEST_MSG` and `TEST_DUMP` for this purpose.
 
 The former one outputs any `printf`-like message, the other one outputs a
@@ -251,8 +219,8 @@ easy to identify the guilty test vector. However, the loop body may execute
 dozens of checking macros and so it may be impractical to add such name to
 customize every check message in the loop.
 
-To solve this, Acutest provides the macro `TEST_CASE`. The macro specifies
-a string serving as the test vector name. When used, Acutest makes sure that
+To solve this, Cute provides the macro `TEST_CASE`. The macro specifies
+a string serving as the test vector name. When used, Cute makes sure that
 in the output log the provided name precedes any message from subsequent
 condition checks.
 
@@ -288,7 +256,7 @@ void test_example(void)
         /* Now, we can check the function produces what it should for the
          * current test vector. If any of the following checking macros
          * produces any output (either because the check fails, or because
-         * high `--verbose` level is used), Acutest also outputs the  currently
+         * high `--verbose` level is used), Cute also outputs the  currently
          * tested vector's name. */
         output = SomeFunction(vec->input, vec->input_size, &output_size);
         if(TEST_CHECK(output != NULL)) {
@@ -352,7 +320,7 @@ with C99.
 ## Building the Test Suite
 
 When we are done with implementing the tests, we can simply compile it as
-a simple C/C++ program. For example, assuming `cc` is your C compiler:
+a simple C program. For example, assuming `cc` is your C compiler:
 
 ```sh
 $ cc test_example.c -o test_example
@@ -378,7 +346,7 @@ $ ./test_example --skip test3   # Runs all tests but those specified
 ```
 
 Note that a single command line argument can select a whole group of test units
-because Acutest implements several levels of unit test selection (the 1st one
+because Cute implements several levels of unit test selection (the 1st one
 matching at least one test unit is used):
 
 1. *Exact match*: When the argument matches exactly the whole name of a unit
@@ -427,15 +395,16 @@ $ ./test_example --help
 
 ## FAQ
 
-**Q: Wasn't this project known as "CUTest"?**
+**Q: This project started as a fork from "acutest"?**
 
-**A:** Yes. It has been renamed as the original name was found to be
-[too much overloaded](https://github.com/mity/cutest/issues/6).
+**A:** Yes. We initially began as a forked from [https://github.com/mity/acutest](https://github.com/mity/acutest).  We wanted a testing a library that focuses only on C.
+While on the other hand acutest caters to both C and C++.  It had some features that were only
+implemented in C++.  We want a uniform API for C and across platforms.
 
 
 **Q: Do I need to distribute file `README.md` and/or `LICENSE.md`?**
 
-**A:** No. The header `acutest.h` includes URL to our repo, copyright note and
+**A:** No. The header `cute.h` includes URL to our repo, copyright note and
 the MIT license terms inside of it. As long as you leave those intact, we are
 completely fine if you only add the header into your project. After all,
 the simple use and all-in-one-header nature of it is our primary aim.
@@ -443,15 +412,15 @@ the simple use and all-in-one-header nature of it is our primary aim.
 
 ## License
 
-Acutest is covered with MIT license, see the file `LICENSE.md` or beginning of
-`acutest.h` for its full text.
+Cute is covered with MIT license, see the file `LICENSE.md` or beginning of
+`cute.h` for its full text.
 
 
 ## More Information
 
 The project resides on github:
 
-* https://github.com/mity/acutest
+* https://github.com/Rickodesea/Cute
 
-You can find the latest version of Acutest there, contribute with enhancements
+You can find the latest version of Cute there, contribute with enhancements
 or report bugs.
