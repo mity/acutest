@@ -1,0 +1,5 @@
+/home/rickodesea/Documents/Rickodesea/Cute/Build/Debug/CMakeFiles/edit_cache.dir
+/home/rickodesea/Documents/Rickodesea/Cute/Build/Debug/CMakeFiles/rebuild_cache.dir
+/home/rickodesea/Documents/Rickodesea/Cute/Build/Debug/Example-Source/CMakeFiles/c-example.dir
+/home/rickodesea/Documents/Rickodesea/Cute/Build/Debug/Example-Source/CMakeFiles/edit_cache.dir
+/home/rickodesea/Documents/Rickodesea/Cute/Build/Debug/Example-Source/CMakeFiles/rebuild_cache.dir

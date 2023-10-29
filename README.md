@@ -81,7 +81,7 @@ The tests can use some preprocessor macros to validate the test conditions.
 They can be used multiple times, and if any of those conditions fails, the
 particular test is considered to fail.
 
-`TEST_CHECK` is the most commonly used testing macro which simply tests a
+`CUTE_CHECK` is the most commonly used testing macro which simply tests a
 boolean condition and fails if the condition evaluates to false (or zero).
 
 For example:
@@ -93,10 +93,10 @@ void test_example(void)
     int a, b;
 
     mem = malloc(10);
-    TEST_CHECK(mem != NULL);
+    CUTE_CHECK(mem != NULL);
 
     mem = realloc(mem, 20);
-    TEST_CHECK(mem != NULL);
+    CUTE_CHECK(mem != NULL);
 }
 ```
 
@@ -106,7 +106,7 @@ in any order. Furthermore by default, on platforms where supported, each unit
 test is executed as a standalone (sub)process.
 
 Finally, the test suite source file has to list the unit tests, using the
-macro `TEST_LIST`. The list specifies name of each test (it has to be unique)
+macro `CUTE_LIST`. The list specifies name of each test (it has to be unique)
 and pointer to a function implementing the test. I recommend names which are
 easy to use on command line: especially avoid space and other special
 characters which might require escaping in shell; also avoid dash (`-`) as a
@@ -114,7 +114,7 @@ first character of the name, as it could then be interpreted as a command line
 option and not as a test name.
 
 ```C
-TEST_LIST = {
+CUTE_LIST = {
    { "example", test_example },
    ...
    { NULL, NULL }     /* zeroed record marking the end of the list */
@@ -129,7 +129,7 @@ situations. We cover them in the following sub-sections.
 
 ### Aborting on a Check Failure
 
-There is a macro `TEST_ASSERT` which is very similar to `TEST_CHECK` but, if it
+There is a macro `CUTE_ASSERT` which is very similar to `CUTE_CHECK` but, if it
 fails, it aborts execution of the current unit test instantly.
 
 For example:
@@ -141,10 +141,10 @@ void test_example(void)
     int a, b;
 
     mem = malloc(10);
-    TEST_ASSERT(mem != NULL);
+    CUTE_ASSERT(mem != NULL);
 
     mem = realloc(mem, 20);
-    TEST_ASSERT(mem != NULL);
+    CUTE_ASSERT(mem != NULL);
 }
 ```
 
@@ -153,18 +153,18 @@ The abortion in the case of failure is performed either by calling `abort()`
 
 Therefore it should be used only if you understand the costs connected with
 such a brutal abortion of the test. Depending on what your unit test does,
-it may include unflushed file descriptors, memory leaks, C++ objects destructed
+it may include unflushed file descriptors, memory leaks, C objects destructed
 without their destructors being called and more.
 
-In general, `TEST_CHECK` should be preferred over `TEST_ASSERT`, unless you
-know exactly what you do and why you chose `TEST_ASSERT` in some particular
+In general, `CUTE_CHECK` should be preferred over `CUTE_ASSERT`, unless you
+know exactly what you do and why you chose `CUTE_ASSERT` in some particular
 situation.
 
 ### Richer Failure Diagnosis
 
 If a condition check fails, it is often useful to provide some additional
 information about the situation so the problem is easier to debug. Cute
-provides the macros `TEST_MSG` and `TEST_DUMP` for this purpose.
+provides the macros `CUTE_MSG` and `CUTE_DUMP` for this purpose.
 
 The former one outputs any `printf`-like message, the other one outputs a
 hexadecimal dump of a provided memory block.
@@ -178,15 +178,15 @@ void test_example(void)
     char expected[] = "Hello World!";
 
     SomeSprintfLikeFunction(produced, "Hello %s!", "world");
-    TEST_CHECK(strcmp(produced, expected) == 0);
-    TEST_MSG("Expected: %s", expected);
-    TEST_MSG("Produced: %s", produced);
+    CUTE_CHECK(strcmp(produced, expected) == 0);
+    CUTE_MSG("Expected: %s", expected);
+    CUTE_MSG("Produced: %s", produced);
 
     /* Or, if the function could provide some binary stuff, we might rather
-     * use TEST_DUMP instead in order to output a hexadecimal dump of the data.
+     * use CUTE_DUMP instead in order to output a hexadecimal dump of the data.
      */
-    TEST_DUMP("Expected:", expected, strlen(expected));
-    TEST_DUMP("Produced:", produced, strlen(produced));
+    CUTE_DUMP("Expected:", expected, strlen(expected));
+    CUTE_DUMP("Produced:", produced, strlen(produced));
 }
 ```
 
@@ -194,16 +194,16 @@ Note that both macros output anything only when the most recently checking
 macro has failed. In other words, these two are equivalent:
 
 ```C
-if(!TEST_CHECK(some_condition != 0))
-    TEST_MSG("some message");
+if(!CUTE_CHECK(some_condition != 0))
+    CUTE_MSG("some message");
 ```
 
 ```C
-TEST_CHECK(some_condition != 0);
-TEST_MSG("some message");
+CUTE_CHECK(some_condition != 0);
+CUTE_MSG("some message");
 ```
 
-(Note that `TEST_MSG` requires the compiler with variadic macros support.)
+(Note that `CUTE_MSG` requires the compiler with variadic macros support.)
 
 ### Loops over Test Vectors
 
@@ -219,7 +219,7 @@ easy to identify the guilty test vector. However, the loop body may execute
 dozens of checking macros and so it may be impractical to add such name to
 customize every check message in the loop.
 
-To solve this, Cute provides the macro `TEST_CASE`. The macro specifies
+To solve this, Cute provides the macro `CUTE_CASE`. The macro specifies
 a string serving as the test vector name. When used, Cute makes sure that
 in the output log the provided name precedes any message from subsequent
 condition checks.
@@ -251,7 +251,7 @@ void test_example(void)
         struct TestVector* vec = &test_vectors[i];
 
         /* Output the name of the tested test vector. */
-        TEST_CASE(vec.name);
+        CUTE_CASE(vec.name);
 
         /* Now, we can check the function produces what it should for the
          * current test vector. If any of the following checking macros
@@ -259,19 +259,19 @@ void test_example(void)
          * high `--verbose` level is used), Cute also outputs the  currently
          * tested vector's name. */
         output = SomeFunction(vec->input, vec->input_size, &output_size);
-        if(TEST_CHECK(output != NULL)) {
-            TEST_CHECK(output_size == vec->expected_output_size);
-            TEST_CHECK(memcmp(output, vec->expected_output, output_size) == 0);
+        if(CUTE_CHECK(output != NULL)) {
+            CUTE_CHECK(output_size == vec->expected_output_size);
+            CUTE_CHECK(memcmp(output, vec->expected_output, output_size) == 0);
             free(output);
         }
     }
 }
 ```
 
-The specified name applies to all checks executed after the use of `TEST_CASE`
+The specified name applies to all checks executed after the use of `CUTE_CASE`
 * until the unit test ends; or
-* until `TEST_CASE` is used again to specify another name; or
-* until the name is explicitly reset by using `TEST_CASE` with the `NULL`
+* until `CUTE_CASE` is used again to specify another name; or
+* until the name is explicitly reset by using `CUTE_CASE` with the `NULL`
   as its argument.
 
 ### Custom Log Messages
@@ -279,21 +279,18 @@ The specified name applies to all checks executed after the use of `TEST_CASE`
 Many of the macros mentioned in the earlier sections have a counterpart which
 allows to output a custom messages instead of some default ones.
 
-All of these have the same name as the aforementioned macros, just with the
-underscore suffix added. With the suffix, they then expect `printf`-like string
-format and corresponding additional arguments.
+All of these have the same name as the aforementioned macros, just with `_FORMAT` added. 
+With the suffix, they then expect `printf`-like string format and corresponding additional arguments.
 
 So, for example, instead of the simple checking macros
-```C++
-TEST_CHECK(a == b);
-TEST_ASSERT(x < y);
-TEST_EXCEPTION(SomeFunction(), std::exception);
+```C
+CUTE_CHECK(a == b);
+CUTE_ASSERT(x < y);
 ```
 we can use their respective counterparts with a custom messages:
-```C++
-TEST_CHECK_(a == b, "%d is equal to %d", a, b);
-TEST_ASSERT_(x < y, "%d is lower than %d", x, y);
-TEST_EXCEPTION_(SomeFunction(), std::exception, "SomeFunction() throws std::exception");
+```C
+CUTE_CHECK_FORMAT(a == b, "%d is equal to %d", a, b);
+CUTE_ASSERT_FORMAT(x < y, "%d is lower than %d", x, y);
 ```
 
 You should use some neutral wording for them because, with the command line
@@ -301,15 +298,15 @@ option `--verbose`, the messages are logged out even if the respective check
 passes successfully.
 
 (If you need to output some diagnostic information just in the case the check
-fails, use the macro `TEST_MSG`. That's exactly its purpose.)
+fails, use the macro `CUTE_MSG`. That's exactly its purpose.)
 
 Similarly, instead of
 ```C
-TEST_CASE("name");
+CUTE_CASE("name");
 ```
 we can use richer
 ```C
-TEST_CASE_("iteration #%d", 42);
+CUTE_CASE_FORMAT("iteration #%d", 42);
 ```
 
 However note all of these can only be used if your compiler supports variadic
@@ -398,8 +395,8 @@ $ ./test_example --help
 **Q: This project started as a fork from "acutest"?**
 
 **A:** Yes. We initially began as a forked from [https://github.com/mity/acutest](https://github.com/mity/acutest).  We wanted a testing a library that focuses only on C.
-While on the other hand acutest caters to both C and C++.  It had some features that were only
-implemented in C++.  We want a uniform API for C and across platforms.
+While on the other hand acutest caters to both C and C.  It had some features that were only
+implemented in C.  We want a uniform API for C and across platforms.
 
 
 **Q: Do I need to distribute file `README.md` and/or `LICENSE.md`?**
