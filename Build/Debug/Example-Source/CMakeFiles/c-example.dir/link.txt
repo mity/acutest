@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -Wextra -g -rdynamic CMakeFiles/c-example.dir/c-example.c.o -o ../c-example 
