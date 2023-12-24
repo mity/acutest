@@ -272,10 +272,32 @@
 
 /* The unit test files should not rely on anything below. */
 
+#include <stdlib.h>
+
+/* Enable the use of the non-standard keyword __attribute__ to silence warnings under some compilers */
+#if defined(__GNUC__) || defined(__clang__)
+    #define ACUTEST_ATTRIBUTE_(attr)    __attribute__((attr))
+#else
+    #define ACUTEST_ATTRIBUTE_(attr)
+#endif
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+int acutest_check_(int cond, const char* file, int line, const char* fmt, ...);
+void acutest_case_(const char* fmt, ...);
+void acutest_message_(const char* fmt, ...);
+void acutest_dump_(const char* title, const void* addr, size_t size);
+void acutest_abort_(void) ACUTEST_ATTRIBUTE_(noreturn);
+#ifdef __cplusplus
+    }  /* extern "C" */
+#endif
+
+#ifndef TEST_NO_MAIN
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
 
@@ -325,13 +347,6 @@
     #endif
 #endif
 
-/* Enable the use of the non-standard keyword __attribute__ to silence warnings under some compilers */
-#if defined(__GNUC__) || defined(__clang__)
-    #define ACUTEST_ATTRIBUTE_(attr)    __attribute__((attr))
-#else
-    #define ACUTEST_ATTRIBUTE_(attr)
-#endif
-
 /* Note our global private identifiers end with '_' to mitigate risk of clash
  * with the unit tests implementation. */
 
@@ -366,14 +381,6 @@ enum {
 
 extern const struct acutest_test_ acutest_list_[];
 
-int acutest_check_(int cond, const char* file, int line, const char* fmt, ...);
-void acutest_case_(const char* fmt, ...);
-void acutest_message_(const char* fmt, ...);
-void acutest_dump_(const char* title, const void* addr, size_t size);
-void acutest_abort_(void) ACUTEST_ATTRIBUTE_(noreturn);
-
-
-#ifndef TEST_NO_MAIN
 
 static char* acutest_argv0_ = NULL;
 static size_t acutest_list_size_ = 0;
