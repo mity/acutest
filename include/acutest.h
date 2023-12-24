@@ -1163,7 +1163,7 @@ acutest_run_(const struct acutest_test_* test, int index, int master_index)
 
         /* Windows has no fork(). So we propagate all info into the child
          * through a command line arguments. */
-        _snprintf(buffer, sizeof(buffer)-1,
+        snprintf(buffer, sizeof(buffer),
                  "%s --worker=%d %s --no-exec --no-summary %s --verbose=%d --color=%s -- \"%s\"",
                  acutest_argv0_, index, acutest_timer_ ? "--time" : "",
                  acutest_tap_ ? "--tap" : "", acutest_verbose_level_,
@@ -1321,11 +1321,7 @@ acutest_cmdline_read_(const ACUTEST_CMDLINE_OPTION_* options, int argc, char** a
                             if(opt->flags & (ACUTEST_CMDLINE_OPTFLAG_OPTIONALARG_ | ACUTEST_CMDLINE_OPTFLAG_REQUIREDARG_)) {
                                 ret = callback(opt->id, argv[i]+2+len+1);
                             } else {
-#if defined(ACUTEST_WIN_)
-                                _snprintf(auxbuf, sizeof(auxbuf)-1, "--%s", opt->longname);
-#else
                                 snprintf(auxbuf, sizeof(auxbuf), "--%s", opt->longname);
-#endif
                                 ret = callback(ACUTEST_CMDLINE_OPTID_BOGUSARG_, auxbuf);
                             }
                             break;
