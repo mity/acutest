@@ -481,18 +481,7 @@ acutest_exit_(int exit_code)
     static double
     acutest_timer_diff_(struct timespec start, struct timespec end)
     {
-        double endns;
-        double startns;
-
-        endns = end.tv_sec;
-        endns *= 1e9;
-        endns += end.tv_nsec;
-
-        startns = start.tv_sec;
-        startns *= 1e9;
-        startns += start.tv_nsec;
-
-        return ((endns - startns)/ 1e9);
+        return (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec) / 1e9;
     }
 
     static void
