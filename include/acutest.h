@@ -1369,7 +1369,7 @@ acutest_cmdline_read_(const ACUTEST_CMDLINE_OPTION_* options, int argc, char** a
                         /* Strip any argument from the long option. */
                         char* assignment = strchr(badoptname, '=');
                         if(assignment != NULL) {
-                            size_t len = assignment - badoptname;
+                            size_t len = (size_t)(assignment - badoptname);
                             if(len > ACUTEST_CMDLINE_AUXBUF_SIZE_)
                                 len = ACUTEST_CMDLINE_AUXBUF_SIZE_;
                             strncpy(auxbuf, badoptname, len);
@@ -1614,7 +1614,7 @@ acutest_is_tracer_present_(void)
             n = read(fd, buf + n_read, sizeof(buf) - 1 - n_read);
             if(n <= 0)
                 break;
-            n_read += n;
+            n_read += (size_t)n;
         }
         buf[n_read] = '\0';
 
