@@ -28,6 +28,19 @@
 #define ACUTEST_H
 
 
+/* Try to auto-detect whether we need to disable C++ exception handling.
+ * If the detection fails, you may always define TEST_NO_EXCEPTIONS before
+ * including "acutest.h" manually. */
+#ifdef __cplusplus
+    #if (__cplusplus >= 199711L && !defined __cpp_exceptions)  ||            \
+        ((defined(__GNUC__) || defined(__clang__)) && !defined __EXCEPTIONS)
+        #ifndef TEST_NO_EXCEPTIONS
+            #define TEST_NO_EXCEPTIONS
+        #endif
+    #endif
+#endif
+
+
 /************************
  *** Public interface ***
  ************************/
@@ -113,6 +126,7 @@
 
 
 #ifdef __cplusplus
+#ifndef TEST_NO_EXCEPTIONS
 /* Macros to verify that the code (the 1st argument) throws exception of given
  * type (the 2nd argument). (Note these macros are only available in C++.)
  *
@@ -159,6 +173,7 @@
         if(msg_ != NULL)                                                       \
             acutest_message_("%s", msg_);                                      \
     } while(0)
+#endif  /* #ifndef TEST_NO_EXCEPTIONS */
 #endif  /* #ifdef __cplusplus */
 
 
@@ -338,7 +353,9 @@ void acutest_abort_(void) ACUTEST_ATTRIBUTE_(noreturn);
 #endif
 
 #ifdef __cplusplus
+#ifndef TEST_NO_EXCEPTIONS
     #include <exception>
+#endif
 #endif
 
 #ifdef __has_include
@@ -1011,7 +1028,9 @@ acutest_do_run_(const struct acutest_test_* test, int index)
     acutest_cond_failed_ = 0;
 
 #ifdef __cplusplus
+#ifndef TEST_NO_EXCEPTIONS
     try {
+#endif
 #endif
         acutest_init_(test->name);
         acutest_begin_test_line_(test);
@@ -1065,6 +1084,7 @@ aborted:
         status = (acutest_test_failures_ == 0) ? 0 : -1;
 
 #ifdef __cplusplus
+#ifndef TEST_NO_EXCEPTIONS
     } catch(std::exception& e) {
         const char* what = e.what();
         acutest_check_(0, NULL, 0, "Threw std::exception");
@@ -1085,6 +1105,7 @@ aborted:
             printf("C++ exception.\n\n");
         }
     }
+#endif
 #endif
 
     acutest_fini_(test->name);
