@@ -871,6 +871,8 @@ acutest_abort_(void)
     } else {
         if(acutest_current_test_ != NULL)
             acutest_fini_(acutest_current_test_->name);
+        fflush(stdout);
+        fflush(stderr);
         abort();
     }
 }
