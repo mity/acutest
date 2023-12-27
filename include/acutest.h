@@ -2,7 +2,7 @@
  * Acutest -- Another C/C++ Unit Test facility
  * <https://github.com/mity/acutest>
  *
- * Copyright 2013-2020 Martin Mitas
+ * Copyright 2013-2023 Martin Mitas
  * Copyright 2019 Garrett D'Amore
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -1176,14 +1176,14 @@ acutest_run_(const struct acutest_test_* test, int index, int master_index)
             GetExitCodeProcess(processInfo.hProcess, &exitCode);
             CloseHandle(processInfo.hThread);
             CloseHandle(processInfo.hProcess);
-            failed = (exitCode != 0);
-            if(exitCode > 1) {
-                switch(exitCode) {
-                    case 3:             acutest_error_("Aborted."); break;
-                    case 0xC0000005:    acutest_error_("Access violation."); break;
-                    default:            acutest_error_("Test ended in an unexpected way [%lu].", exitCode); break;
-                }
+            switch(exitCode) {
+                case 0:             break;  /* unit test success. */
+                case 1:             break;  /* "standard" unit test failure (unlike the cases below). */
+                case 3:             acutest_error_("Aborted."); break;
+                case 0xC0000005:    acutest_error_("Access violation."); break;
+                default:            acutest_error_("Test ended in an unexpected way [%lu].", exitCode); break;
             }
+            failed = (exitCode != 0);
         } else {
             acutest_error_("Cannot create unit test subprocess [%ld].", GetLastError());
             failed = 1;
@@ -1583,88 +1583,100 @@ acutest_cmdline_callback_(int id, const char* arg)
     return 0;
 }
 
-
-#ifdef ACUTEST_LINUX_
 static int
-acutest_is_tracer_present_(void)
+acutest_under_debugger_(void)
 {
-    /* Must be large enough so the line 'TracerPid: ${PID}' can fit in. */
-    static const int OVERLAP = 32;
+#ifdef ACUTEST_LINUX_
+    /* Scan /proc/self/status for line "TracerPid: [PID]". If such line exists
+     * and the PID is non-zero, we're being debugged. */
+    {
+        static const int OVERLAP = 32;
+        int fd;
+        char buf[512];
+        size_t n_read;
+        pid_t tracer_pid = 0;
 
-    char buf[512];
-    int tracer_present = 0;
-    int fd;
-    size_t n_read = 0;
+        /* Little trick so that we can treat the 1st line the same as any other
+         * and detect line start easily. */
+        buf[0] = '\n';
+        n_read = 1;
 
-    fd = open("/proc/self/status", O_RDONLY);
-    if(fd == -1)
-        return 0;
+        fd = open("/proc/self/status", O_RDONLY);
+        if(fd == -1)
+            return 0;
 
-    while(1) {
-        static const char pattern[] = "TracerPid:";
-        const char* field;
+        while(1) {
+            static const char pattern[] = "\nTracerPid:";
+            const char* field;
 
-        while(n_read < sizeof(buf) - 1) {
-            ssize_t n;
+            while(n_read < sizeof(buf) - 1) {
+                ssize_t n;
 
-            n = read(fd, buf + n_read, sizeof(buf) - 1 - n_read);
-            if(n <= 0)
+                n = read(fd, buf + n_read, sizeof(buf) - 1 - n_read);
+                if(n <= 0)
+                    break;
+                n_read += (size_t)n;
+            }
+            buf[n_read] = '\0';
+
+            field = strstr(buf, pattern);
+            if(field != NULL  &&  field < buf + sizeof(buf) - OVERLAP) {
+                tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
                 break;
-            n_read += (size_t)n;
-        }
-        buf[n_read] = '\0';
+            }
 
-        field = strstr(buf, pattern);
-        if(field != NULL  &&  field < buf + sizeof(buf) - OVERLAP) {
-            pid_t tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
-            tracer_present = (tracer_pid != 0);
-            break;
+            if(n_read == sizeof(buf) - 1) {
+                /* Move the tail with the potentially incomplete line we're
+                 * looking for to the beginning of the buffer. OVERLAP must be
+                 * large enough so the searched line fits in completely. */
+                memmove(buf, buf + sizeof(buf) - 1 - OVERLAP, OVERLAP);
+                n_read = OVERLAP;
+            } else {
+                break;
+            }
         }
 
-        if(n_read == sizeof(buf) - 1) {
-            /* Move the tail with the potentially incomplete line we're looking
-             * for to the beginning of the buffer. */
-            memmove(buf, buf + sizeof(buf) - 1 - OVERLAP, OVERLAP);
-            n_read = OVERLAP;
-        } else {
-            break;
-        }
+        close(fd);
+        if(tracer_pid != 0)
+            return 1;
     }
-
-    close(fd);
-    return tracer_present;
-}
 #endif
 
 #ifdef ACUTEST_MACOS_
-static bool
-acutest_AmIBeingDebugged(void)
-{
-    int junk;
-    int mib[4];
-    struct kinfo_proc info;
-    size_t size;
+    /* See https://developer.apple.com/library/archive/qa/qa1361/_index.html */
+    {
+        int mib[4];
+        struct kinfo_proc info;
+        size_t size;
 
-    // Initialize the flags so that, if sysctl fails for some bizarre
-    // reason, we get a predictable result.
-    info.kp_proc.p_flag = 0;
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_PROC;
+        mib[2] = KERN_PROC_PID;
+        mib[3] = getpid();
 
-    // Initialize mib, which tells sysctl the info we want, in this case
-    // we're looking for information about a specific process ID.
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_PROC;
-    mib[2] = KERN_PROC_PID;
-    mib[3] = getpid();
+        size = sizeof(info);
+        info.kp_proc.p_flag = 0;
+        sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
 
-    // Call sysctl.
-    size = sizeof(info);
-    junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
-    assert(junk == 0);
-
-    // We're being debugged if the P_TRACED flag is set.
-    return ( (info.kp_proc.p_flag & P_TRACED) != 0 );
-}
+        if(info.kp_proc.p_flag & P_TRACED)
+            return 1;
+    }
 #endif
+
+#ifdef ACUTEST_WIN_
+    if(IsDebuggerPresent())
+        return 1;
+#endif
+
+#ifdef RUNNING_ON_VALGRIND
+    /* We treat Valgrind as a debugger of sorts.
+     * (Macro RUNNING_ON_VALGRIND is provided by <valgrind.h>, if available.) */
+    if(RUNNING_ON_VALGRIND)
+        return 1;
+#endif
+
+    return 0;
+}
 
 int
 main(int argc, char** argv)
@@ -1715,31 +1727,14 @@ main(int argc, char** argv)
             acutest_remember_(i);
     }
 
-    /* Guess whether we want to run unit tests as child processes. */
+    /* By default, we want to suppress running tests as child processes if we
+     * run just one test, or if we're under debugger: Debugging tests is then
+     * so much easier. */
     if(acutest_no_exec_ < 0) {
-        acutest_no_exec_ = 0;
-
-        if(acutest_count_ <= 1) {
+        if(acutest_count_ <= 1  ||  acutest_under_debugger_())
             acutest_no_exec_ = 1;
-        } else {
-#ifdef ACUTEST_WIN_
-            if(IsDebuggerPresent())
-                acutest_no_exec_ = 1;
-#endif
-#ifdef ACUTEST_LINUX_
-            if(acutest_is_tracer_present_())
-                acutest_no_exec_ = 1;
-#endif
-#ifdef ACUTEST_MACOS_
-            if(acutest_AmIBeingDebugged())
-                acutest_no_exec_ = 1;
-#endif
-#ifdef RUNNING_ON_VALGRIND
-            /* RUNNING_ON_VALGRIND is provided by optionally included <valgrind.h> */
-            if(RUNNING_ON_VALGRIND)
-                acutest_no_exec_ = 1;
-#endif
-        }
+        else
+            acutest_no_exec_ = 0;
     }
 
     if(acutest_tap_) {
