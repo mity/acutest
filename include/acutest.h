@@ -81,8 +81,8 @@
  *       TEST_CHECK(ptr->member2 > 200);
  *   }
  */
-#define TEST_CHECK_(cond,...)   acutest_check_((cond), __FILE__, __LINE__, __VA_ARGS__)
-#define TEST_CHECK(cond)        acutest_check_((cond), __FILE__, __LINE__, "%s", #cond)
+#define TEST_CHECK_(cond,...)   acutest_check_(!!(cond), __FILE__, __LINE__, __VA_ARGS__)
+#define TEST_CHECK(cond)        acutest_check_(!!(cond), __FILE__, __LINE__, "%s", #cond)
 
 
 /* These macros are the same as TEST_CHECK_ and TEST_CHECK except that if the
@@ -102,12 +102,12 @@
  */
 #define TEST_ASSERT_(cond,...)                                                 \
     do {                                                                       \
-        if(!acutest_check_((cond), __FILE__, __LINE__, __VA_ARGS__))           \
+        if(!acutest_check_(!!(cond), __FILE__, __LINE__, __VA_ARGS__))         \
             acutest_abort_();                                                  \
     } while(0)
 #define TEST_ASSERT(cond)                                                      \
     do {                                                                       \
-        if(!acutest_check_((cond), __FILE__, __LINE__, "%s", #cond))           \
+        if(!acutest_check_(!!(cond), __FILE__, __LINE__, "%s", #cond))         \
             acutest_abort_();                                                  \
     } while(0)
 
