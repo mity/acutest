@@ -1602,43 +1602,44 @@ acutest_under_debugger_(void)
         n_read = 1;
 
         fd = open("/proc/self/status", O_RDONLY);
-        if(fd == -1)
-            return 0;
+        if(fd != -1) {
+            while(1) {
+                static const char pattern[] = "\nTracerPid:";
+                const char* field;
 
-        while(1) {
-            static const char pattern[] = "\nTracerPid:";
-            const char* field;
+                while(n_read < sizeof(buf) - 1) {
+                    ssize_t n;
 
-            while(n_read < sizeof(buf) - 1) {
-                ssize_t n;
+                    n = read(fd, buf + n_read, sizeof(buf) - 1 - n_read);
+                    if(n <= 0)
+                        break;
+                    n_read += (size_t)n;
+                }
+                buf[n_read] = '\0';
 
-                n = read(fd, buf + n_read, sizeof(buf) - 1 - n_read);
-                if(n <= 0)
+                field = strstr(buf, pattern);
+                if(field != NULL  &&  field < buf + sizeof(buf) - OVERLAP) {
+                    tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
                     break;
-                n_read += (size_t)n;
-            }
-            buf[n_read] = '\0';
+                }
 
-            field = strstr(buf, pattern);
-            if(field != NULL  &&  field < buf + sizeof(buf) - OVERLAP) {
-                tracer_pid = (pid_t) atoi(field + sizeof(pattern) - 1);
-                break;
+                if(n_read == sizeof(buf) - 1) {
+                    /* Move the tail with the potentially incomplete line we're
+                     * be looking for to the beginning of the buffer.
+                     * (The OVERLAP must be large enough so the searched line
+                     * can fit in completely.) */
+                    memmove(buf, buf + sizeof(buf) - 1 - OVERLAP, OVERLAP);
+                    n_read = OVERLAP;
+                } else {
+                    break;
+                }
             }
 
-            if(n_read == sizeof(buf) - 1) {
-                /* Move the tail with the potentially incomplete line we're
-                 * looking for to the beginning of the buffer. OVERLAP must be
-                 * large enough so the searched line fits in completely. */
-                memmove(buf, buf + sizeof(buf) - 1 - OVERLAP, OVERLAP);
-                n_read = OVERLAP;
-            } else {
-                break;
-            }
+            close(fd);
+
+            if(tracer_pid != 0)
+                return 1;
         }
-
-        close(fd);
-        if(tracer_pid != 0)
-            return 1;
     }
 #endif
 
