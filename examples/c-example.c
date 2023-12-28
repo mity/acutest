@@ -42,6 +42,20 @@ test_fail(void)
     TEST_MSG("b: %d", b);
 }
 
+void
+test_skip(void)
+{
+    TEST_SKIP("Decided to skip.");
+    TEST_CHECK(1 == 0);  /* ignored check. */
+}
+
+void
+test_bad_skip(void)
+{
+    TEST_CHECK(1 == 1);
+    TEST_SKIP("Decided to skip.");      /* Cannot skip after any TEST_CHECK */
+}
+
 static void
 helper(void)
 {
@@ -75,6 +89,8 @@ test_crash(void)
 TEST_LIST = {
     { "tutorial", test_tutorial },
     { "fail",     test_fail },
+    { "skip",     test_skip },
+    { "bad-skip", test_bad_skip },
     { "abort",    test_abort },
     { "crash",    test_crash },
     { NULL, NULL }
