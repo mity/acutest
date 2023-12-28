@@ -603,6 +603,35 @@ acutest_colored_printf_(int color, const char* fmt, ...)
 #endif
 }
 
+static const char*
+acutest_basename_(const char* path)
+{
+    const char* name;
+
+    name = strrchr(path, '/');
+    if(name != NULL)
+        name++;
+    else
+        name = path;
+
+#ifdef ACUTEST_WIN_
+    {
+        const char* alt_name;
+
+        alt_name = strrchr(path, '\\');
+        if(alt_name != NULL)
+            alt_name++;
+        else
+            alt_name = path;
+
+        if(alt_name > name)
+            name = alt_name;
+    }
+#endif
+
+    return name;
+}
+
 static void
 acutest_begin_test_line_(const struct acutest_test_* test)
 {
@@ -705,19 +734,7 @@ acutest_check_(int cond, const char* file, int line, const char* fmt, ...)
 
         acutest_line_indent_(acutest_case_name_[0] ? 2 : 1);
         if(file != NULL) {
-#ifdef ACUTEST_WIN_
-            const char* lastsep1 = strrchr(file, '\\');
-            const char* lastsep2 = strrchr(file, '/');
-            if(lastsep1 == NULL)
-                lastsep1 = file-1;
-            if(lastsep2 == NULL)
-                lastsep2 = file-1;
-            file = (lastsep1 > lastsep2 ? lastsep1 : lastsep2) + 1;
-#else
-            const char* lastsep = strrchr(file, '/');
-            if(lastsep != NULL)
-                file = lastsep+1;
-#endif
+            file = acutest_basename_(file);
             printf("%s:%d: Check ", file, line);
         }
 
@@ -1810,14 +1827,7 @@ main(int argc, char** argv)
     }
 
     if (acutest_xml_output_) {
-#if defined ACUTEST_UNIX_
-        char *suite_name = basename(argv[0]);
-#elif defined ACUTEST_WIN_
-        char suite_name[_MAX_FNAME];
-        _splitpath(argv[0], NULL, NULL, suite_name, NULL);
-#else
-        const char *suite_name = argv[0];
-#endif
+        const char* suite_name = acutest_basename_(argv[0]);
         fprintf(acutest_xml_output_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         fprintf(acutest_xml_output_, "<testsuite name=\"%s\" tests=\"%d\" errors=\"%d\" failures=\"%d\" skip=\"%d\">\n",
             suite_name, (int)acutest_list_size_, acutest_stat_failed_units_, acutest_stat_failed_units_,
