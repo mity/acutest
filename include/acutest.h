@@ -1788,8 +1788,11 @@ main(int argc, char** argv)
         /* TAP harness should provide some summary. */
         acutest_no_summary_ = 1;
 
-        if(!acutest_worker_)
-            printf("1..%d\n", (int) acutest_count_);
+        if(!acutest_worker_) {
+            printf("1..%d\n", (acutest_skip_mode_)
+                        ? (int) (acutest_list_size_ - acutest_count_)
+                        : (int) acutest_count_);
+        }
     }
 
     index = acutest_worker_index_;
