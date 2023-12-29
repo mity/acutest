@@ -1807,7 +1807,7 @@ int
 main(int argc, char** argv)
 {
     int i, index;
-    int exit_code;
+    int exit_code = 1;
 
     acutest_argv0_ = argv[0];
 
