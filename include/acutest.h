@@ -2,7 +2,7 @@
  * Acutest -- Another C/C++ Unit Test facility
  * <https://github.com/mity/acutest>
  *
- * Copyright 2013-2023 Martin Mitas
+ * Copyright 2013-2023 Martin Mitáš
  * Copyright 2019 Garrett D'Amore
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
