@@ -1828,7 +1828,7 @@ main(int argc, char** argv)
     for(i = 0; acutest_list_[i].func != NULL; i++)
         acutest_list_size_++;
 
-    acutest_test_data_ = (struct acutest_test_data_*)calloc(acutest_list_size_, sizeof(struct acutest_test_data_));
+    acutest_test_data_ = (struct acutest_test_data_*)calloc((size_t) acutest_list_size_, sizeof(struct acutest_test_data_));
     if(acutest_test_data_ == NULL) {
         fprintf(stderr, "Out of memory.\n");
         acutest_exit_(2);
