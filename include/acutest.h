@@ -1980,9 +1980,6 @@ main(int argc, char** argv)
     return exit_code;
 }
 
-
-#endif  /* #ifndef TEST_NO_MAIN */
-
 #ifdef _MSC_VER
     #pragma warning(pop)
 #endif
@@ -1990,5 +1987,7 @@ main(int argc, char** argv)
 #ifdef __cplusplus
     }  /* extern "C" */
 #endif
+
+#endif  /* #ifndef TEST_NO_MAIN */
 
 #endif  /* #ifndef ACUTEST_H */
