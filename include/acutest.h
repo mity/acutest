@@ -441,6 +441,7 @@ static int acutest_test_already_logged_ = 0;
 static int acutest_case_already_logged_ = 0;
 static int acutest_verbose_level_ = 2;
 static int acutest_test_failures_ = 0;
+static int acutest_max_msg_ = TEST_MSG_MAXSIZE;
 static int acutest_colorize_ = 0;
 static int acutest_timer_ = 0;
 
@@ -888,7 +889,7 @@ acutest_case_(const char* fmt, ...)
 void ACUTEST_ATTRIBUTE_(format (printf, 1, 2))
 acutest_message_(const char* fmt, ...)
 {
-    char buffer[TEST_MSG_MAXSIZE];
+    char buffer[acutest_max_msg_];
     char* line_beg;
     char* line_end;
     va_list args;
@@ -902,9 +903,9 @@ acutest_message_(const char* fmt, ...)
         return;
 
     va_start(args, fmt);
-    vsnprintf(buffer, TEST_MSG_MAXSIZE, fmt, args);
+    vsnprintf(buffer, acutest_max_msg_, fmt, args);
     va_end(args);
-    buffer[TEST_MSG_MAXSIZE-1] = '\0';
+    buffer[acutest_max_msg_-1] = '\0';
 
     line_beg = buffer;
     while(1) {
@@ -1292,10 +1293,10 @@ acutest_run_(const struct acutest_test_* test, int index, int master_index)
         /* Windows has no fork(). So we propagate all info into the child
          * through a command line arguments. */
         snprintf(buffer, sizeof(buffer),
-                 "%s --worker=%d %s --no-exec --no-summary %s --verbose=%d --color=%s -- \"%s\"",
+                 "%s --worker=%d %s --no-exec --no-summary %s --verbose=%d --max-msg=%d --color=%s -- \"%s\"",
                  acutest_argv0_, index, acutest_timer_ ? "--time" : "",
                  acutest_tap_ ? "--tap" : "", acutest_verbose_level_,
-                 acutest_colorize_ ? "always" : "never",
+                 acutest_max_msg_, acutest_colorize_ ? "always" : "never",
                  test->name);
         memset(&startupInfo, 0, sizeof(startupInfo));
         startupInfo.cb = sizeof(STARTUPINFO);
@@ -1543,6 +1544,7 @@ acutest_help_(void)
     printf("                          2 ... As 1 and failed conditions (this is default)\n");
     printf("                          3 ... As 1 and all conditions (and extended summary)\n");
     printf("  -q, --quiet           Same as --verbose=0\n");
+    printf("      --max-msg=NUMBER  Set message output limit to NUMBER (greater than 0)\n");
     printf("      --color[=WHEN]    Enable colorized output\n");
     printf("                          (WHEN is one of 'auto', 'always', 'never')\n");
     printf("      --no-color        Same as --color=never\n");
@@ -1571,6 +1573,7 @@ static const ACUTEST_CMDLINE_OPTION_ acutest_cmdline_options_[] = {
     { 'l',  "list",         'l', 0 },
     { 'v',  "verbose",      'v', ACUTEST_CMDLINE_OPTFLAG_OPTIONALARG_ },
     { 'q',  "quiet",        'q', 0 },
+    {  0,   "max-msg",      'm', ACUTEST_CMDLINE_OPTFLAG_REQUIREDARG_ },
     {  0,   "color",        'c', ACUTEST_CMDLINE_OPTFLAG_OPTIONALARG_ },
     {  0,   "no-color",     'C', 0 },
     { 'h',  "help",         'h', 0 },
@@ -1640,6 +1643,15 @@ acutest_cmdline_callback_(int id, const char* arg)
 
         case 'q':
             acutest_verbose_level_ = 0;
+            break;
+
+        case 'm':
+            acutest_max_msg_ = atoi(arg);
+            if (acutest_max_msg_ < 1) {
+                fprintf(stderr, "%s: Argument error '%s' for option --max-msg.\n", acutest_argv0_, arg);
+                fprintf(stderr, "Try '%s --help' for more information.\n", acutest_argv0_);
+                acutest_exit_(2);
+            }
             break;
 
         case 'c':
