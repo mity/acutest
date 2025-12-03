@@ -111,7 +111,7 @@ void test_example(void)
 }
 ```
 
-Note that the tests should be completely independent on each other. Whenever
+Note that the tests should be completely independent of each other. Whenever
 the test suite is invoked, the user may run any number of tests in the suite,
 in any order. Furthermore by default, on platforms where supported, each unit
 test is executed as a standalone (sub)process.
@@ -134,7 +134,7 @@ TEST_LIST = {
 
 Note the test list has to be ended with zeroed record.
 
-For a basic test suites this is more or less all you need to know. However
+For a basic test suite, this is more or less all you need to know. However
 Acutest provides some more macros which can be useful in some specific
 situations. We cover them in the following sub-sections.
 
@@ -162,7 +162,7 @@ void test_example(void)
 The abortion in the case of failure is performed either by calling `abort()`
 (if the test is executed as a child process) or via `longjmp()` (if it is not).
 
-Therefore it should be used only if you understand the costs connected with
+Therefore, it should be used only if you understand the costs connected with
 such a brutal abortion of the test. Depending on what your unit test does,
 it may include unflushed file descriptors, memory leaks, C++ objects destructed
 without their destructors being called and more.
@@ -219,7 +219,7 @@ void test_example(void)
 }
 ```
 
-Note that both macros output anything only when the most recently checking
+Note that both macros output anything only when the most recent checking
 macro has failed. In other words, these two are equivalent:
 
 ```C
@@ -238,7 +238,7 @@ TEST_MSG("some message");
 
 Sometimes, it is useful to design your testing function as a loop over data
 providing a collection of test vectors and their respective expected outputs.
-For example imagine our unit test is supposed to verify some kind of a hashing
+For example, imagine our unit test is supposed to verify some kind of a hashing
 function implementation and we've got a collection of test vectors for it in
 the hash specification.
 
@@ -253,7 +253,7 @@ a string serving as the test vector name. When used, Acutest makes sure that
 in the output log the provided name precedes any message from subsequent
 condition checks.
 
-For example, lets assume we are testing `SomeFunction()` which is supposed,
+For example, let's assume we are testing `SomeFunction()` which is supposed,
 for a given byte array of some size, return another array of bytes in a newly
 `malloc`-ed buffer. Then we can do something like this:
 
@@ -285,7 +285,7 @@ void test_example(void)
         /* Now, we can check the function produces what it should for the
          * current test vector. If any of the following checking macros
          * produces any output (either because the check fails, or because
-         * high `--verbose` level is used), Acutest also outputs the  currently
+         * high `--verbose` level is used), Acutest also outputs the currently
          * tested vector's name. */
         output = SomeFunction(vec->input, vec->input_size, &output_size);
         if(TEST_CHECK(output != NULL)) {
@@ -306,7 +306,7 @@ The specified name applies to all checks executed after the use of `TEST_CASE`
 ### Custom Log Messages
 
 Many of the macros mentioned in the earlier sections have a counterpart which
-allows to output a custom messages instead of some default ones.
+allows us to output a custom message instead of some default ones.
 
 All of these have the same name as the aforementioned macros, just with the
 underscore suffix added. With the suffix, they then expect `printf`-like string
@@ -318,7 +318,7 @@ TEST_CHECK(a == b);
 TEST_ASSERT(x < y);
 TEST_EXCEPTION(SomeFunction(), std::exception);
 ```
-we can use their respective counterparts with a custom messages:
+we can use their respective counterparts with a custom message:
 ```C++
 TEST_CHECK_(a == b, "%d is equal to %d", a, b);
 TEST_ASSERT_(x < y, "%d is lower than %d", x, y);
@@ -329,7 +329,7 @@ You should use some neutral wording for them because, with the command line
 option `--verbose`, the messages are logged out even if the respective check
 passes successfully.
 
-(If you need to output some diagnostic information just in the case the check
+(If you need to output some diagnostic information just in case the check
 fails, use the macro `TEST_MSG`. That's exactly its purpose.)
 
 Similarly, instead of
@@ -341,14 +341,14 @@ we can use richer
 TEST_CASE_("iteration #%d", 42);
 ```
 
-However note all of these can only be used if your compiler supports variadic
+However, note all of these can only be used if your compiler supports variadic
 preprocessor macros. Variadic macros became a standard part of the C language
 with C99.
 
 
 ## Building the Test Suite
 
-When we are done with implementing the tests, we can simply compile it as
+When we are done implementing the tests, we can simply compile it as
 a simple C/C++ program. For example, assuming `cc` is your C compiler:
 
 ```sh
@@ -358,14 +358,14 @@ $ cc test_example.c -o test_example
 
 ## Running Unit Tests
 
-When the test suite is compiled, the resulted testing binary can be used to run
+When the test suite is compiled, the resulting testing binary can be used to run
 the tests.
 
 Exit code of the test suite is 0 if all the executed unit tests pass, 1 if any
 of them fails, or any other number if an internal error occurs.
 
 By default (without any command line options), it runs all implemented unit
-tests. It can also run only subset of the unit tests as specified on the
+tests. It can also run a subset of the unit tests as specified on the
 command line:
 
 ```sh
